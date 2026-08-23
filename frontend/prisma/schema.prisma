@@ -42,6 +42,9 @@ model User {
   withdrawals       Withdrawal[]
   oauthAccounts     OAuthAccount[]
   adminActions      AdminAction[]
+  customers         Customer[]
+  tailoringOrders   TailoringOrder[]
+  workshopTasks     WorkshopTask[]
 
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
@@ -331,4 +334,134 @@ model Withdrawal {
   @@index([userId, requestedAt])
   @@index([status, requestedAt])
   @@index([provider, providerPayoutId])
+}
+
+// ---------------------------------------------------------------------------
+// Domaine atelier de couture
+// ---------------------------------------------------------------------------
+// Ajouté par le fork (le starter ne ship que des modèles génériques). `Order`
+// reste la commande de PAIEMENT ; `TailoringOrder` est la commande de couture.
+//
+// Tout est rattaché à `userId` : un compte = un atelier. Le multi-atelier
+// passerait par `organizationId`, comme le décrit le CLAUDE.md — non activé ici.
+
+model Customer {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name  String
+  phone String?
+  // FEMALE | MALE — détermine la palette de mesures présentée (17 ou 23 champs).
+  gender String
+  loyal  Boolean @default(false)
+  notes  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  measurementSets MeasurementSet[]
+  tailoringOrders TailoringOrder[]
+
+  // Deux clients d'ateliers différents peuvent porter le même nom ; l'unicité
+  // n'a de sens que dans un atelier donné.
+  @@unique([userId, name])
+  @@index([userId, createdAt])
+}
+
+model MeasurementSet {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  // Palette employée au moment du relevé. Conservée avec le relevé : changer
+  // le genre du client plus tard ne doit pas réinterpréter d'anciennes mesures.
+  gender String
+  // Valeurs indexées par `section::numero` (« Haut::9A »). Un Json plutôt qu'une
+  // table par champ : les palettes évoluent avec les habitudes de l'atelier, et
+  // une migration à chaque ajout de mesure serait disproportionnée.
+  values Json
+  notes  String?
+
+  // URL Cloudinary des tissus apportés et du modèle choisi.
+  fabricPhotos Json?
+  modelPhoto   String?
+
+  takenAt   DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId, takenAt])
+}
+
+model TailoringOrder {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  // Numéro lisible affiché à l'atelier (« #087 »). Séquentiel PAR atelier :
+  // chaque couturier compte ses commandes depuis 1, pas depuis un compteur
+  // global partagé avec les autres comptes.
+  sequence Int
+
+  garment String // type de tenue
+  fabric  String?
+  color   String?
+
+  // IN_PROGRESS | FITTING | DELIVERY | LATE | DELIVERED
+  status String @default("IN_PROGRESS")
+
+  // Montants en francs CFA — entiers, la devise n'a pas de décimales
+  // (invariant du CLAUDE.md : jamais de décimales sur la monnaie).
+  priceAmount   Int
+  depositAmount Int @default(0)
+
+  // Artisan chargé de la confection. Chaîne libre pour l'instant : l'équipe
+  // vit dans les paramètres, pas encore en base.
+  assignee String?
+
+  dueDate DateTime?
+  notes   String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deliveredAt DateTime?
+
+  @@unique([userId, sequence])
+  @@index([userId, createdAt])
+  @@index([userId, status])
+  @@index([customerId, createdAt])
+}
+
+model WorkshopTask {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Initiales de l'artisan, comme sur `TailoringOrder.assignee` : l'équipe vit
+  // dans les paramètres, pas encore en base. Le jour où elle y sera, ce champ
+  // deviendra une relation — d'où l'index qui l'accompagne déjà.
+  assignee String
+
+  // Jour planifié, sans heure. `@db.Date` plutôt qu'un `DateTime` complet :
+  // une tâche appartient à une journée d'atelier, pas à un instant. Cela évite
+  // aussi qu'un décalage de fuseau ne la fasse glisser d'une case dans la grille.
+  day DateTime @db.Date
+
+  // Durée en heures pleines. La journée compte 8 blocs à l'atelier.
+  hours Int
+
+  label String
+
+  // DONE | IN_PROGRESS | FITTING | PLANNED | BLOCKED
+  status String @default("PLANNED")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, day])
+  @@index([userId, assignee, day])
 }

@@ -1,19 +1,21 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 
-const inter = Inter({
+// Police du système de design Banani (--font-body et --font-headings pointent
+// tous deux dessus dans globals.css).
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-space-grotesk',
   display: 'swap',
 });
 
-// Replace these with your app name + description per fork.
 export const metadata: Metadata = {
-  title: 'izi kit',
-  description: 'Headless Next.js 16 starter — auth, payments, admin, webhooks, cron.',
+  title: 'AtelierPro — gestion d’atelier de couture',
+  description:
+    'Commandes, mesures, planning d’équipe et clients — la gestion complète de votre atelier de couture.',
 };
 
 export default function RootLayout({
@@ -22,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className={inter.className}>
+    <html lang="fr" className={spaceGrotesk.variable}>
+      <body className="bg-background text-foreground font-body antialiased">
         <ToastProvider>
           <AuthProvider>{children}</AuthProvider>
         </ToastProvider>
