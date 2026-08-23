@@ -45,6 +45,7 @@ model User {
   customers         Customer[]
   tailoringOrders   TailoringOrder[]
   workshopTasks     WorkshopTask[]
+  artisans          Artisan[]
 
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
@@ -434,6 +435,36 @@ model TailoringOrder {
   @@index([userId, createdAt])
   @@index([userId, status])
   @@index([customerId, createdAt])
+}
+
+model Artisan {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name String
+  role String
+
+  // Initiales affichées dans les pastilles, et surtout clé de rapprochement :
+  // `TailoringOrder.assignee` et `WorkshopTask.assignee` les stockent. D'où
+  // l'unicité par atelier — deux « MK » rendraient les deux ambigus. Le jour où
+  // ces colonnes deviendront de vraies clés étrangères, cette contrainte pourra
+  // tomber ; jusque-là elle est ce qui garantit la jointure.
+  initials String
+
+  // Capacité quotidienne en heures. Un apprenti ne tient pas les 8 h d'un
+  // tailleur senior, et le planning doit refléter la vraie disponibilité.
+  dailyHours Int @default(8)
+
+  // Un artisan qui quitte l'atelier est désactivé, jamais supprimé : ses
+  // commandes et ses tâches passées doivent rester lisibles.
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, initials])
+  @@index([userId, active])
 }
 
 model WorkshopTask {

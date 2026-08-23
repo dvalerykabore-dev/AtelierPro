@@ -16,8 +16,8 @@ import MeasureRow from '@/components/ui/MeasureRow';
 import { Field, SelectField, TextareaField } from '@/components/ui/Field';
 import { api, ApiError } from '@/lib/api';
 import { useClients } from '@/lib/useClients';
+import { useArtisans } from '@/lib/useArtisans';
 import {
-  artisans,
   etapeCourante,
   etapesNouvelleCommande,
   livraisonEstimee,
@@ -48,13 +48,16 @@ const ACOMPTE_PAR_DEFAUT = 10000;
  */
 export default function FormulaireNouvelleCommande() {
   const { clients, source } = useClients();
+  const { artisans } = useArtisans();
+  /** Une commande ne s'assigne qu'à un artisan encore en poste. */
+  const equipe = artisans.filter((a) => a.actif);
   const surServeur = source === 'serveur';
 
   const [clientId, setClientId] = useState<string | null>(null);
   const [typeTenue, setTypeTenue] = useState<string>(tarifs[0]!.tenue);
   const [tissu, setTissu] = useState('Wax hollandais — 6 yards');
   const [couleur, setCouleur] = useState<string>(COULEURS[0]!.label);
-  const [assigne, setAssigne] = useState<string>(artisans[0]!.id);
+  const [assigne, setAssigne] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [acompte, setAcompte] = useState<string>(String(ACOMPTE_PAR_DEFAUT));
   const [confirmee, setConfirmee] = useState(false);
@@ -63,7 +66,7 @@ export default function FormulaireNouvelleCommande() {
   const [erreurServeur, setErreurServeur] = useState<string | null>(null);
 
   const client = clients.find((c) => c.id === clientId) ?? clients[0];
-  const artisan = artisans.find((a) => a.id === assigne) ?? artisans[0]!;
+  const artisan = equipe.find((a) => a.id === assigne) ?? equipe[0];
   const tarif = tarifs.find((t) => t.tenue === typeTenue) ?? tarifs[0]!;
   const palette = paletteDe(client?.genre ?? 'Femme');
   const couleurChoisie = COULEURS.find((c) => c.label === couleur) ?? COULEURS[0]!;
@@ -71,8 +74,8 @@ export default function FormulaireNouvelleCommande() {
   const acompteVerse = Number.parseInt(acompte, 10) || 0;
   const resteAPayer = Math.max(0, tarif.prix - acompteVerse);
 
-  /** L'artisan est-il déjà saturé aujourd'hui ? */
-  const surcharge = artisan.heuresUtilisees >= artisan.heuresTotal;
+  /** L'artisan est-il déjà saturé aujourd'hui ? Sans équipe, la question ne se pose pas. */
+  const surcharge = artisan ? artisan.heuresAujourdhui >= artisan.capacite : false;
 
   const problemes = useMemo(() => {
     const liste: string[] = [];
@@ -106,7 +109,7 @@ export default function FormulaireNouvelleCommande() {
           color: couleur,
           priceAmount: tarif.prix,
           depositAmount: acompteVerse,
-          assignee: artisan.initiales,
+          assignee: artisan?.initiales ?? undefined,
           notes: notes || undefined,
         },
       });
@@ -269,9 +272,14 @@ export default function FormulaireNouvelleCommande() {
                 label="Assigné à"
                 value={assigne}
                 onChange={(e) => modifier(setAssigne)(e.target.value)}
-                aide={`${artisan.heuresUtilisees}/${artisan.heuresTotal} h engagées aujourd’hui`}
+                aide={
+                  artisan
+                    ? `${artisan.heuresAujourdhui}/${artisan.capacite} h engagées aujourd’hui`
+                    : 'Aucun artisan actif — composez l’équipe dans les paramètres'
+                }
               >
-                {artisans.map((a) => (
+                {equipe.length === 0 && <option value="">Aucun artisan actif</option>}
+                {equipe.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.nom} — {a.role}
                   </option>
@@ -302,8 +310,8 @@ export default function FormulaireNouvelleCommande() {
             {surcharge && (
               <p className="text-warning mt-4 flex items-start gap-2 text-xs">
                 <TriangleAlert size={13} className="mt-0.5 flex-shrink-0" aria-hidden />
-                {artisan.nom} est déjà saturé aujourd’hui ({artisan.heuresUtilisees}/
-                {artisan.heuresTotal} h) — la livraison estimée en tiendra compte.
+                {artisan?.nom} est déjà saturé aujourd’hui ({artisan?.heuresAujourdhui}/
+                {artisan?.capacite} h) — la livraison estimée en tiendra compte.
               </p>
             )}
           </section>
@@ -390,7 +398,7 @@ export default function FormulaireNouvelleCommande() {
                 {livraisonEstimee.date}
               </div>
               <div className="text-muted-foreground mt-1 text-xs">
-                {livraisonEstimee.dureeEstimee} · {artisan.nom}
+                {livraisonEstimee.dureeEstimee} · {artisan?.nom ?? 'non assigné'}
               </div>
             </div>
           </div>

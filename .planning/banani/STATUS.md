@@ -352,6 +352,51 @@ fait dans un helper appelé par `useClients`, `useReleveMesures`, `useRapports` 
 `usePlanning` : `body.message` d'abord, puis la première entrée de `body.issues`, sinon
 un repli en français.
 
+#### L'équipe — dernier référentiel simulé
+
+Migration `20260823105037_atelier_artisans` : `Artisan` (nom, rôle, initiales,
+capacité quotidienne, actif), cloisonné par `userId`, `@@unique([userId, initials])`.
+Les initiales sont la clé de rapprochement de `TailoringOrder.assignee` et
+`WorkshopTask.assignee` : la route les dérive du nom et les désambiguïse (MK, MK2)
+plutôt que de refuser une collision que l'utilisateur ne saurait pas résoudre.
+
+Les cinq artisans étaient codés en dur : **un atelier qui venait d'ouvrir voyait le
+personnel de quelqu'un d'autre et ne pouvait pas le corriger** — même classe de bug
+que la fiche client. `/api/artisans` + `/api/artisans/[id]` (PATCH ; pas de DELETE :
+un partant est désactivé, ses commandes passées doivent rester lisibles) alimentent
+désormais les paramètres, le planning, le formulaire de commande et le tableau de bord.
+
+La capacité devient **individuelle** : un apprenti à 6 h n'est plus jugé au seuil de
+8 h d'un senior. Le plafond serveur (`409 DAY_CAPACITY_EXCEEDED`) lit la capacité de
+l'artisan, et refuse aussi d'assigner un artisan désactivé (`409 ARTISAN_INACTIVE`).
+
+#### Le tableau de bord annonçait 24 commandes au-dessus d'une liste d'une seule
+
+Les quatre tuiles étaient figées (« 24 actives », « +3 »), la date aussi
+(« Jeudi 23 janvier 2025 »). Tout se dérive maintenant des commandes et du carnet
+déjà chargés — sans appel supplémentaire, donc sans divergence possible avec la liste
+juste en dessous. Les tendances « +3 » ont disparu : rien en base ne permet de les
+calculer, et un écart inventé serait pire qu'une absence. La charge de l'équipe est
+sommée depuis les tâches du jour, et « Prochaine dispo » est calculée au lieu d'être
+annoncée.
+
+> ⚠️ **Limite connue, non corrigée — décision utilisateur requise.**
+> `REFRESH_TIMEOUT_MS = 10_000` dans `lib/api.ts` (fichier **protégé**). Quand la base
+> est lente — mesuré à 5–8 s par requête sur le plan gratuit Neon — le rafraîchissement
+> de jeton dépasse ce délai, le 401 initial remonte, et l'application bascule en mode
+> démonstration alors que la session est valide. Chaque hook montant sa propre requête,
+> certains basculent et d'autres non : le tableau de bord affiche alors « 1 commande
+> active » au-dessus de dix commandes d'exemple.
+>
+> Atténué sans toucher au fichier protégé : `lib/api-repli.ts` rejoue une fois toute
+> **lecture** ayant échoué en 401, le temps que le rafraîchissement aboutisse (les
+> mutations ne sont jamais rejouées — l'aide ne prend qu'un chemin, pas de corps).
+> Les tuiles annoncent « exemples » quand elles comptent des exemples, pour ne plus
+> jamais paraître contredire la liste.
+>
+> Le correctif de fond — relever le délai, ou le rendre configurable — impose de
+> modifier `lib/api.ts`. À arbitrer.
+
 #### Le carnet clients se contredisait
 
 `nbCommandes` et `totalFacture` venaient de la fiche client, que l'API ne renvoie

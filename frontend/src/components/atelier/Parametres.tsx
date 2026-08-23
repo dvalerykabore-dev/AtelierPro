@@ -8,9 +8,9 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { Field } from '@/components/ui/Field';
 import { useAuth } from '@/contexts/AuthContext';
+import { useArtisans } from '@/lib/useArtisans';
 import {
   atelier,
-  equipeParametres,
   preferencesNotifications,
   tarifs as tarifsInitiaux,
   type Tarif,
@@ -72,8 +72,15 @@ export default function Parametres() {
   const router = useRouter();
   const { logout, loggingOut } = useAuth();
 
+  const {
+    artisans: equipe,
+    source: sourceEquipe,
+    chargement: chargementEquipe,
+    ajouter: ajouterArtisan,
+    basculer: basculerArtisan,
+  } = useArtisans();
+
   const [onglet, setOnglet] = useState<Onglet>('Atelier');
-  const [equipe, setEquipe] = useState(equipeParametres);
   const [preferences, setPreferences] = useState(preferencesNotifications);
   const [tarifs, setTarifs] = useState<Tarif[]>(tarifsInitiaux);
 
@@ -83,8 +90,40 @@ export default function Parametres() {
   const [nomTenue, setNomTenue] = useState('');
   const [prix, setPrix] = useState('');
 
-  function basculerMembre(id: string) {
-    setEquipe((prec) => prec.map((m) => (m.id === id ? { ...m, actif: !m.actif } : m)));
+  // Ajout d'un artisan — la maquette Banani montre le bouton sans destination.
+  const [artisanOuvert, setArtisanOuvert] = useState(false);
+  const [nomArtisan, setNomArtisan] = useState('');
+  const [roleArtisan, setRoleArtisan] = useState('Couturière');
+  const [capaciteArtisan, setCapaciteArtisan] = useState('8');
+  const [echecEquipe, setEchecEquipe] = useState<string | null>(null);
+  const [envoiArtisan, setEnvoiArtisan] = useState(false);
+
+  async function soumettreArtisan(e: FormEvent) {
+    e.preventDefault();
+    const capacite = Number.parseInt(capaciteArtisan, 10);
+    if (!nomArtisan.trim() || !roleArtisan.trim() || Number.isNaN(capacite)) return;
+
+    setEnvoiArtisan(true);
+    setEchecEquipe(null);
+    const probleme = await ajouterArtisan({
+      nom: nomArtisan.trim(),
+      role: roleArtisan.trim(),
+      capacite,
+    });
+    setEnvoiArtisan(false);
+
+    if (probleme) {
+      setEchecEquipe(probleme);
+      return;
+    }
+    setNomArtisan('');
+    setArtisanOuvert(false);
+  }
+
+  /** L'interrupteur est optimiste ; le hook revient en arrière si le serveur refuse. */
+  async function basculerMembre(id: string) {
+    const probleme = await basculerArtisan(id);
+    if (probleme) setEchecEquipe(probleme);
   }
 
   function basculerPreference(id: string) {
@@ -179,16 +218,40 @@ export default function Parametres() {
           <section className="bg-surface border-border overflow-hidden rounded-lg border">
             <div className="border-border flex items-center justify-between gap-3 border-b px-5 py-3">
               <h2 className="font-headings text-foreground text-sm font-bold">
-                Équipe ({equipe.filter((m) => m.actif).length} actifs sur {equipe.length})
+                Équipe ({equipe.filter((m) => m.actif).length} actif
+                {equipe.filter((m) => m.actif).length > 1 ? 's' : ''} sur {equipe.length})
+                {sourceEquipe === 'demonstration' && (
+                  <span className="text-warning ml-1.5 font-normal">· exemples</span>
+                )}
               </h2>
               <button
                 type="button"
+                onClick={() => setArtisanOuvert(true)}
                 className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium"
               >
                 <UserPlus size={12} aria-hidden />
                 Ajouter
               </button>
             </div>
+
+            {echecEquipe && (
+              <p role="alert" className="text-danger border-border border-b px-5 py-2.5 text-xs">
+                {echecEquipe}
+              </p>
+            )}
+
+            {chargementEquipe && equipe.length === 0 && (
+              <p className="text-muted-foreground px-5 py-4 text-xs">Chargement de l’équipe…</p>
+            )}
+
+            {/* Un atelier qui vient d'ouvrir n'a personne : c'est ici qu'il
+                compose son équipe, et le planning en dépend entièrement. */}
+            {!chargementEquipe && equipe.length === 0 && (
+              <p className="text-muted-foreground px-5 py-4 text-xs">
+                Aucun artisan. Ajoutez-en un pour pouvoir assigner des commandes et remplir le
+                planning.
+              </p>
+            )}
 
             <ul>
               {equipe.map((m) => (
@@ -369,6 +432,62 @@ export default function Parametres() {
             value={prix}
             onChange={(e) => setPrix(e.target.value)}
           />
+        </form>
+      </Modal>
+
+      {/* Ajout d'un artisan — écran absent des maquettes Banani. */}
+      <Modal
+        ouvert={artisanOuvert}
+        onFermer={() => setArtisanOuvert(false)}
+        titre="Ajouter un artisan"
+        description="Les initiales sont déduites du nom ; elles identifient l’artisan sur les commandes et le planning."
+        pied={
+          <>
+            <Button variante="fantome" onClick={() => setArtisanOuvert(false)}>
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              form="formulaire-artisan"
+              disabled={!nomArtisan.trim() || envoiArtisan}
+            >
+              {envoiArtisan ? 'Ajout…' : 'Ajouter à l’équipe'}
+            </Button>
+          </>
+        }
+      >
+        <form id="formulaire-artisan" onSubmit={soumettreArtisan} className="flex flex-col gap-4">
+          <Field
+            label="Nom complet"
+            required
+            autoFocus
+            placeholder="Moussa Koné"
+            value={nomArtisan}
+            onChange={(e) => setNomArtisan(e.target.value)}
+          />
+          <Field
+            label="Rôle"
+            required
+            placeholder="Tailleur senior"
+            value={roleArtisan}
+            onChange={(e) => setRoleArtisan(e.target.value)}
+          />
+          <Field
+            label="Capacité quotidienne (heures)"
+            type="number"
+            required
+            min={1}
+            max={16}
+            aide="Un apprenti ne tient pas les 8 h d’un tailleur senior — le planning s’appuie sur ce chiffre."
+            value={capaciteArtisan}
+            onChange={(e) => setCapaciteArtisan(e.target.value)}
+          />
+
+          {echecEquipe && (
+            <p role="alert" className="text-danger text-sm">
+              {echecEquipe}
+            </p>
+          )}
         </form>
       </Modal>
     </div>

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
+import { avecReessai401 } from '@/lib/api-repli';
 import { messageErreur } from '@/lib/message-erreur';
 import type { Genre } from '@/lib/mock/atelier';
 
@@ -62,7 +63,9 @@ export function useReleveMesures(clientId: string | null, actif: boolean) {
 
     void (async () => {
       try {
-        const res = await api<{ releve: ReleveApi | null }>(`/api/clients/${clientId}/mesures`);
+        const res = await avecReessai401<{ releve: ReleveApi | null }>(
+          `/api/clients/${clientId}/mesures`,
+        );
         if (annule) return;
         setCharge(
           res.releve

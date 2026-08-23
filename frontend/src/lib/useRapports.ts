@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { avecReessai401 } from '@/lib/api-repli';
 import { messageErreur } from '@/lib/message-erreur';
 
 export interface Rapports {
@@ -44,7 +45,7 @@ export function useRapports() {
 
     void (async () => {
       try {
-        const res = await api<Rapports>('/api/rapports');
+        const res = await avecReessai401<Rapports>('/api/rapports');
         if (!annule) {
           setRapports(res);
           setSource('serveur');

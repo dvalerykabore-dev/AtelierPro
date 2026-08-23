@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
+import { avecReessai401 } from '@/lib/api-repli';
 import { messageErreur } from '@/lib/message-erreur';
 import { clients as clientsSimules, type Client, type Genre } from '@/lib/mock/atelier';
 
@@ -13,6 +14,7 @@ interface ClientApi {
   gender: 'FEMALE' | 'MALE';
   loyal: boolean;
   notes: string | null;
+  createdAt: string;
 }
 
 /** « Mariam Coulibaly » → « MC ». */
@@ -38,6 +40,7 @@ function versUI(c: ClientApi): Client {
     derniereCommande: '—',
     fidele: c.loyal,
     totalFacture: 0,
+    creeLe: c.createdAt,
   };
 }
 
@@ -66,7 +69,7 @@ export function useClients() {
     setChargement(true);
     setErreur(null);
     try {
-      const res = await api<{ clients: ClientApi[] }>('/api/clients');
+      const res = await avecReessai401<{ clients: ClientApi[] }>('/api/clients');
       setClients(res.clients.map(versUI));
       setSource('serveur');
     } catch (err) {

@@ -328,10 +328,26 @@ export const statistiques: StatistiqueCle[] = [
 ];
 
 /** Date affichée dans les en-têtes — figée tant que les données sont simulées. */
-export const dateDuJour = {
-  long: 'Jeudi 23 janvier 2025',
-  court: 'Jeudi 23 jan',
-};
+/**
+ * Date du jour, dans la langue de l'atelier.
+ *
+ * C'était une chaîne figée (« Jeudi 23 janvier 2025 ») : le tableau de bord
+ * affichait une date fausse dès le lendemain de la maquette. Calculée au rendu,
+ * elle suit l'horloge — c'est la seule donnée d'accueil qui n'a besoin ni du
+ * serveur ni de la base.
+ */
+export function dateDuJourFr(): { long: string; court: string } {
+  const d = new Date();
+  const long = d.toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const court = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' });
+  const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+  return { long: majuscule(long), court: majuscule(court) };
+}
 
 /** Encart « Prochaine dispo » de la colonne capacité (desktop). */
 export const prochaineDisponibilite = {
@@ -1057,6 +1073,8 @@ export interface Client {
   fidele: boolean;
   /** Cumul facturé, en francs CFA. */
   totalFacture: number;
+  /** Date de création ISO — absente du jeu d'exemple, qui n'a pas d'historique. */
+  creeLe?: string;
 }
 
 export const clients: Client[] = [

@@ -146,18 +146,42 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const { assignee, day, hours, label, status } = parsed.data;
     const jour = jourUtc(day);
 
-    // Garde-fou métier : une journée compte 8 heures. Refuser la surcharge ici
-    // plutôt qu'à l'écran, sinon deux onglets ouverts la contournent.
-    const engagees = await prisma.workshopTask.aggregate({
-      where: { userId: auth.user.sub, assignee, day: jour },
-      _sum: { hours: true },
-    });
+    // Garde-fou métier : la capacité est celle de l'artisan, pas une constante.
+    // Un apprenti à 6 h ne doit pas se voir imposer la journée d'un senior.
+    // Refuser la surcharge ici plutôt qu'à l'écran, sinon deux onglets ouverts
+    // la contournent.
+    const [artisan, engagees] = await Promise.all([
+      prisma.artisan.findFirst({
+        where: { userId: auth.user.sub, initials: assignee },
+        select: { dailyHours: true, active: true },
+      }),
+      prisma.workshopTask.aggregate({
+        where: { userId: auth.user.sub, assignee, day: jour },
+        _sum: { hours: true },
+      }),
+    ]);
+
+    // Un artisan désactivé ne reçoit plus de travail — sinon le planning
+    // continuerait de charger quelqu'un qui a quitté l'atelier.
+    if (artisan && !artisan.active) {
+      return NextResponse.json(
+        {
+          error: 'ARTISAN_INACTIVE',
+          message: `${assignee} ne fait plus partie de l’équipe active.`,
+        },
+        { status: 409 },
+      );
+    }
+
+    // Artisan inconnu : on retient le plafond par défaut plutôt que de refuser.
+    // Des tâches ont pu être créées avant que l'équipe ne soit constituée.
+    const capacite = artisan?.dailyHours ?? HEURES_PAR_JOUR;
     const dejaPrises = engagees._sum.hours ?? 0;
-    if (dejaPrises + hours > HEURES_PAR_JOUR) {
+    if (dejaPrises + hours > capacite) {
       return NextResponse.json(
         {
           error: 'DAY_CAPACITY_EXCEEDED',
-          message: `${assignee} a déjà ${dejaPrises} h engagées ce jour-là (${HEURES_PAR_JOUR} h maximum).`,
+          message: `${assignee} a déjà ${dejaPrises} h engagées ce jour-là (${capacite} h maximum).`,
         },
         { status: 409 },
       );

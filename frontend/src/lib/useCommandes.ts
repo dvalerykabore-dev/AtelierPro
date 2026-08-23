@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { api, ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import { avecReessai401 } from '@/lib/api-repli';
 import {
   commandes as commandesSimulees,
   type Commande,
@@ -77,7 +78,7 @@ export function useCommandes() {
   const recharger = useCallback(async () => {
     setChargement(true);
     try {
-      const res = await api<{ commandes: CommandeApi[] }>('/api/commandes');
+      const res = await avecReessai401<{ commandes: CommandeApi[] }>('/api/commandes');
       setCommandes(res.commandes.map(versUI));
       setSource('serveur');
     } catch (err) {

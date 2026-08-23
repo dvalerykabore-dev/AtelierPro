@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
+import { avecReessai401 } from '@/lib/api-repli';
 import { messageErreur } from '@/lib/message-erreur';
 import {
   STATUTS_TACHE,
@@ -127,7 +128,7 @@ export function usePlanning() {
 
     void (async () => {
       try {
-        const res = await api<ReponsePlanning>(
+        const res = await avecReessai401<ReponsePlanning>(
           debut ? `/api/planning?debut=${debut}` : '/api/planning',
         );
         if (annule) return;

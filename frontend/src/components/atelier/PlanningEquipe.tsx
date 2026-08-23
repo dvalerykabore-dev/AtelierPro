@@ -1,19 +1,15 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Plus, TriangleAlert } from 'lucide-react';
 import AppShell from '@/components/atelier/AppShell';
 import Avatar from '@/components/ui/Avatar';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { Field, SelectField } from '@/components/ui/Field';
-import {
-  HEURES_PAR_JOUR,
-  STATUTS_TACHE,
-  artisans,
-  styleTache,
-  type StatutTache,
-} from '@/lib/mock/atelier';
+import { HEURES_PAR_JOUR, STATUTS_TACHE, styleTache, type StatutTache } from '@/lib/mock/atelier';
+import { useArtisans } from '@/lib/useArtisans';
 import { usePlanning, type JourSemaine, type TachePlanifiee } from '@/lib/usePlanning';
 import { cn } from '@/lib/utils';
 
@@ -24,13 +20,18 @@ function tachesDe(liste: TachePlanifiee[], initiales: string, iso: string) {
   return liste.filter((t) => t.assignee === initiales && t.iso === iso);
 }
 
-function charge(heures: number) {
-  const sature = heures >= HEURES_PAR_JOUR;
-  const tendu = heures >= 6 && !sature;
+/**
+ * Charge d'un artisan rapportée à SA capacité : un apprenti à 6 h n'est pas
+ * jugé sur la journée de 8 h d'un tailleur senior.
+ */
+function charge(heures: number, capacite: number) {
+  const plafond = capacite > 0 ? capacite : HEURES_PAR_JOUR;
+  const sature = heures >= plafond;
+  const tendu = heures >= plafond * 0.75 && !sature;
   return {
     sature,
     couleur: sature ? 'bg-danger' : tendu ? 'bg-warning' : 'bg-success',
-    pourcentage: Math.min(Math.round((heures / HEURES_PAR_JOUR) * 100), 100),
+    pourcentage: Math.min(Math.round((heures / plafond) * 100), 100),
   };
 }
 
@@ -103,18 +104,29 @@ export default function PlanningEquipe() {
     decale,
   } = usePlanning();
 
+  const { artisans, chargement: chargementEquipe } = useArtisans();
+  /** Seuls les artisans actifs occupent une ligne : un partant ne doit plus recevoir de tâche. */
+  const equipe = artisans.filter((a) => a.actif);
+
   const [jourActif, setJourActif] = useState(0);
 
   // Affectation d'une tâche — écran absent des maquettes Banani, qui montrent
   // le bouton sans destination.
   const [affectationOuverte, setAffectationOuverte] = useState(false);
-  const [artisanChoisi, setArtisanChoisi] = useState(artisans[0]?.initiales ?? '');
+  const [artisanChoisi, setArtisanChoisi] = useState('');
   const [jourChoisi, setJourChoisi] = useState('');
   const [libelle, setLibelle] = useState('');
   const [duree, setDuree] = useState('3');
   const [statutChoisi, setStatutChoisi] = useState<StatutTache>('Planifié');
   const [envoi, setEnvoi] = useState(false);
   const [echec, setEchec] = useState<string | null>(null);
+
+  // L'équipe arrive elle aussi après le premier rendu : on cale le choix par
+  // défaut du formulaire sur le premier artisan actif dès qu'il est connu.
+  useEffect(() => {
+    if (equipe.length === 0) return;
+    setArtisanChoisi((prec) => prec || (equipe[0]?.initiales ?? ''));
+  }, [equipe]);
 
   // La semaine arrive après le premier rendu : on cale la sélection sur
   // aujourd'hui dès qu'elle est connue, sans écraser un choix de l'utilisateur.
@@ -154,6 +166,9 @@ export default function PlanningEquipe() {
 
   /** Heures déjà engagées pour l'artisan et le jour sélectionnés dans le formulaire. */
   const chargeCible = tachesDe(taches, artisanChoisi, jourChoisi).reduce((s, t) => s + t.duree, 0);
+  /** Capacité de l'artisan visé — le plafond n'est plus le même pour tous. */
+  const capaciteCible =
+    equipe.find((a) => a.initiales === artisanChoisi)?.capacite ?? HEURES_PAR_JOUR;
 
   // L'en-tête vit ici plutôt que dans la page serveur : le libellé de semaine
   // et les flèches doivent lire la MÊME semaine que la grille. Séparés, ils
@@ -199,10 +214,29 @@ export default function PlanningEquipe() {
     ),
   };
 
-  if (chargement) {
+  if (chargement || chargementEquipe) {
     return (
       <AppShell {...entete}>
         <p className="text-muted-foreground p-12 text-center text-sm">Chargement du planning…</p>
+      </AppShell>
+    );
+  }
+
+  // Sans équipe, la grille n'a aucune ligne à afficher : on renvoie vers
+  // l'endroit où l'on compose l'équipe plutôt que de montrer un tableau vide.
+  if (equipe.length === 0) {
+    return (
+      <AppShell {...entete}>
+        <div className="flex flex-col items-center gap-3 p-12 text-center">
+          <p className="text-foreground text-sm font-medium">Aucun artisan actif</p>
+          <p className="text-muted-foreground max-w-sm text-xs">
+            Le planning se remplit par artisan. Composez votre équipe pour commencer à affecter des
+            tâches.
+          </p>
+          <Link href="/parametres">
+            <Button>Composer l’équipe</Button>
+          </Link>
+        </div>
       </AppShell>
     );
   }
@@ -266,10 +300,10 @@ export default function PlanningEquipe() {
           </div>
 
           <ul className="flex flex-col">
-            {artisans.map((a) => {
+            {equipe.map((a) => {
               const duJour = tachesDe(taches, a.initiales, jourSelectionne?.iso ?? '');
               const heures = duJour.reduce((s, t) => s + t.duree, 0);
-              const { couleur, pourcentage } = charge(heures);
+              const { couleur, pourcentage } = charge(heures, a.capacite);
 
               return (
                 <li key={a.id} className="border-border border-b px-4 py-3">
@@ -280,7 +314,7 @@ export default function PlanningEquipe() {
                       <div className="text-muted-foreground text-xs">{a.role}</div>
                     </div>
                     <span className="text-muted-foreground flex-shrink-0 text-xs">
-                      {heures}/{HEURES_PAR_JOUR}h
+                      {heures}/{a.capacite}h
                     </span>
                   </div>
 
@@ -354,7 +388,7 @@ export default function PlanningEquipe() {
           </div>
 
           {/* Une ligne par artisan */}
-          {artisans.map((a) => (
+          {equipe.map((a) => (
             <div key={a.id} className="border-border flex min-h-18 border-b">
               <div className="border-border bg-surface flex w-48 flex-shrink-0 items-center gap-3 border-r px-4 py-3">
                 <Avatar initiales={a.initiales} taille="sm" className="h-8 w-8" />
@@ -367,7 +401,7 @@ export default function PlanningEquipe() {
               {semaine.map((j) => {
                 const duJour = tachesDe(taches, a.initiales, j.iso);
                 const heures = duJour.reduce((s, t) => s + t.duree, 0);
-                const { couleur, pourcentage } = charge(heures);
+                const { couleur, pourcentage } = charge(heures, a.capacite);
 
                 return (
                   <div
@@ -419,7 +453,7 @@ export default function PlanningEquipe() {
             </div>
             {semaine.map((j) => {
               const total = taches.filter((t) => t.iso === j.iso).reduce((s, t) => s + t.duree, 0);
-              const maximum = artisans.length * HEURES_PAR_JOUR;
+              const maximum = equipe.reduce((s, a) => s + a.capacite, 0) || 1;
               const pct = Math.round((total / maximum) * 100);
               const couleur = pct >= 100 ? 'bg-danger' : pct >= 75 ? 'bg-warning' : 'bg-success';
 
@@ -491,7 +525,7 @@ export default function PlanningEquipe() {
                 value={artisanChoisi}
                 onChange={(e) => setArtisanChoisi(e.target.value)}
               >
-                {artisans.map((a) => (
+                {equipe.map((a) => (
                   <option key={a.id} value={a.initiales}>
                     {a.nom}
                   </option>
@@ -515,7 +549,7 @@ export default function PlanningEquipe() {
                 type="number"
                 required
                 min={1}
-                max={HEURES_PAR_JOUR}
+                max={capaciteCible}
                 value={duree}
                 onChange={(e) => setDuree(e.target.value)}
               />
@@ -537,10 +571,10 @@ export default function PlanningEquipe() {
               délais réalistes — affecter au-delà de 8 h la casserait en silence.
               Le serveur refuse de son côté (409 DAY_CAPACITY_EXCEEDED) : cet
               avertissement prévient, il ne garde pas la porte. */}
-            {chargeCible + Number.parseInt(duree || '0', 10) > HEURES_PAR_JOUR && (
+            {chargeCible + Number.parseInt(duree || '0', 10) > capaciteCible && (
               <p className="text-warning text-xs">
                 Cette affectation porterait la journée à{' '}
-                {chargeCible + Number.parseInt(duree || '0', 10)} h sur {HEURES_PAR_JOUR} h —
+                {chargeCible + Number.parseInt(duree || '0', 10)} h sur {capaciteCible} h —
                 l’artisan serait en surcharge.
               </p>
             )}
