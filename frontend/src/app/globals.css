@@ -61,3 +61,15 @@ body {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+/*
+ * Défilement fluide pour les ancres de la page d'accueil (#tarifs, #faq…).
+ * Conditionné à la préférence système : un défilement animé déclenche des
+ * nausées chez les personnes sensibles au mouvement, et l'ancre reste
+ * parfaitement fonctionnelle sans lui.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

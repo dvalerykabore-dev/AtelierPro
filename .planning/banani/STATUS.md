@@ -3,7 +3,7 @@
 Flow : **Atelier Couture Pro** — `BlTaeCglLjgB`
 https://app.banani.co/flow/BlTaeCglLjgB
 
-Last updated : 2026-08-21
+Last updated : 2026-08-23
 
 ## Système de design (source : `/style.css`, bloc `@theme`)
 
@@ -454,3 +454,119 @@ mesures : ce sont des actions métier, pas des écrans. Elles demandent un back-
 dépassait son délai de 5 s quand la suite complète tourne en parallèle sur une machine
 chargée (6 inscriptions avec hachage bcrypt), alors qu'il passe en 3,5 s isolé.
 Délai porté à 20 s pour ce cas seul : la suite est redevenue déterministe (570/570).
+
+## Page d'accueil publique — `LandingPage.jsx` + `MobileLandingPage.jsx` (2026-08-23)
+
+Plan : `.planning/banani/landing-page.md`. Route `/` — elle redirigeait vers
+`/dashboard`, le produit n'avait aucune vitrine : un visiteur non connecté
+tombait directement sur l'écran de connexion.
+
+**Deux maquettes, récupérées en deux temps.** Le premier appel au MCP n'a
+renvoyé que `LandingPage.jsx` (`desktop`) ; la version mobile a d'abord été
+conçue à la main. `MobileLandingPage.jsx` (`screenSize = 'mobile'`) est arrivé
+ensuite, et chaque section a été réalignée dessus — l'espacement du téléphone
+n'est pas une réduction du desktop, c'est une maquette distincte. La page est
+passée de 7 259 à 5 406 px de haut à 375 px après cet alignement.
+
+### Fichiers
+
+`src/app/page.tsx` · `src/lib/landing-contenu.ts` · `src/components/landing/`
+(BarreNavigation, SectionHero, SectionFonctionnalites, SectionCasUsage,
+SectionTemoignages, SectionTarifs, SectionFaq, SectionAppelFinal, PiedDePage,
+PageLegale) · `src/app/legal/{confidentialite,conditions}/page.tsx` ·
+`src/components/auth/FormulaireInscription.tsx` (extrait de la page pour la
+frontière `<Suspense>` qu'impose `useSearchParams`).
+
+### Ce qui est branché, et à quoi
+
+| Élément | Branchement | Vérifié |
+|---|---|---|
+| CTA de la barre haute | `AuthContext` — session ⇒ « Tableau de bord » → `/dashboard`, sinon « Essai gratuit » → `/inscription` ; le lien « Se connecter » disparaît en session | oui |
+| 4 liens de nav | ancres `#fonctionnalites` `#tarifs` `#temoignages` `#faq`, `scroll-mt-20` sous la barre collante de 59 px | oui, les 4 |
+| Tiroir mobile | état réel, Échap referme, un lien referme et défile | oui |
+| 6 cartes fonctionnalités | `/planning` `/mesures` `/commandes` `/clients` `/rapports` `/dashboard` | oui, 200 |
+| « Parcourir la démonstration » | `/dashboard`, qui affiche le bandeau « Mode démonstration » | oui |
+| Boutons de tarifs | `/inscription?plan=decouverte\|atelier` ; l'inscription affiche « Plan retenu : … ». Plan inconnu ⇒ mention absente | oui |
+| Enterprise | ancre `#contact`, pas de prix inventé | oui |
+| Accordéon FAQ | `aria-expanded`, panneau retiré du DOM quand fermé, une seule ouverte, Entrée au clavier | oui |
+| Pied de page | 2 pages légales réelles (200) + « Contact » → `#contact` | oui |
+
+22 liens sur la page, **aucun `href="#"`**, aucune destination en erreur.
+
+### Responsive
+
+Pas de débordement horizontal à 368 / 775 / 1308 px CSS. Grille des
+fonctionnalités 1 → 2 → 3 colonnes. Toutes les cibles tactiles ≥ 44 px après
+correction du logo (32 px au départ).
+
+⚠️ **Les captures d'écran de ce poste sont trompeuses** : l'affichage Windows
+applique une échelle de ~1,445, si bien qu'un contexte Playwright demandé à
+375 px rend en réalité 540 px CSS, et que les coordonnées de clic ne
+correspondent pas aux pixels CSS. Un premier diagnostic — « le hamburger n'est
+pas cliquable » — en découlait et était **faux** : les taps visaient du vide.
+Étalonner le rapport avant toute vérification visuelle.
+
+### ⚠️ Affirmations non vérifiables — à trancher avant mise en ligne
+
+Toutes regroupées dans `src/lib/landing-contenu.ts` sous un bandeau
+d'avertissement, pour qu'aucune ne parte en production sans avoir été relue :
+
+1. **Chiffres du hero** — « 50K+ tailleurs », « 40 h gagnées/mois », « 96 % de
+   satisfaction ». Aucune source.
+2. **Témoignages** — trois personnes nommées, avec ville et métier, dont les
+   citations sortent du générateur de maquette. En l'état, ce sont de faux avis
+   clients. `SectionTemoignages` se retire d'elle-même si le tableau est vidé.
+3. **Résultats des cas d'usage** — « +35 % de commandes », « revenus +60 % ».
+4. **Réponses de la FAQ** — reformulées pour ne plus promettre le hors-ligne ni
+   l'import de fichier comme s'ils existaient, mais le sujet reste sensible.
+5. **Tarifs** — aucun paiement n'est branché. Une mention le dit sous la grille.
+
+Deux écarts délibérés avec la maquette, le texte d'origine étant faux :
+« App iOS & Android » (l'application est un site web) et le numéro
+`+226 XXXXXXXXX`, remplacé par `NEXT_PUBLIC_ATELIER_WHATSAPP` — variable vide,
+ligne non rendue.
+
+### Alignement sur la maquette mobile (seconde passe)
+
+Divergences réelles entre les deux maquettes, désormais portées par des paliers
+plutôt que par une réduction uniforme du desktop :
+
+| Section | Téléphone | Desktop |
+|---|---|---|
+| Barre haute | logo 28 px, marque `text-base`, bouton d'essai `text-xs` | logo 32 px, `text-lg`, liens d'ancre visibles |
+| Hero | **titre → visuel → boutons**, boutons empilés pleine largeur | deux colonnes, visuel à droite sur les deux rangées |
+| Chiffres | lignes horizontales, icône 40 px à gauche, valeur `text-lg` | colonnes centrées, icône 48 px, valeur `text-3xl` |
+| Fonctionnalités | 1 colonne, cartes `rounded-lg p-4`, icône 32 px | 3 colonnes, `rounded-xl p-6`, icône 40 px |
+| Cas d'usage · Témoignages · Tarifs | 1 colonne, `p-4`, titres `text-sm` | 3 colonnes, `p-6` / `p-8` |
+| FAQ | questions `text-xs`, `gap-2` | `text-base`, `gap-3` |
+| Pied de page | centré, séparateurs `·` | réparti sur une ligne |
+
+L'ordre du hero impose un placement explicite en grille (`lg:row-start`,
+`lg:row-span-2`) : un simple empilement ne peut pas produire les deux ordres.
+
+#### Trois écarts délibérés avec la maquette mobile
+
+1. **Le hamburger est conservé.** La maquette mobile ne montre que le logo et le
+   bouton d'essai — aucun lien de navigation. Les quatre ancres, dont les tarifs
+   et la FAQ, deviendraient inatteignables sur une page de 5 400 px. Le tiroir
+   vit donc **à côté** du bouton de la maquette, pas à sa place ; vérifié sans
+   chevauchement à 368 px CSS.
+2. **Les cibles tactiles restent à 44 px.** Le `py-1.5` du bouton d'essai donne
+   27 px de haut : au-dessus du minimum WCAG 2.2 (24 px), en dessous de ce que
+   demande l'action principale d'une page consultée au doigt. La barre garde sa
+   hauteur de 69 px, seul le bouton est plus haut que la maquette.
+3. **La liste des tarifs n'est pas tronquée.** La maquette mobile n'affiche que
+   `features.slice(0, 3)` ; or ce qui distingue les plans est précisément dans
+   les lignes suivantes. Tronquer revient à faire choisir sans montrer.
+
+Deux artefacts de maquette non repris, parce qu'ils cassaient la lecture :
+`max-h-20 overflow-hidden` sur les réponses de la FAQ (coupe le texte en pleine
+phrase — l'accordéon montre la réponse entière), et le « + » décoratif à côté de
+chaque question, devenu un vrai bouton.
+
+#### Revérifié après réalignement
+
+368 / 775 / 1308 px CSS sans débordement · ordre du hero correct sur les deux
+formats · 22 liens, aucun mort · 4 ancres sous la barre collante · accordéon
+(souris, tactile, clavier) · tiroir (tap, Échap, fermeture au clic d'un lien) ·
+aucune cible tactile sous 44 px · `lint`, `typecheck`, 577/577 tests, `build`.
