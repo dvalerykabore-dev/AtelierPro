@@ -16,6 +16,7 @@
 // env var. Forks that override `COOKIE_PREFIX` must update the regex in
 // csrfFromCookies().
 
+import { pathToFileURL } from 'node:url';
 import { PrismaClient } from '@prisma/client';
 
 const BASE_URL = process.env.SMOKE_BASE_URL ?? 'http://localhost:3000';
@@ -150,7 +151,12 @@ export async function main(): Promise<number> {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Cross-platform CLI guard. A naive `file://${process.argv[1]}` never matches
+// on Windows: import.meta.url is `file:///C:/…` with forward slashes, while
+// argv[1] is `C:\…` with backslashes — so the script silently no-ops and exits
+// 0 without running. pathToFileURL() normalises both. Under Vitest, argv[1] is
+// the vitest binary, so the auto-run path stays inert as the tests expect.
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   main()
     .then((code) => process.exit(code))
     .catch((err) => {

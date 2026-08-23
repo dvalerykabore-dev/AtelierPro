@@ -114,6 +114,11 @@ describe('POST /api/auth/signup', () => {
     expect(Array.isArray(body.issues)).toBe(true);
   });
 
+  // Timeout élargi à 20 s : ce cas lance 6 inscriptions concurrentes, chacune
+  // hachant un mot de passe avec bcrypt. Seul, il s'exécute en ~2 s ; mais
+  // lorsque les 66 fichiers de tests tournent en parallèle sur une machine
+  // chargée, le budget de 5 s par défaut est dépassé et le test échoue de
+  // façon intermittente — sans rapport avec le comportement testé.
   it('returns 429 TOO_MANY_SIGNUP_ATTEMPTS when the per-email limit is hit', async () => {
     prismaMock.user.findUnique.mockResolvedValue(null);
     prismaMock.user.create.mockResolvedValue({ id: 'u-rate' } as never);
@@ -134,7 +139,7 @@ describe('POST /api/auth/signup', () => {
     const limited = calls.find((r) => r.status === 429)!;
     const body = await limited.json();
     expect(body.error).toBe('TOO_MANY_SIGNUP_ATTEMPTS');
-  });
+  }, 20_000);
 
   it('rejects pwned passwords with PASSWORD_PWNED when PASSWORD_HIBP_CHECK=1', async () => {
     vi.stubEnv('PASSWORD_HIBP_CHECK', '1');
