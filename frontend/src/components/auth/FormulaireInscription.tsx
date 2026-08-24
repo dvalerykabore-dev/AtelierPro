@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
 import AuthCard from '@/components/auth/AuthCard';
+import BoutonGoogle from '@/components/auth/BoutonGoogle';
 import Button from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { api, ApiError } from '@/lib/api';
@@ -111,6 +112,8 @@ export default function FormulaireInscription() {
           Un code de vérification vous sera envoyé par e-mail.
         </p>
       </form>
+
+      <BoutonGoogle />
     </AuthCard>
   );
 }
