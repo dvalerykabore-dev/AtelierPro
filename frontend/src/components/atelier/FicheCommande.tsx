@@ -1,11 +1,12 @@
 'use client';
+import { useState } from 'react';
 import Link from 'next/link';
 import {
+  AlertCircle,
   Calendar,
   Check,
   CheckCircle2,
   ChevronRight,
-  Clock,
   MessageCircle,
   Phone,
   Printer,
@@ -18,23 +19,33 @@ import NotesAtelier from '@/components/atelier/NotesAtelier';
 import PaiementsCommande from '@/components/atelier/PaiementsCommande';
 import Avatar from '@/components/ui/Avatar';
 import Button from '@/components/ui/Button';
+import { useClients } from '@/lib/useClients';
 import { useCommandes } from '@/lib/useCommandes';
-import { clientPrincipal, etapesFabrication, mesuresResume, rappels } from '@/lib/mock/atelier';
+import { useReleveMesures } from '@/lib/useReleveMesures';
+import {
+  etapeSuivante,
+  etapesDe,
+  initialesDe,
+  libelleRang,
+  mesuresResumeesDe,
+  numeroWhatsApp,
+  rangCommande,
+} from '@/lib/commande-fiche';
+import { messageErreur } from '@/lib/message-erreur';
+import { paletteDe, type StatutCommande } from '@/lib/mock/atelier';
 import { cn, formatPrice } from '@/lib/utils';
 
-/** Initiales à partir d'un nom complet — « Mariam Coulibaly » → « MC ». */
-function initiales(nom: string): string {
-  return nom
-    .split(' ')
-    .slice(0, 2)
-    .map((m) => m[0] ?? '')
-    .join('')
-    .toUpperCase();
-}
-
 export default function FicheCommande({ id }: { id: string }) {
-  const { commandes, chargement } = useCommandes();
+  const { commandes, chargement, source, changerStatut } = useCommandes();
+  const [envoiStatut, setEnvoiStatut] = useState(false);
+  const [erreurStatut, setErreurStatut] = useState<string | null>(null);
+  const { clients } = useClients();
   const commande = commandes.find((c) => c.id === id);
+  const client = clients.find((c) => c.id === commande?.clientId);
+
+  // Le relevé ne se charge que sur un identifiant réel : en démonstration les
+  // ids sont ceux du jeu simulé et l'API répondrait 404.
+  const { charge: releve } = useReleveMesures(commande?.clientId ?? null, source === 'serveur');
 
   // Trois états distincts : sans cette séparation, « commande introuvable »
   // s'afficherait le temps du chargement, à tort.
@@ -60,6 +71,26 @@ export default function FicheCommande({ id }: { id: string }) {
     );
   }
 
+  const rang = rangCommande(commandes, commande);
+  const etapes = etapesDe(commande.statut, commande.creeLe, commande.livraison);
+  // La palette suit le genre du relevé lui-même : c'est lui qui dit sous quels
+  // libellés les valeurs ont été prises.
+  const mesures = releve ? mesuresResumeesDe(paletteDe(releve.genre), releve.valeurs) : [];
+  const suivante = etapeSuivante(commande.statut);
+  const whatsapp = numeroWhatsApp(client?.telephone);
+
+  async function avancer(statut: StatutCommande) {
+    setEnvoiStatut(true);
+    setErreurStatut(null);
+    try {
+      await changerStatut(id, statut);
+    } catch (err) {
+      setErreurStatut(messageErreur(err, 'Le statut n’a pas pu être enregistré.'));
+    } finally {
+      setEnvoiStatut(false);
+    }
+  }
+
   return (
     <AppShell
       titre={`${commande.reference} — ${commande.client}`}
@@ -67,25 +98,51 @@ export default function FicheCommande({ id }: { id: string }) {
         <>
           <button
             type="button"
+            onClick={() => window.print()}
             className="border-border text-foreground hover:bg-muted flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm transition-colors"
           >
             <Printer size={14} aria-hidden />
             Imprimer
           </button>
-          <button
-            type="button"
-            className="border-border text-foreground hover:bg-muted flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm transition-colors"
-          >
-            <MessageCircle size={14} aria-hidden />
-            WhatsApp cliente
-          </button>
-          <button
-            type="button"
-            className="bg-primary text-primary-foreground hover:bg-accent flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-colors"
-          >
-            <CheckCircle2 size={14} aria-hidden />
-            Valider essayage
-          </button>
+
+          {/* Sans numéro joignable, le lien wa.me ouvrirait une conversation
+              vide : le bouton reste visible mais annonce ce qui manque. */}
+          {whatsapp ? (
+            <a
+              href={`https://wa.me/${whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border-border text-foreground hover:bg-muted flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm transition-colors"
+            >
+              <MessageCircle size={14} aria-hidden />
+              WhatsApp {commande.client.split(' ')[0]}
+            </a>
+          ) : (
+            <button
+              type="button"
+              disabled
+              title="Aucun numéro enregistré pour ce client."
+              className="border-border text-muted-foreground flex cursor-not-allowed items-center gap-1.5 rounded-md border px-3 py-2 text-sm opacity-50"
+            >
+              <MessageCircle size={14} aria-hidden />
+              Pas de numéro
+            </button>
+          )}
+
+          {/* Le libellé nomme le geste du jour — « Valider l'essayage » n'a de
+              sens que sur une commande en essayage. Une commande livrée n'a
+              plus de jalon suivant : le bouton disparaît. */}
+          {suivante && (
+            <button
+              type="button"
+              onClick={() => void avancer(suivante.suivant)}
+              disabled={envoiStatut}
+              className="bg-primary text-primary-foreground hover:bg-accent flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              <CheckCircle2 size={14} aria-hidden />
+              {envoiStatut ? 'Enregistrement…' : suivante.libelle}
+            </button>
+          )}
         </>
       }
     >
@@ -100,8 +157,20 @@ export default function FicheCommande({ id }: { id: string }) {
         </span>
       </div>
 
+      {erreurStatut && (
+        <p
+          role="alert"
+          className="text-danger border-border flex items-start gap-2 border-b px-4 py-3 text-sm lg:px-8"
+        >
+          <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
+          {erreurStatut}
+        </p>
+      )}
+
       <OngletsFiche
-        recapitulatif={<RecapitulatifCommande commande={commande} />}
+        recapitulatif={
+          <RecapitulatifCommande commande={commande} client={client} releve={releve} rang={rang} />
+        }
         suivi={
           <div className="flex min-w-0 flex-col lg:flex-row">
             {/* ---- Colonne principale ---- */}
@@ -111,7 +180,7 @@ export default function FicheCommande({ id }: { id: string }) {
                 <div className="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar
-                      initiales={initiales(commande.client)}
+                      initiales={initialesDe(commande.client)}
                       taille="lg"
                       className="h-12 w-12 text-base"
                     />
@@ -120,7 +189,7 @@ export default function FicheCommande({ id }: { id: string }) {
                         <h2 className="font-headings text-foreground text-xl font-bold">
                           {commande.client}
                         </h2>
-                        {clientPrincipal.fidele && (
+                        {client?.fidele && (
                           <span className="bg-primary text-primary-foreground rounded-sm px-2 py-0.5 text-xs font-medium">
                             Fidèle
                           </span>
@@ -129,12 +198,12 @@ export default function FicheCommande({ id }: { id: string }) {
                       <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
                         <span className="flex items-center gap-1">
                           <Phone size={12} aria-hidden />
-                          {clientPrincipal.telephone}
+                          {client?.telephone || 'Téléphone non renseigné'}
                         </span>
                         <span aria-hidden>·</span>
                         <span className="flex items-center gap-1">
                           <Shirt size={12} aria-hidden />
-                          {clientPrincipal.rangCommande}
+                          {libelleRang(rang)}
                         </span>
                       </div>
                     </div>
@@ -147,9 +216,20 @@ export default function FicheCommande({ id }: { id: string }) {
                         {commande.reference}
                       </span>
                     </div>
-                    <div className="text-accent flex items-center gap-1.5 text-xs font-medium">
-                      <span className="bg-accent h-1.5 w-1.5 rounded-full" aria-hidden />
-                      Essayage aujourd’hui 15h
+                    <div
+                      className={cn(
+                        'flex items-center gap-1.5 text-xs font-medium',
+                        commande.urgent ? 'text-accent' : 'text-muted-foreground',
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'h-1.5 w-1.5 rounded-full',
+                          commande.urgent ? 'bg-accent' : 'bg-border',
+                        )}
+                        aria-hidden
+                      />
+                      {commande.statut}
                     </div>
                     <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
                       <Calendar size={11} aria-hidden />
@@ -163,7 +243,9 @@ export default function FicheCommande({ id }: { id: string }) {
                   <span className="bg-warning h-10 w-10 flex-shrink-0 rounded-md" aria-hidden />
                   <div className="min-w-0 flex-1">
                     <div className="text-foreground text-sm font-bold">{commande.tenue}</div>
-                    <div className="text-muted-foreground text-xs">{clientPrincipal.tissu}</div>
+                    <div className="text-muted-foreground text-xs">
+                      {commande.tissu ?? 'Tissu non renseigné'}
+                    </div>
                   </div>
                   <div className="flex flex-col sm:items-end">
                     <span className="text-foreground text-base font-bold">
@@ -182,7 +264,7 @@ export default function FicheCommande({ id }: { id: string }) {
 
                 {/* Mobile : liste verticale — 7 étapes ne tiennent pas en ligne sur 375px */}
                 <ol className="flex flex-col gap-3 lg:hidden">
-                  {etapesFabrication.map((e, i) => (
+                  {etapes.map((e, i) => (
                     <li key={e.label} className="flex items-center gap-3">
                       <span
                         className={cn(
@@ -222,9 +304,9 @@ export default function FicheCommande({ id }: { id: string }) {
 
                 {/* Desktop : frise horizontale */}
                 <ol className="hidden items-start lg:flex">
-                  {etapesFabrication.map((e, i) => (
+                  {etapes.map((e, i) => (
                     <li key={e.label} className="relative flex flex-1 flex-col items-center">
-                      {i < etapesFabrication.length - 1 && (
+                      {i < etapes.length - 1 && (
                         <span
                           className={cn(
                             'absolute top-3 left-1/2 h-0.5 w-full',
@@ -281,70 +363,49 @@ export default function FicheCommande({ id }: { id: string }) {
               <section className="border-border border-b px-4 py-5 lg:px-6">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <h2 className="font-headings text-foreground text-sm font-bold">Mesures</h2>
-                  <span className="text-primary text-xs font-medium">Voir tout</span>
+                  <Link
+                    href="/mesures"
+                    className="text-primary text-xs font-medium hover:underline"
+                  >
+                    Voir tout
+                  </Link>
                 </div>
-                <div className="border-border overflow-hidden rounded-lg border">
-                  {mesuresResume.map((m, i) => (
-                    <div
-                      key={m.label}
-                      className={cn(
-                        'flex items-center justify-between gap-3 px-3 py-2.5',
-                        i < mesuresResume.length - 1 && 'border-border border-b',
-                        i % 2 === 1 ? 'bg-muted' : 'bg-surface',
-                      )}
-                    >
-                      <span className="text-muted-foreground text-xs">{m.label}</span>
-                      <span className="text-foreground text-xs font-medium">
-                        {m.valeur} {m.unite}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <PaiementsCommande />
-
-              {/* Rappels */}
-              <section className="px-4 py-5 lg:px-6">
-                <h2 className="font-headings text-foreground mb-3 text-sm font-bold">Rappels</h2>
-                <div className="flex flex-col gap-2">
-                  {rappels.map((r) => (
-                    <div
-                      key={r.texte}
-                      className={cn(
-                        'border-border flex items-center gap-2.5 rounded-md border px-3 py-2',
-                        r.envoye ? 'bg-muted' : 'bg-surface',
-                      )}
-                    >
-                      {r.envoye ? (
-                        <CheckCircle2
-                          size={14}
-                          className="text-success flex-shrink-0"
-                          aria-hidden
-                        />
-                      ) : (
-                        <Clock
-                          size={14}
-                          className="text-muted-foreground flex-shrink-0"
-                          aria-hidden
-                        />
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="text-foreground text-xs">{r.texte}</div>
-                        <div className="text-muted-foreground text-xs">{r.date}</div>
+                {mesures.length > 0 ? (
+                  <div className="border-border overflow-hidden rounded-lg border">
+                    {mesures.map((m, i) => (
+                      /* « Tour de hanches » figure deux fois dans la palette
+                         féminine : le libellé seul ne fait pas une clé. */
+                      <div
+                        key={`${m.label}-${i}`}
+                        className={cn(
+                          'flex items-center justify-between gap-3 px-3 py-2.5',
+                          i < mesures.length - 1 && 'border-border border-b',
+                          i % 2 === 1 ? 'bg-muted' : 'bg-surface',
+                        )}
+                      >
+                        <span className="text-muted-foreground text-xs">{m.label}</span>
+                        <span className="text-foreground text-xs font-medium">
+                          {m.valeur} {m.unite}
+                        </span>
                       </div>
-                      {!r.envoye && (
-                        <button
-                          type="button"
-                          className="text-primary flex-shrink-0 text-xs font-medium"
-                        >
-                          Envoyer
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="border-border rounded-lg border border-dashed px-3 py-4">
+                    <p className="text-muted-foreground text-xs">
+                      {source === 'serveur'
+                        ? `Aucune mesure relevée pour ${commande.client}. Prenez le relevé avant de tailler.`
+                        : 'Les mesures ne sont pas consultables en mode démonstration.'}
+                    </p>
+                  </div>
+                )}
               </section>
+
+              <PaiementsCommande
+                commandeId={commande.id}
+                montant={commande.montant}
+                encaisse={commande.encaisse ?? 0}
+              />
             </aside>
           </div>
         }

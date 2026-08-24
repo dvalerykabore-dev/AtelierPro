@@ -28,8 +28,14 @@ export interface Artisan {
 export interface Commande {
   id: string;
   reference: string;
+  /** Numéro brut de la commande dans l'atelier — « 87 » pour « #087 ». */
+  sequence: number;
   client: string;
+  /** Identifiant du client — permet de rejoindre sa fiche, ses mesures, son rang. */
+  clientId: string;
   tenue: string;
+  /** Tissu et coloris, tels que saisis. `null` quand rien n'a été renseigné. */
+  tissu: string | null;
   statut: StatutCommande;
   /** Libellé d'échéance tel qu'affiché (« 24 jan », « Auj. 15h »). */
   livraison: string;
@@ -40,6 +46,18 @@ export interface Commande {
   montant: number;
   /** `false` déclenche le badge « Aucun acompte » dans la liste. */
   acompte: boolean;
+  /**
+   * Somme réellement encaissée, en francs CFA.
+   *
+   * Miroir de `TailoringOrder.depositAmount`, lui-même recalé sur le journal de
+   * caisse à chaque écriture. Absent des commandes d'exemple : le jeu simulé
+   * n'a jamais eu de montant encaissé, seulement un booléen.
+   */
+  encaisse?: number;
+  /** Consignes d'atelier saisies à la commande. */
+  notes: string | null;
+  /** Date de création, en ISO — affichée dans le récapitulatif. */
+  creeLe: string;
 }
 
 export interface StatistiqueCle {
@@ -117,158 +135,223 @@ export const commandes: Commande[] = [
   {
     id: 'c087',
     reference: '#087',
+    sequence: 87,
     client: 'Mariam Coulibaly',
+    clientId: 'cl1',
     tenue: 'Robe wax cérémonie',
+    tissu: 'Wax hollandais orange · 6 yards',
     statut: 'Essayage',
     livraison: 'Auj. 15h',
     assignee: 'AT',
     urgent: true,
     montant: 30000,
     acompte: true,
+    notes: 'Broderie à l’encolure, doublure incluse. Essayage avant montage des manches.',
+    creeLe: '2025-01-10T00:00:00.000Z',
   },
   {
     id: 'c086',
     reference: '#086',
+    sequence: 86,
     client: 'Amadou Diallo',
+    clientId: 'cl2',
     tenue: 'Boubou grand occasion',
+    tissu: 'Bazin riche blanc · 8 yards',
     statut: 'En cours',
     livraison: '24 jan',
     assignee: 'MK',
     urgent: false,
     montant: 40000,
     acompte: true,
+    notes: null,
+    creeLe: '2025-01-08T00:00:00.000Z',
   },
   {
     id: 'c085',
     reference: '#085',
+    sequence: 85,
     client: 'Aissatou Ndiaye',
+    clientId: 'cl5',
     tenue: 'Robe de mariée',
+    tissu: 'Dentelle et satin ivoire · 10 yards',
     statut: 'En cours',
     livraison: '28 jan',
     assignee: 'SO',
     urgent: false,
     montant: 75000,
     acompte: true,
+    notes: 'Trois essayages prévus. Perles cousues main sur le bustier.',
+    creeLe: '2025-01-06T00:00:00.000Z',
   },
   {
     id: 'c084',
     reference: '#084',
+    sequence: 84,
     client: 'Sekou Camara',
+    clientId: 'cl6',
     tenue: 'Boubou bazin brodé',
+    tissu: 'Bazin riche bleu nuit · 8 yards',
     statut: 'Essayage',
     livraison: '25 jan',
     assignee: 'AT',
     urgent: false,
     montant: 35000,
     acompte: false,
+    notes: null,
+    creeLe: '2025-01-04T00:00:00.000Z',
   },
   {
     id: 'c083',
     reference: '#083',
+    sequence: 83,
     client: 'Kadiatou Sylla',
+    clientId: 'cl3',
     tenue: 'Ensemble pagne bazin',
+    tissu: 'Pagne tissé et bazin · 6 yards',
     statut: 'Livraison',
     livraison: '22 jan',
     assignee: 'FB',
     urgent: false,
     montant: 22000,
     acompte: true,
+    notes: null,
+    creeLe: '2025-01-02T00:00:00.000Z',
   },
   {
     id: 'c082',
     reference: '#082',
+    sequence: 82,
     client: 'Oumar Sangaré',
+    clientId: 'cl8',
     tenue: 'Costume 3 pièces',
+    tissu: 'Laine peignée grise · 3,5 m',
     statut: 'En retard',
     livraison: '20 jan',
     assignee: 'MK',
     urgent: true,
     montant: 45000,
     acompte: true,
+    notes: null,
+    creeLe: '2024-12-31T00:00:00.000Z',
   },
   {
     id: 'c081',
     reference: '#081',
+    sequence: 81,
     client: 'Boubacar Touré',
+    clientId: 'cl4',
     tenue: 'Chemise bogolan',
+    tissu: 'Bogolan écru · 2 yards',
     statut: 'En cours',
     livraison: '26 jan',
     assignee: 'ID',
     urgent: false,
     montant: 12000,
     acompte: false,
+    notes: null,
+    creeLe: '2024-12-29T00:00:00.000Z',
   },
   {
     id: 'c080',
     reference: '#080',
+    sequence: 80,
     client: 'Rokia Kouyaté',
+    clientId: 'cl7',
     tenue: 'Tailleur wax',
+    tissu: 'Wax Vlisco vert · 6 yards',
     statut: 'En cours',
     livraison: '27 jan',
     assignee: 'FB',
     urgent: false,
     montant: 28000,
     acompte: true,
+    notes: null,
+    creeLe: '2024-12-27T00:00:00.000Z',
   },
   {
     id: 'c079',
     reference: '#079',
+    sequence: 79,
     client: 'Mariam Coulibaly',
+    clientId: 'cl1',
     tenue: 'Ensemble 2 pièces',
+    tissu: 'Bazin riche jaune · 6 yards',
     statut: 'Livré',
     livraison: '15 jan',
     assignee: 'AT',
     urgent: false,
     montant: 18000,
     acompte: false,
+    notes: null,
+    creeLe: '2024-12-25T00:00:00.000Z',
   },
   {
     id: 'c078',
     reference: '#078',
+    sequence: 78,
     client: 'Amadou Diallo',
+    clientId: 'cl2',
     tenue: 'Boubou bazin simple',
+    tissu: 'Bazin uni blanc · 8 yards',
     statut: 'Livré',
     livraison: '14 jan',
     assignee: 'MK',
     urgent: false,
     montant: 15000,
     acompte: false,
+    notes: null,
+    creeLe: '2024-12-23T00:00:00.000Z',
   },
   {
     id: 'c077',
     reference: '#077',
+    sequence: 77,
     client: 'Sekou Camara',
+    clientId: 'cl6',
     tenue: 'Chemise sur mesure',
+    tissu: 'Popeline de coton ciel · 2 m',
     statut: 'Livré',
     livraison: '10 jan',
     assignee: 'ID',
     urgent: false,
     montant: 12000,
     acompte: false,
+    notes: null,
+    creeLe: '2024-12-21T00:00:00.000Z',
   },
   {
     id: 'c076',
     reference: '#076',
+    sequence: 76,
     client: 'Boubacar Touré',
+    clientId: 'cl4',
     tenue: 'Boubou bazin brodé',
+    tissu: 'Bazin riche marron · 8 yards',
     statut: 'En retard',
     livraison: '22 jan',
     assignee: 'MK',
     urgent: true,
     montant: 35000,
     acompte: true,
+    notes: null,
+    creeLe: '2024-12-19T00:00:00.000Z',
   },
   {
     id: 'c075',
     reference: '#075',
+    sequence: 75,
     client: 'Kadiatou Sylla',
+    clientId: 'cl3',
     tenue: 'Robe wax',
+    tissu: 'Wax fleuri rouge · 6 yards',
     statut: 'En retard',
     livraison: '21 jan',
     assignee: 'AT',
     urgent: true,
     montant: 20000,
     acompte: true,
+    notes: null,
+    creeLe: '2024-12-17T00:00:00.000Z',
   },
 ];
 
@@ -544,121 +627,6 @@ export interface Notification {
   /** Lien de l'action, quand la cible existe déjà. */
   href?: string;
 }
-
-export const notifications: Notification[] = [
-  {
-    id: 'n1',
-    categorie: 'Paiements',
-    icone: 'paiement',
-    couleurIcone: 'bg-success text-primary-foreground',
-    titre: 'Acompte reçu — Mariam Coulibaly',
-    corps: '10 000 F CFA versés pour la commande #087 · Robe wax cérémonie',
-    moment: 'Il y a 18 min',
-    lue: false,
-    action: 'Voir commande',
-    href: '/commandes/c087',
-  },
-  {
-    id: 'n2',
-    categorie: 'Clients',
-    icone: 'essayage',
-    couleurIcone: 'bg-accent text-primary-foreground',
-    titre: 'Essayage dans 1 heure — Mariam Coulibaly',
-    corps: 'Essayage prévu aujourd’hui à 15h00 pour la commande #087',
-    moment: 'Il y a 42 min',
-    lue: false,
-    action: 'Voir commande',
-    href: '/commandes/c087',
-  },
-  {
-    id: 'n3',
-    categorie: 'Livraisons',
-    icone: 'retard',
-    couleurIcone: 'bg-danger text-primary-foreground',
-    titre: 'Retard détecté — Oumar Sangaré',
-    corps:
-      'La commande #082 (Costume 3 pièces) dépasse la date de livraison du 20 jan. Moussa Koné est assigné.',
-    moment: 'Il y a 2 h',
-    lue: false,
-    action: 'Gérer le retard',
-    href: '/commandes/c082',
-  },
-  {
-    id: 'n4',
-    categorie: 'Clients',
-    icone: 'message',
-    couleurIcone: 'bg-secondary text-primary',
-    titre: 'Nouveau message WhatsApp — Kadiatou Sylla',
-    corps: '« Bonjour, ma commande est prête quand ? » · +226 65 88 99 00',
-    moment: 'Il y a 3 h',
-    lue: false,
-    action: 'Répondre',
-  },
-  {
-    id: 'n5',
-    categorie: 'Livraisons',
-    icone: 'livraison',
-    couleurIcone: 'bg-primary text-primary-foreground',
-    titre: 'Commande prête à livrer — Kadiatou Sylla',
-    corps: 'La commande #083 (Ensemble pagne bazin) est prête. Livraison prévue aujourd’hui.',
-    moment: 'Il y a 4 h',
-    lue: false,
-    action: 'Marquer livré',
-    href: '/commandes/c083',
-  },
-  {
-    id: 'n6',
-    categorie: 'Atelier',
-    icone: 'equipe',
-    couleurIcone: 'bg-muted text-muted-foreground',
-    titre: 'Planning mis à jour',
-    corps: 'Seydou Ouédraogo est en congé demain. Sa capacité a été retirée du planning du 24 jan.',
-    moment: 'Hier 17h30',
-    lue: true,
-  },
-  {
-    id: 'n7',
-    categorie: 'Paiements',
-    icone: 'paiement',
-    couleurIcone: 'bg-success text-primary-foreground',
-    titre: 'Solde reçu — Amadou Diallo',
-    corps: '25 000 F CFA reçus. Commande #086 (Boubou grand occasion) entièrement réglée.',
-    moment: 'Hier 14h12',
-    lue: true,
-  },
-  {
-    id: 'n8',
-    categorie: 'Clients',
-    icone: 'nouveauClient',
-    couleurIcone: 'bg-secondary text-primary',
-    titre: 'Nouveau client ajouté — Rokia Kouyaté',
-    corps: 'Profil créé avec mesures et tissu en stock. Première commande : Tailleur wax.',
-    moment: 'Hier 11h05',
-    lue: true,
-    action: 'Voir profil',
-    href: '/clients',
-  },
-  {
-    id: 'n9',
-    categorie: 'Livraisons',
-    icone: 'livraison',
-    couleurIcone: 'bg-primary text-primary-foreground',
-    titre: 'Commande livrée — Sekou Camara',
-    corps: 'La commande #077 (Chemise sur mesure) a été remise au client.',
-    moment: '22 jan 09h40',
-    lue: true,
-  },
-  {
-    id: 'n10',
-    categorie: 'Atelier',
-    icone: 'equipe',
-    couleurIcone: 'bg-muted text-muted-foreground',
-    titre: 'Stock tissu faible',
-    corps: 'Il reste moins de 3 yards de bazin riche bleu en réserve atelier.',
-    moment: '21 jan 16h20',
-    lue: true,
-  },
-];
 
 // ---------------------------------------------------------------------------
 // Rapports
@@ -1168,20 +1136,6 @@ export const clients: Client[] = [
   },
 ];
 
-/** Mesures corporelles complètes de la fiche client. */
-export const mesuresCorporelles: Mesure[] = [
-  { label: 'Poitrine', valeur: '96', unite: 'cm' },
-  { label: 'Taille', valeur: '76', unite: 'cm' },
-  { label: 'Hanches', valeur: '102', unite: 'cm' },
-  { label: 'Épaules', valeur: '38', unite: 'cm' },
-  { label: 'Tour de bras', valeur: '32', unite: 'cm' },
-  { label: 'Longueur robe', valeur: '138', unite: 'cm' },
-  { label: 'Tour de cou', valeur: '36', unite: 'cm' },
-  { label: 'Longueur dos', valeur: '42', unite: 'cm' },
-  { label: 'Longueur manche', valeur: '58', unite: 'cm' },
-  { label: 'Hauteur poitrine', valeur: '26', unite: 'cm' },
-];
-
 export interface CommandePassee {
   reference: string;
   tenue: string;
@@ -1247,23 +1201,6 @@ export const mesuresMiseAJour = '15 jan 2025';
 // Fiche commande détaillée
 // ---------------------------------------------------------------------------
 
-export interface EtapeFabrication {
-  label: string;
-  date: string;
-  terminee: boolean;
-  active?: boolean;
-}
-
-export const etapesFabrication: EtapeFabrication[] = [
-  { label: 'Prise de mesures', date: '15 jan', terminee: true },
-  { label: 'Découpe tissu', date: '16 jan', terminee: true },
-  { label: 'Assemblage', date: '18–20 jan', terminee: true },
-  { label: 'Essayage', date: 'Auj. 15h', terminee: false, active: true },
-  { label: 'Retouches', date: '24 jan', terminee: false },
-  { label: 'Finition & repassage', date: '26 jan', terminee: false },
-  { label: 'Livraison', date: '28 jan', terminee: false },
-];
-
 export interface Paiement {
   label: string;
   montant: number;
@@ -1275,16 +1212,6 @@ export interface Paiement {
 export const paiements: Paiement[] = [
   { label: 'Acompte 50 %', montant: 15000, date: '15 jan', mode: 'Mobile Money', regle: true },
   { label: 'Solde restant', montant: 15000, date: 'À la livraison', mode: '—', regle: false },
-];
-
-/** Extrait des mesures affiché en colonne latérale de la fiche commande. */
-export const mesuresResume: Mesure[] = [
-  { label: 'Poitrine', valeur: '96', unite: 'cm' },
-  { label: 'Taille', valeur: '76', unite: 'cm' },
-  { label: 'Hanches', valeur: '102', unite: 'cm' },
-  { label: 'Longueur robe', valeur: '138', unite: 'cm' },
-  { label: 'Épaules', valeur: '38', unite: 'cm' },
-  { label: 'Tour de bras', valeur: '32', unite: 'cm' },
 ];
 
 export interface NoteAtelier {
@@ -1308,46 +1235,6 @@ export const notesAtelier: NoteAtelier[] = [
     texte: 'Broderie encolure en cours, 2h restantes.',
   },
 ];
-
-export interface Rappel {
-  texte: string;
-  date: string;
-  envoye: boolean;
-}
-
-export const rappels: Rappel[] = [
-  { texte: 'SMS essayage envoyé', date: '22 jan', envoye: true },
-  { texte: 'Rappel livraison prévu', date: '27 jan', envoye: false },
-];
-
-/**
- * Récapitulatif de la commande — source Banani : screens/new_screen4.jsx
- * (« Fiche commande »), écran distinct de la fiche de suivi.
- */
-export const recapitulatifCommande = {
-  dateCreation: 'Lundi 20 janvier 2025',
-  livraisonCalculee: 'Mardi 28 janvier 2025',
-  dureeEstimee: '6 heures de travail',
-  tissu: 'Wax hollandais — 6 yards',
-  assigneNom: 'Awa Traoré',
-  assigneInitiales: 'AT',
-  instructions:
-    'Col bateau, fermeture invisible dans le dos, finitions dorées sur les ourlets. Longueur cheville.',
-};
-
-export const tarificationCommande: LigneTarif[] = [
-  { label: 'Façon robe cérémonie', montant: 25000 },
-  { label: 'Finitions broderie dorée', montant: 5000 },
-  { label: 'Acompte versé (20 jan)', montant: 10000, deduction: true },
-];
-
-/** Informations client complémentaires affichées sur la fiche commande. */
-export const clientPrincipal = {
-  telephone: '+226 70 11 22 33',
-  rangCommande: '6ᵉ commande',
-  fidele: true,
-  tissu: 'Wax hollandais orange · 6 yards · Broderie encolure',
-};
 
 export const modeleCommande = {
   typeTenue: 'Robe wax cérémonie',

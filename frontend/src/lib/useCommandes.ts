@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ApiError } from '@/lib/api';
+import { api, ApiError } from '@/lib/api';
 import { avecReessai401 } from '@/lib/api-repli';
 import {
   commandes as commandesSimulees,
@@ -20,6 +20,15 @@ const STATUT_AFFICHE: Record<StatutApi, StatutCommande> = {
   DELIVERED: 'Livré',
 };
 
+/** Sens inverse : l'écran parle français, la base parle en constantes. */
+const STATUT_API: Record<StatutCommande, StatutApi> = {
+  'En cours': 'IN_PROGRESS',
+  Essayage: 'FITTING',
+  Livraison: 'DELIVERY',
+  'En retard': 'LATE',
+  Livré: 'DELIVERED',
+};
+
 interface CommandeApi {
   id: string;
   sequence: number;
@@ -32,6 +41,7 @@ interface CommandeApi {
   assignee: string | null;
   dueDate: string | null;
   notes: string | null;
+  createdAt: string;
   customer: { id: string; name: string; gender: 'FEMALE' | 'MALE' };
 }
 
@@ -45,12 +55,26 @@ function echeance(dueDate: string | null): string {
   return new Date(dueDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
+/**
+ * « Bazin riche » + « bleu nuit » → « Bazin riche · bleu nuit ».
+ *
+ * Rien n'est inventé quand les deux champs sont vides : la fiche dira que le
+ * tissu n'est pas renseigné plutôt que d'afficher un tissu qui n'existe pas.
+ */
+function tissuDe(fabric: string | null, color: string | null): string | null {
+  const parts = [fabric, color].filter((v): v is string => (v ?? '').trim() !== '');
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
+
 function versUI(c: CommandeApi): Commande {
   return {
     id: c.id,
     reference: reference(c.sequence),
+    sequence: c.sequence,
     client: c.customer.name,
+    clientId: c.customer.id,
     tenue: c.garment,
+    tissu: tissuDe(c.fabric, c.color),
     statut: STATUT_AFFICHE[c.status],
     livraison: echeance(c.dueDate),
     // Initiales de l'artisan : l'équipe n'a pas encore de table dédiée.
@@ -59,6 +83,9 @@ function versUI(c: CommandeApi): Commande {
     urgent: c.status === 'LATE',
     montant: c.priceAmount,
     acompte: c.depositAmount > 0,
+    encaisse: c.depositAmount,
+    notes: c.notes,
+    creeLe: c.createdAt,
   };
 }
 
@@ -97,5 +124,23 @@ export function useCommandes() {
     void recharger();
   }, [recharger]);
 
-  return { commandes, source, chargement, recharger };
+  /**
+   * Fait avancer une commande d'un jalon.
+   *
+   * Rien n'est posé localement avant la réponse : contrairement au marquage
+   * « lu » d'une notification, un statut faux se voit sur le planning, dans les
+   * rapports et sur la fiche client. Mieux vaut un bouton qui attend une
+   * seconde qu'un atelier qui croit une commande livrée.
+   */
+  const changerStatut = useCallback(async (id: string, statut: StatutCommande) => {
+    const res = await api<{ commande: CommandeApi }>(`/api/commandes/${id}`, {
+      method: 'PATCH',
+      body: { status: STATUT_API[statut] },
+    });
+    const maj = versUI(res.commande);
+    setCommandes((prec) => prec.map((c) => (c.id === id ? maj : c)));
+    return maj;
+  }, []);
+
+  return { commandes, source, chargement, recharger, changerStatut };
 }
