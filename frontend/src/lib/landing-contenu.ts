@@ -12,24 +12,35 @@ import {
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════════
- * ⚠️  AFFIRMATIONS NON VÉRIFIÉES — À TRANCHER AVANT TOUTE MISE EN LIGNE
+ * TEXTE COMMERCIAL DE LA PAGE D'ACCUEIL
  *
- * Tout le texte commercial de la page d'accueil est rassemblé ici, et nulle
- * part ailleurs, pour une raison précise : la maquette Banani a rédigé des
- * chiffres et des témoignages qu'aucune donnée ne soutient. Éparpillés dans
- * dix composants, ils partiraient en production sans que personne ne les
- * relise.
+ * Tout est rassemblé ici, et nulle part ailleurs, pour une raison précise : la
+ * maquette Banani avait rédigé des chiffres et des témoignages qu'aucune donnée
+ * ne soutenait. Éparpillés dans dix composants, ils seraient partis en
+ * production sans que personne ne les relise.
  *
- * Ne sont adossés à rien :
- *   · CHIFFRES_CLES      — « 50K+ tailleurs », « 96 % de satisfaction »
- *   · TEMOIGNAGES        — trois personnes nommées, citations écrites par le
- *                          générateur de maquette : ce sont des avis fabriqués
- *   · CAS_USAGE.resultat — « +35 % de commandes », « revenue +60 % »
- *   · QUESTIONS          — hors-ligne, formation gratuite, import de clients,
- *                          support WhatsApp : aucun n'est implémenté
- *   · PLANS_TARIFAIRES   — aucun paiement n'est branché dans l'application
+ * ── Corrigé ────────────────────────────────────────────────────────────────
+ *   · CHIFFRES_CLES      — « 50K+ tailleurs », « 96 % de satisfaction » →
+ *                          remplacés par des faits vérifiables en ouvrant
+ *                          l'application. L'original est en CHIFFRES_MAQUETTE.
+ *   · TEMOIGNAGES        — vidé. Trois personnes nommées, avec ville et métier,
+ *                          n'avaient jamais rien dit. L'original est en
+ *                          TEMOIGNAGES_MAQUETTE ; la section et son lien de
+ *                          navigation disparaissent tant que le tableau est vide.
+ *   · CAS_USAGE.resultat — « +35 % de commandes », « +60 % de chiffre
+ *                          d'affaires » → remplacés par ce que l'application
+ *                          fait réellement pour chaque profil.
+ *   · QUESTIONS          — reformulées : le hors-ligne et l'import de fichier
+ *                          sont annoncés comme prévus, non comme disponibles.
  *
- * FONCTIONNALITES est la seule liste qui décrit des écrans réellement livrés.
+ * ── Reste à trancher ───────────────────────────────────────────────────────
+ *   · PLANS_TARIFAIRES   — les montants sont une décision commerciale, pas une
+ *                          affirmation vérifiable. Ils restent tels quels, mais
+ *                          AUCUN PAIEMENT N'EST BRANCHÉ : une mention le dit
+ *                          sous la grille, à retirer le jour où il le sera.
+ *
+ * FONCTIONNALITES est la liste dont chaque ligne se vérifie d'un clic : chaque
+ * carte mène à l'écran qu'elle décrit.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 export interface ChiffreCle {
@@ -38,8 +49,30 @@ export interface ChiffreCle {
   icone: LucideIcon;
 }
 
-/** ⚠️ Chiffres de démarchage — aucune source. */
+/**
+ * Trois chiffres du bandeau d'accroche.
+ *
+ * La maquette annonçait « 50K+ tailleurs », « 40 h gagnées par mois » et
+ * « 96 % de satisfaction ». Aucun n'était mesurable : le produit n'a pas
+ * d'utilisateurs, donc pas d'adoption à citer, et aucune enquête n'a jamais
+ * été menée. Les trois sont remplacés par des faits vérifiables en ouvrant
+ * l'application — c'est moins spectaculaire, mais c'est tenable devant le
+ * premier client qui demande d'où sort le chiffre.
+ *
+ * L'original est conservé plus bas dans `CHIFFRES_MAQUETTE`.
+ */
 export const CHIFFRES_CLES: ChiffreCle[] = [
+  { valeur: '30 jours', label: 'D’essai gratuit, sans carte bancaire', icone: Clock },
+  { valeur: '0 F', label: 'À installer — tout passe par le navigateur', icone: Smartphone },
+  { valeur: '8', label: 'Écrans de gestion, du planning à la trésorerie', icone: LayoutGrid },
+];
+
+/**
+ * Les chiffres d'origine de la maquette Banani. Conservés pour mémoire, et
+ * pour que les rétablir reste un remplacement d'une ligne le jour où ils
+ * seront étayés par de vraies mesures.
+ */
+export const CHIFFRES_MAQUETTE: ChiffreCle[] = [
   { valeur: '50K+', label: 'Tailleurs en Afrique de l’Ouest', icone: Users },
   { valeur: '40 h', label: 'Temps gagné par atelier et par mois', icone: Clock },
   { valeur: '96 %', label: 'Satisfaction clients', icone: Star },
@@ -114,31 +147,38 @@ export const FONCTIONNALITES: Fonctionnalite[] = [
 export interface CasUsage {
   titre: string;
   description: string;
-  /** ⚠️ Résultat annoncé — aucune mesure ne l'appuie. */
+  /** Ce que l'application fait pour ce profil — une capacité, pas une promesse chiffrée. */
   resultat: string;
   mesure: string;
 }
 
-/** ⚠️ Les `resultat` sont des promesses de maquette, pas des mesures. */
+/**
+ * Trois profils d'atelier.
+ *
+ * La maquette promettait « +35 % de commandes », « +45 % de satisfaction »,
+ * « chiffre d'affaires +60 % ». Ces gains n'ont été mesurés nulle part. Ils
+ * cèdent la place à ce que l'application fait réellement pour chaque profil :
+ * vérifiable en cliquant, et ça n'engage que ce qui existe.
+ */
 export const CAS_USAGE: CasUsage[] = [
   {
     titre: 'Atelier de quartier',
     description:
       'Un tailleur seul ou deux à trois couturières. Commandes régulières, clientèle fidèle.',
-    resultat: '+35 % de commandes, −20 h d’administratif par mois',
-    mesure: 'Temps gagné',
+    resultat: 'Carnet client, mesures et acomptes au même endroit',
+    mesure: 'Ce que ça change',
   },
   {
     titre: 'Production collective',
     description: 'Cinq à dix tailleurs, forte charge. Besoin de coordination et de délais tenus.',
-    resultat: 'Zéro retard de livraison, +45 % de satisfaction',
-    mesure: 'Qualité',
+    resultat: 'Charge de chaque artisan, jour par jour, avec sa capacité propre',
+    mesure: 'Ce que ça change',
   },
   {
     titre: 'Maison de mode',
     description: 'Pièces de valeur, retouches nombreuses, clientèle exigeante.',
-    resultat: 'Chiffre d’affaires +60 %, paiements 50 % plus rapides',
-    mesure: 'Revenus',
+    resultat: 'Relevé corporel conservé, photos des tissus, solde suivi à l’écriture près',
+    mesure: 'Ce que ça change',
   },
 ];
 
@@ -150,14 +190,24 @@ export interface Temoignage {
 }
 
 /**
- * ⚠️ Témoignages fabriqués.
+ * Témoignages affichés — **vide, délibérément**.
  *
- * Ces trois personnes n'existent pas et n'ont rien dit : les citations sortent
- * du générateur de maquette. Publier la page en l'état revient à afficher de
- * faux avis clients signés d'un nom et d'une ville. À remplacer par de vrais
- * retours, ou à retirer — la section entière disparaît si le tableau est vide.
+ * La maquette en fournissait trois, attribués à des personnes nommées avec leur
+ * ville et leur métier. Aucune n'existe et aucune n'a rien dit : les citations
+ * sortent du générateur. Publier la page en l'état, c'est afficher de faux avis
+ * clients signés — la seule chose de cette page qu'un visiteur ne peut pas
+ * vérifier lui-même, et celle qui coûterait le plus cher à démentir.
+ *
+ * `SectionTemoignages` se retire d'elle-même quand ce tableau est vide : la
+ * page se referme proprement, sans trou de mise en page.
+ *
+ * Pour rétablir la section, remplacez ce tableau par de vrais retours — ou par
+ * `TEMOIGNAGES_MAQUETTE` ci-dessous, en connaissance de cause.
  */
-export const TEMOIGNAGES: Temoignage[] = [
+export const TEMOIGNAGES: Temoignage[] = [];
+
+/** Les citations d'origine de la maquette. Inventées — voir ci-dessus. */
+export const TEMOIGNAGES_MAQUETTE: Temoignage[] = [
   {
     nom: 'Moussa Koné',
     initiales: 'MK',

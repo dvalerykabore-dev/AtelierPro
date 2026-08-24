@@ -2,14 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import BasculeTheme from '@/components/ui/BasculeTheme';
 import { Menu, Shirt, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { ANCRES } from '@/lib/landing-contenu';
+import { ANCRES, TEMOIGNAGES } from '@/lib/landing-contenu';
 
+/**
+ * Liens d'ancre de la barre.
+ *
+ * « Témoignages » n'apparaît que si la section existe : `SectionTemoignages` se
+ * retire quand aucun témoignage n'est publié, et un lien de navigation qui ne
+ * mène nulle part est pire que pas de lien du tout.
+ */
 const LIENS = [
   { href: `#${ANCRES.fonctionnalites}`, label: 'Fonctionnalités' },
   { href: `#${ANCRES.tarifs}`, label: 'Tarifs' },
-  { href: `#${ANCRES.temoignages}`, label: 'Témoignages' },
+  ...(TEMOIGNAGES.length > 0 ? [{ href: `#${ANCRES.temoignages}`, label: 'Témoignages' }] : []),
   { href: `#${ANCRES.faq}`, label: 'Questions' },
 ];
 
@@ -96,6 +104,10 @@ export default function BarreNavigation() {
               </Link>
             )}
           </div>
+
+          {/* Bascule de thème — les visiteurs non connectés y ont droit aussi,
+              c'est leur seul point d'accès au réglage. */}
+          <BasculeTheme />
 
           {/* Bouton d'essai — présent dans les deux maquettes. La hauteur
               minimale de 44px prime sur le `py-1.5` de la maquette mobile, qui
