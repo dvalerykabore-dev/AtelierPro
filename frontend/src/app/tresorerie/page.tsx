@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import AppShell from '@/components/atelier/AppShell';
 import Tresorerie from '@/components/atelier/Tresorerie';
-import { ATELIER_NOM } from '@/lib/mock/atelier';
+import { NomAtelier } from '@/components/atelier/IdentiteAtelier';
 
 export const metadata: Metadata = {
   title: 'Trésorerie — AtelierPro',
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
  */
 export default function TresoreriePage() {
   return (
-    <AppShell titre="Trésorerie" sousTitre={ATELIER_NOM}>
+    <AppShell titre="Trésorerie" sousTitre={<NomAtelier />}>
       <Tresorerie />
     </AppShell>
   );

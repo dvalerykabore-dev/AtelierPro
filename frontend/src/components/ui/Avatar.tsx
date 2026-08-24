@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 const TAILLES = {
@@ -7,8 +8,8 @@ const TAILLES = {
 } as const;
 
 export interface AvatarProps {
-  /** Initiales affichées (2 lettres). */
-  initiales: string;
+  /** Initiales affichées (2 lettres) — un noeud, pour les cas où elles viennent de la session. */
+  initiales: ReactNode;
   taille?: keyof typeof TAILLES;
   /** Bordure or — utilisée pour l'utilisateur connecté dans le rail latéral. */
   accentue?: boolean;

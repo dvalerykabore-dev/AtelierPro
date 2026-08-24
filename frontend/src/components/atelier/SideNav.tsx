@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Settings } from 'lucide-react';
@@ -9,7 +10,7 @@ import { cn } from '@/lib/utils';
 
 export interface SideNavProps {
   /** Initiales de l'utilisateur connecté, en pied de rail. */
-  initiales: string;
+  initiales: ReactNode;
 }
 
 /**

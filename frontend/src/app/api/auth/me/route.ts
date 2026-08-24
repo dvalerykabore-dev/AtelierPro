@@ -42,6 +42,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         id: true,
         email: true,
         emailVerifiedAt: true,
+        workshopName: true,
         createdAt: true,
         updatedAt: true,
         passwordHash: true,
@@ -70,6 +71,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           ? dbUser.updatedAt.toISOString()
           : dbUser.updatedAt
         : null,
+      workshopName: dbUser?.workshopName ?? null,
       hasPassword: !!dbUser?.passwordHash,
       linkedProviders: (dbUser?.oauthAccounts ?? []).map((a) => a.provider),
     };

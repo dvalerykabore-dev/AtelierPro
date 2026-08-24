@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Moon, Pencil, Plus, Sun, Trash2, UserPlus } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
@@ -8,6 +8,9 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { Field } from '@/components/ui/Field';
 import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
+import { NOM_ATELIER_DEFAUT } from '@/lib/atelier-identite';
+import { messageErreur } from '@/lib/message-erreur';
 import { useTheme } from '@/contexts/ThemeContext';
 import { THEMES } from '@/lib/theme';
 import { useArtisans } from '@/lib/useArtisans';
@@ -23,6 +26,79 @@ const ONGLETS = ['Atelier', 'Équipe', 'Tarification', 'Notifications', 'Compte'
 type Onglet = (typeof ONGLETS)[number];
 
 /** Champ en lecture seule — la maquette ne prévoit pas de saisie active. */
+/**
+ * Champ enregistrable — le seul de cet écran, pour l'instant.
+ *
+ * Les autres restent en lecture : ils affichent des valeurs simulées et rien
+ * en base ne les porte. Les rendre modifiables donnerait l'impression de
+ * réglages qui ne survivraient pas au rechargement.
+ */
+function ChampEnregistrable({
+  label,
+  valeur,
+  placeholder,
+  onEnregistrer,
+}: {
+  label: string;
+  valeur: string;
+  placeholder: string;
+  onEnregistrer: (valeur: string) => Promise<void>;
+}) {
+  const [saisie, setSaisie] = useState(valeur);
+  const [envoi, setEnvoi] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [enregistre, setEnregistre] = useState(false);
+
+  // La valeur du serveur reprend la main quand elle arrive après le montage.
+  useEffect(() => {
+    setSaisie(valeur);
+  }, [valeur]);
+
+  const modifie = saisie.trim() !== valeur.trim();
+
+  async function soumettre() {
+    setEnvoi(true);
+    setErreur(null);
+    try {
+      await onEnregistrer(saisie.trim());
+      setEnregistre(true);
+    } catch (err) {
+      setErreur(messageErreur(err, 'Le nom n’a pas pu être enregistré.'));
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
+  return (
+    <div>
+      <span className="text-muted-foreground mb-1 block text-xs">{label}</span>
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          type="text"
+          value={saisie}
+          placeholder={placeholder}
+          onChange={(e) => {
+            setSaisie(e.target.value);
+            setEnregistre(false);
+          }}
+          className="bg-input border-border text-foreground min-w-0 flex-1 rounded-md border px-3 py-2.5 text-sm"
+        />
+        <Button type="button" onClick={() => void soumettre()} disabled={!modifie || envoi}>
+          {envoi ? 'Enregistrement…' : 'Enregistrer'}
+        </Button>
+      </div>
+      {erreur && (
+        <p role="alert" className="text-danger mt-1 text-xs">
+          {erreur}
+        </p>
+      )}
+      {enregistre && !modifie && !erreur && (
+        <p className="text-success mt-1 text-xs">Enregistré.</p>
+      )}
+    </div>
+  );
+}
+
 function Champ({ label, valeur }: { label: string; valeur: string }) {
   return (
     <div>
@@ -72,7 +148,20 @@ function Interrupteur({
  */
 export default function Parametres() {
   const router = useRouter();
-  const { logout, loggingOut } = useAuth();
+  const { user, logout, loggingOut, refresh } = useAuth();
+
+  /**
+   * Enregistre le nom de l'atelier, puis relit la session.
+   *
+   * Le relire plutôt que de poser la valeur localement : le nom s'affiche dans
+   * le rail et le sous-titre de quatre écrans, tous alimentés par le contexte
+   * d'authentification. Un seul point de vérité évite qu'un écran affiche
+   * l'ancien nom et son voisin le nouveau.
+   */
+  async function enregistrerNom(nom: string) {
+    await api('/api/atelier', { method: 'PATCH', body: { workshopName: nom } });
+    await refresh();
+  }
   const { theme, definir: definirTheme } = useTheme();
 
   const {
@@ -200,7 +289,12 @@ export default function Parametres() {
               </div>
 
               <div className="flex flex-1 flex-col gap-3">
-                <Champ label="Nom de l’atelier" valeur={atelier.nom} />
+                <ChampEnregistrable
+                  label="Nom de l’atelier"
+                  valeur={user?.workshopName ?? ''}
+                  placeholder={NOM_ATELIER_DEFAUT}
+                  onEnregistrer={enregistrerNom}
+                />
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Champ label="Téléphone" valeur={atelier.telephone} />
                   <Champ label="Ville" valeur={atelier.ville} />

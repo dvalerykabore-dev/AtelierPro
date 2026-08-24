@@ -18,6 +18,11 @@ model User {
   emailVerifiedAt   DateTime?
   tokenVersion      Int       @default(0)
   withdrawalPinHash String? // bcrypt hash of withdrawal PIN; null = no PIN set
+  // Nom commercial de l'atelier, affiché en sous-titre des écrans métier.
+  // Nullable : un compte fraîchement créé n'en a pas encore, et l'écran doit
+  // dire « Mon atelier » plutôt que d'inventer une raison sociale.
+  workshopName      String?
+
   // Optional display name — populated from OAuth profile on first sign-in.
   // Email/password users can fill it later via /api/auth/me PATCH (future).
   name              String?

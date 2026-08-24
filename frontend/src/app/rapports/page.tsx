@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Download } from 'lucide-react';
 import AppShell from '@/components/atelier/AppShell';
 import Rapports from '@/components/atelier/Rapports';
-import { ATELIER_NOM } from '@/lib/mock/atelier';
+import { NomAtelier } from '@/components/atelier/IdentiteAtelier';
 
 export const metadata: Metadata = {
   title: 'Rapports — AtelierPro',
@@ -16,7 +16,7 @@ export default function RapportsPage() {
   return (
     <AppShell
       titre="Rapports"
-      sousTitre={ATELIER_NOM}
+      sousTitre={<NomAtelier />}
       actions={
         <button
           type="button"

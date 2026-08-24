@@ -4,12 +4,13 @@ import BottomNav from '@/components/atelier/BottomNav';
 import AuthGuard from '@/components/atelier/AuthGuard';
 import { cn } from '@/lib/utils';
 import BasculeTheme from '@/components/ui/BasculeTheme';
+import { InitialesAtelier } from '@/components/atelier/IdentiteAtelier';
 
 export interface AppShellProps {
   /** Titre de la barre haute (desktop) et de l'en-tête mobile par défaut. */
   titre: string;
   /** Ligne secondaire sous le titre, desktop uniquement. */
-  sousTitre?: string;
+  sousTitre?: ReactNode;
   /** Boutons et champs alignés à droite de la barre haute desktop. */
   actions?: ReactNode;
   /** Actions compactes de l'en-tête mobile par défaut. */
@@ -24,8 +25,6 @@ export interface AppShellProps {
   children: ReactNode;
   className?: string;
 }
-
-const INITIALES_UTILISATEUR = 'MK';
 
 /**
  * Coquille commune à tous les écrans de l'atelier : rail latéral sur desktop,
@@ -45,7 +44,7 @@ export default function AppShell({
   return (
     <AuthGuard>
       <div className="bg-background font-body flex min-h-screen">
-        <SideNav initiales={INITIALES_UTILISATEUR} />
+        <SideNav initiales={<InitialesAtelier />} />
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* En-tête mobile : personnalisé si fourni, sinon barre simple */}

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { ATELIER_NOM } from '@/lib/mock/atelier';
+import { NOM_PRODUIT } from '@/lib/atelier-identite';
 
 export interface AuthCardProps {
   titre: string;
@@ -27,7 +27,7 @@ export default function AuthCard({ titre, sousTitre, children, pied }: AuthCardP
           <span className="text-primary-foreground font-headings text-2xl font-bold">A</span>
         </span>
         <span className="text-muted-foreground text-xs tracking-widest uppercase">
-          {ATELIER_NOM}
+          {NOM_PRODUIT}
         </span>
       </div>
 

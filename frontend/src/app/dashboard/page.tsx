@@ -7,7 +7,8 @@ import CapaciteEquipe from '@/components/atelier/CapaciteEquipe';
 import StatistiquesAtelier from '@/components/atelier/StatistiquesAtelier';
 import Avatar from '@/components/ui/Avatar';
 import BasculeTheme from '@/components/ui/BasculeTheme';
-import { ATELIER_NOM, dateDuJourFr, nombreNotifications } from '@/lib/mock/atelier';
+import { dateDuJourFr, nombreNotifications } from '@/lib/mock/atelier';
+import { NomAtelier } from '@/components/atelier/IdentiteAtelier';
 
 export const metadata: Metadata = {
   title: 'Tableau de bord — AtelierPro',
@@ -40,7 +41,7 @@ export default function DashboardPage() {
             <div className="min-w-0">
               <p className="text-muted text-xs font-medium">{dateDuJourFr().court}</p>
               <h1 className="font-headings text-background truncate text-lg leading-tight font-bold">
-                {ATELIER_NOM}
+                <NomAtelier />
               </h1>
             </div>
 

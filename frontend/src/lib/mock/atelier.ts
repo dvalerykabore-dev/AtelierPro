@@ -72,8 +72,6 @@ export interface StatistiqueCle {
   surMobile: boolean;
 }
 
-export const ATELIER_NOM = 'Atelier Koné';
-
 export const artisans: Artisan[] = [
   {
     id: 'a1',
