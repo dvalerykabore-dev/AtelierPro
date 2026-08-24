@@ -7,12 +7,14 @@ import {
   Banknote,
   CalendarClock,
   MessageCircle,
+  Lock,
   Package,
   UserPlus,
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import { CATEGORIES_NOTIF, notifications, type Notification } from '@/lib/mock/atelier';
+import { CATEGORIES_NOTIF, type Notification } from '@/lib/mock/atelier';
+import { useNotifications } from '@/lib/useNotifications';
 import { cn } from '@/lib/utils';
 
 const ICONES: Record<Notification['icone'], LucideIcon> = {
@@ -26,54 +28,67 @@ const ICONES: Record<Notification['icone'], LucideIcon> = {
 };
 
 type Filtre = 'Toutes' | 'Non lues' | (typeof CATEGORIES_NOTIF)[number];
-const FILTRES: Filtre[] = ['Toutes', 'Non lues', ...CATEGORIES_NOTIF];
 
 /**
- * Centre de notifications.
+ * Centre de notifications, lu depuis `/api/notifications`.
  * Source Banani : screens/new_screen7.jsx (« Notifications — AtelierPro »).
  *
- * Les filtres et le marquage « tout lu » sont fonctionnels : la maquette les
- * montrait figés. L'état vit côté client tant que les données sont simulées.
+ * Le marquage « lu » part au serveur : il doit survivre au rechargement, sinon
+ * la pastille revient et l'on relit dix fois la même chose.
  */
 export default function ListeNotifications() {
+  const { notifications, nonLues, session, chargement, marquerLues } = useNotifications();
   const [filtre, setFiltre] = useState<Filtre>('Toutes');
-  const [lues, setLues] = useState<Set<string>>(
-    () => new Set(notifications.filter((n) => n.lue).map((n) => n.id)),
-  );
+
+  // Les onglets suivent ce que la liste contient vraiment : un filtre
+  // « Livraisons » qui ne peut jamais rien afficher est une promesse en l'air.
+  const filtres = useMemo<Filtre[]>(() => {
+    const presentes = CATEGORIES_NOTIF.filter((cat) =>
+      notifications.some((n) => n.categorie === cat),
+    );
+    return ['Toutes', 'Non lues', ...presentes];
+  }, [notifications]);
 
   const comptes = useMemo(() => {
     const c: Record<string, number> = {
       Toutes: notifications.length,
-      'Non lues': notifications.filter((n) => !lues.has(n.id)).length,
+      'Non lues': nonLues,
     };
     for (const cat of CATEGORIES_NOTIF) {
       c[cat] = notifications.filter((n) => n.categorie === cat).length;
     }
     return c;
-  }, [lues]);
+  }, [notifications, nonLues]);
 
   const visibles = useMemo(() => {
     if (filtre === 'Toutes') return notifications;
-    if (filtre === 'Non lues') return notifications.filter((n) => !lues.has(n.id));
+    if (filtre === 'Non lues') return notifications.filter((n) => !n.lue);
     return notifications.filter((n) => n.categorie === filtre);
-  }, [filtre, lues]);
+  }, [filtre, notifications]);
 
-  function marquerLue(id: string) {
-    setLues((prec) => new Set(prec).add(id));
+  if (!session) {
+    return (
+      <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+        <Lock size={26} className="text-muted-foreground mb-3" aria-hidden />
+        <p className="text-foreground mb-1 text-sm font-bold">Notifications indisponibles</p>
+        <p className="text-muted-foreground max-w-md text-xs">
+          Vos alertes ne s’affichent qu’une fois connecté. Aucun jeu d’exemple n’est proposé ici :
+          une notification affirme un fait daté, et une alerte inventée se confondrait avec une
+          vraie.
+        </p>
+        <Link href="/connexion" className="text-primary mt-4 text-sm font-medium">
+          Se connecter
+        </Link>
+      </div>
+    );
   }
-
-  function toutMarquerLu() {
-    setLues(new Set(notifications.map((n) => n.id)));
-  }
-
-  const nonLues = comptes['Non lues'] ?? 0;
 
   return (
     <div className="flex min-h-full flex-col">
       {/* Filtres */}
       <div className="border-border bg-background border-b">
         <div className="flex items-center gap-1 overflow-x-auto px-4 py-3 lg:px-8">
-          {FILTRES.map((f) => {
+          {filtres.map((f) => {
             const actif = f === filtre;
             return (
               <button
@@ -103,7 +118,7 @@ export default function ListeNotifications() {
 
           <button
             type="button"
-            onClick={toutMarquerLu}
+            onClick={() => void marquerLues('all')}
             disabled={nonLues === 0}
             className="text-primary ml-auto flex-shrink-0 px-3 py-1.5 text-xs font-medium disabled:opacity-40"
           >
@@ -113,15 +128,31 @@ export default function ListeNotifications() {
       </div>
 
       {/* Liste */}
-      {visibles.length === 0 ? (
+      {chargement && notifications.length === 0 ? (
         <p className="text-muted-foreground px-4 py-10 text-center text-sm lg:px-8">
-          Aucune notification dans cette catégorie.
+          Chargement des notifications…
         </p>
+      ) : visibles.length === 0 ? (
+        <div className="px-4 py-10 text-center lg:px-8">
+          <p className="text-foreground text-sm font-medium">
+            {notifications.length === 0
+              ? 'Aucune notification'
+              : 'Aucune notification dans cette catégorie'}
+          </p>
+          {notifications.length === 0 && (
+            /* Dire pourquoi c'est vide : sans cette phrase, un écran nu passe
+               pour une panne de chargement. */
+            <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs">
+              Rien ne vous a été signalé. Les retards et les livraisons du lendemain sont vérifiés
+              chaque matin — aucune échéance ne tombe aujourd’hui.
+            </p>
+          )}
+        </div>
       ) : (
         <ul className="flex flex-col">
           {visibles.map((n) => {
             const Icone = ICONES[n.icone];
-            const nonLue = !lues.has(n.id);
+            const nonLue = !n.lue;
 
             return (
               <li
@@ -163,7 +194,7 @@ export default function ListeNotifications() {
                       (n.href ? (
                         <Link
                           href={n.href}
-                          onClick={() => marquerLue(n.id)}
+                          onClick={() => void marquerLues([n.id])}
                           className="text-primary text-xs font-medium"
                         >
                           {n.action}
@@ -171,7 +202,7 @@ export default function ListeNotifications() {
                       ) : (
                         <button
                           type="button"
-                          onClick={() => marquerLue(n.id)}
+                          onClick={() => void marquerLues([n.id])}
                           className="text-primary text-xs font-medium"
                         >
                           {n.action}
@@ -181,7 +212,7 @@ export default function ListeNotifications() {
                     {nonLue && (
                       <button
                         type="button"
-                        onClick={() => marquerLue(n.id)}
+                        onClick={() => void marquerLues([n.id])}
                         className="text-muted-foreground hover:text-foreground text-xs"
                       >
                         Marquer comme lue

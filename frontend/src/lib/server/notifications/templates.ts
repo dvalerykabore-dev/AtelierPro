@@ -50,3 +50,57 @@ export function paymentReceived(
     dedupeKey: `payment-received:${orderId}`,
   };
 }
+
+// ───────────────────────────────────────────────────────────────────────────
+// Atelier — alertes d'échéance, émises par le cron `atelier-alertes`.
+//
+// Rédigées en français : elles s'affichent telles quelles sur `/notifications`,
+// contrairement aux modèles ci-dessus qui viennent du starter. `commandeId`
+// dans `data` est la clé que l'écran suit pour ouvrir la fiche — voir
+// `lienDe()` dans `lib/notifications.ts`.
+//
+// La clé de déduplication porte le jour : une commande en retard depuis une
+// semaine ne produit qu'une alerte par jour, pas une par passage du cron.
+// ───────────────────────────────────────────────────────────────────────────
+
+interface AlerteCommande {
+  userId: string;
+  commandeId: string;
+  sequence: number;
+  tenue: string;
+  client: string;
+  /** Jour de l'alerte, « AAAA-MM-JJ » — dédoublonne à la journée. */
+  jour: string;
+}
+
+/** « #007 » — le format court que l'atelier dicte à voix haute. */
+function reference(sequence: number): string {
+  return `#${String(sequence).padStart(3, '0')}`;
+}
+
+export function commandeEnRetard(
+  alerte: AlerteCommande & { echeance: Date },
+): CreateNotificationInput {
+  const ref = reference(alerte.sequence);
+  const date = alerte.echeance.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+  return {
+    userId: alerte.userId,
+    type: 'COMMANDE_EN_RETARD',
+    title: `Commande ${ref} en retard — ${alerte.client}`,
+    body: `${alerte.tenue} devait être livrée le ${date}.`,
+    data: { commandeId: alerte.commandeId, sequence: alerte.sequence },
+    dedupeKey: `commande-retard:${alerte.commandeId}:${alerte.jour}`,
+  };
+}
+
+export function livraisonDemain(alerte: AlerteCommande): CreateNotificationInput {
+  const ref = reference(alerte.sequence);
+  return {
+    userId: alerte.userId,
+    type: 'LIVRAISON_DEMAIN',
+    title: `Livraison demain — ${alerte.client}`,
+    body: `${alerte.tenue} (${ref}) est attendue demain.`,
+    data: { commandeId: alerte.commandeId, sequence: alerte.sequence },
+    dedupeKey: `livraison-demain:${alerte.commandeId}:${alerte.jour}`,
+  };
+}
