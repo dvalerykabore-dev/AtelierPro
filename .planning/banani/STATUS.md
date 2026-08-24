@@ -943,3 +943,66 @@ annonçait cinq pour six existantes — dérive antérieure, corrigée au passag
 **Non vérifié à l'écran** : le navigateur de test est resté occupé. Le cron n'a
 pas été déclenché contre une vraie base, et les trois boutons n'ont pas été
 cliqués.
+
+## Verrous de déploiement — quatre levés sur cinq (2026-08-24)
+
+### 1. Nom d'atelier — corrigé
+
+`ATELIER_NOM = 'Atelier Koné'` s'affichait sur le tableau de bord, les
+rapports, la trésorerie et les dépenses, quel que soit le compte. Le champ
+`User.workshopName` porte désormais le nom, `PATCH /api/atelier` l'écrit, et
+`/parametres` le rend modifiable — sans quoi il serait resté vide pour tout le
+monde.
+
+Deux découvertes au passage : la pastille du rail affichait « MK », les
+initiales d'un artisan fictif, sur tous les comptes ; et les écrans
+d'authentification affichaient le même nom d'atelier, alors qu'avant de se
+connecter personne ne sait de quel atelier il s'agit — c'est le nom du produit
+qui s'y affiche maintenant.
+
+Sans nom renseigné, l'écran dit « Mon atelier » : jamais l'adresse e-mail, qui
+en sous-titre d'un écran de trésorerie s'exposerait à qui regarde par-dessus
+l'épaule.
+
+### 2. Mode démonstration — verrouillé
+
+`NEXT_PUBLIC_ATELIER_DEMO` est ignoré quand `NODE_ENV` vaut « production ». Un
+bandeau d'avertissement suppose que quelqu'un regarde ; une erreur de
+configuration, elle, se déploie un vendredi soir.
+
+### 3 et 4. Expéditeur e-mail et APP_URL — signalés au démarrage
+
+`lib/server/config-production.ts` inspecte, en production uniquement, quatre
+réglages qui échouent en silence : `APP_URL` sur localhost, `EMAIL_FROM` de bac
+à sable, mode démonstration resté posé, et `AUTH_PROTECTED_PREFIXES` vide.
+
+Le cas `EMAIL_FROM` est le plus coûteux : un expéditeur `@resend.dev` ne
+délivre qu'au propriétaire du compte. Comme les cookies ne sont émis qu'après
+`/verify-email`, **personne d'autre que soi ne pourrait créer de compte** — et
+rien ne le signalerait avant le premier inscrit perdu.
+
+On journalise sans interrompre le démarrage : une prod qui refuse de monter
+pour un lien d'e-mail mal formé est un incident plus grave que le lien. La
+correction réelle reste manuelle — vérifier un domaine chez Resend.
+
+`NEXT_PUBLIC_REFRESH_TIMEOUT_MS` avait le même défaut la veille : un correctif
+en place, mais aucune valeur posée.
+
+### 5. Dépôt — en attente d'arbitrage
+
+Le remote pointe toujours sur le dépôt du starter. Rien n'est poussé.
+
+### Vérifié
+
+Nom enregistré depuis `/parametres` → « Enregistré. », initiales du rail
+passées de « VE » à « AZ », sous-titre de `/tresorerie` mis à jour, le tout
+sans rechargement. Nom de test effacé après coup : aucun compte ne porte de
+raison sociale inventée.
+
+`format`, `lint`, `typecheck`, `build`, **766 tests** (dont 15 sur les
+anomalies de configuration et 9 sur `PATCH /api/atelier`).
+
+⚠️ **Piège rencontré, sans rapport avec le code** : enchaîner `next build` puis
+`next dev` laisse `.next` dans un état où certaines routes répondent 404 — ici
+`/api/auth/me` et `/api/tresorerie/mouvements`, avec la page 404 HTML pour
+corps. Supprimer `.next` suffit. À ne pas confondre avec une régression.
