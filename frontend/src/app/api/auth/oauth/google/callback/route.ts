@@ -11,7 +11,8 @@
 //   6. claims.email_verified !== true → GOOGLE_EMAIL_NOT_VERIFIED (CRITICAL — D-05)
 //   7. Find-or-create:
 //      a. OAuthAccount.findUnique({ provider_providerAccountId }) — returning user
-//      b. else User.findUnique({ email }) — D-01 silent linking; leave User.name/avatarUrl untouched
+//      b. else User.findUnique({ email }) — D-01 silent linking; leave User.name/avatarUrl
+//         untouched, but mark emailVerifiedAt when unset (step 6 already proved the mailbox)
 //      c. else $transaction → User + OAuthAccount; isNewUser = true
 //   8. setAuthCookies(access, refresh) + setCsrfCookie() — same as verify-email
 //   9. If isNewUser: createNotification(prisma, welcomeNotification(userId, email)) — NOTIF-05 invariant
@@ -128,17 +129,39 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       const normalizedEmail = claims.email.toLowerCase();
       const existingByEmail = await prisma.user.findUnique({
         where: { email: normalizedEmail },
-        select: { id: true },
+        select: { id: true, emailVerifiedAt: true },
       });
       if (existingByEmail) {
         // D-01 silent linking — leave User.name/avatarUrl untouched
         // (T-02-OAUTH-NAME-OVERWRITE mitigation).
-        await prisma.oAuthAccount.create({
-          data: {
-            userId: existingByEmail.id,
-            provider: 'google',
-            providerAccountId: claims.sub,
-          },
+        //
+        // The account is also marked verified when it was not. Step 6 above
+        // refused anything but `email_verified === true`, so Google has just
+        // proven control of this mailbox — the same proof our own 8-char code
+        // provides. Without this, an account opened by e-mail and abandoned
+        // before the code stays reachable through Google yet keeps failing
+        // password login with EMAIL_NOT_VERIFIED, and nothing on screen
+        // explains why one door opens and the other stays shut.
+        //
+        // An existing date is preserved: it records when the address was
+        // first proven, which is worth more than when it was proven again.
+        //
+        // Both writes sit in one transaction — a link without the flag is
+        // exactly the split state this branch exists to close.
+        await prisma.$transaction(async (tx) => {
+          await tx.oAuthAccount.create({
+            data: {
+              userId: existingByEmail.id,
+              provider: 'google',
+              providerAccountId: claims.sub,
+            },
+          });
+          if (!existingByEmail.emailVerifiedAt) {
+            await tx.user.update({
+              where: { id: existingByEmail.id },
+              data: { emailVerifiedAt: new Date() },
+            });
+          }
         });
         userId = existingByEmail.id;
       } else {
