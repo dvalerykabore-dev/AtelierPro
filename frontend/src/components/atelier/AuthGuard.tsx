@@ -16,8 +16,15 @@ import { useAuth } from '@/contexts/AuthContext';
  * Désactivé dès que la variable est absente ou différente de « 1 ». Quand il
  * est actif, un bandeau permanent l'annonce : impossible de le laisser traîner
  * en production sans le voir.
+ *
+ * Et en production, la variable ne suffit plus : le mode est refusé quoi qu'on
+ * ait posé dans l'environnement. Un bandeau d'avertissement suppose que
+ * quelqu'un regarde ; une erreur de configuration, elle, se déploie un vendredi
+ * soir. Le seul coût est de ne pas pouvoir faire de démonstration publique sans
+ * compte — ce qui est le comportement voulu.
  */
-const MODE_DEMO = process.env.NEXT_PUBLIC_ATELIER_DEMO === '1';
+const MODE_DEMO =
+  process.env.NEXT_PUBLIC_ATELIER_DEMO === '1' && process.env.NODE_ENV !== 'production';
 
 function BandeauDemo() {
   return (
