@@ -570,3 +570,376 @@ chaque question, devenu un vrai bouton.
 formats · 22 liens, aucun mort · 4 ancres sous la barre collante · accordéon
 (souris, tactile, clavier) · tiroir (tap, Échap, fermeture au clic d'un lien) ·
 aucune cible tactile sous 44 px · `lint`, `typecheck`, 577/577 tests, `build`.
+
+## Trésorerie de l'atelier — hors maquette Banani (2026-08-23)
+
+Demande utilisateur : suivre les dépenses, les recouper avec les recettes, en
+dégager la trésorerie et une prévision. Aucune maquette Banani ne couvre ce
+domaine — la mise en page suit les conventions déjà posées par les autres
+écrans.
+
+### L'obstacle levé d'abord
+
+`TailoringOrder.depositAmount` était un cumul **sans date**, écrit à la création
+de la commande et jamais modifié ensuite. L'écran « Paiements » d'une commande
+tournait sur `lib/mock/atelier.ts` : ce qu'on y saisissait disparaissait au
+rechargement. Impossible de dire « au 23 août, la caisse contient X » sans un
+journal daté.
+
+### Modèle
+
+- `CashMovement` — journal unique, deux sens (`IN` / `OUT`). `occurredAt` est en
+  `@db.Date` et porte **le jour où l'argent a bougé**, pas celui de la saisie.
+  Un seul registre plutôt que deux tables : la trésorerie est la somme signée
+  des mouvements, elle doit se lire d'une requête.
+- `RecurringCharge` — charges fixes déclarées. Elles n'écrivent **rien** en
+  caisse : une charge auto-postée montrerait un loyer payé avant qu'il le soit.
+- `TailoringOrder.depositAmount` devient un raccourci de lecture, recalé par
+  `recalerAcompte(tx, orderId)` dans la même transaction que chaque écriture ou
+  suppression. Vérifié dans les deux sens : +5 000 F → acompte 10 000 → 15 000 ;
+  suppression → retour à 10 000.
+
+Migration `20260823200621_atelier_tresorerie`.
+
+### Routes
+
+`/api/tresorerie` (recoupement) · `/api/tresorerie/mouvements` (GET filtrable,
+POST) · `/api/tresorerie/mouvements/[id]` (DELETE) · `/api/tresorerie/charges`
+(GET, POST) · `/api/tresorerie/charges/[id]` (PATCH, DELETE).
+
+Pas de `PATCH` sur un mouvement : une ligne fausse se supprime et se ressaisit.
+Modifier un montant déjà rapproché d'une commande imposerait de rejouer le
+contrôle de dépassement dans les deux sens pour un gain nul.
+
+### Écrans
+
+`/depenses` — saisie, filtre par mois et par poste, répartition.
+`/tresorerie` — solde constaté, mois courant, six mois, répartition, prévision,
+charges fixes.
+`PaiementsCommande` — repris sur le journal réel.
+
+Douze postes, dont les quatre ajoutés par l'utilisateur (internet, publicité,
+commission, broderie). Les regroupements initialement proposés ont été éclatés :
+une facture d'électricité qui double ne se voit pas si elle est noyée dans le
+loyer.
+
+### Trois règles tenues à l'écran, pas seulement dans le code
+
+1. **Encaissé ≠ facturé.** Une commande de 80 000 F réglée de 20 000 F pèse
+   20 000 F en trésorerie et 80 000 F dans `/rapports`. Un encart l'explique —
+   sans lui, l'écart passerait pour une anomalie.
+2. **Le mesuré et le prévu ne se mélangent pas.** Le solde est constaté ; la
+   projection est dans son propre bloc et s'annonce comme telle.
+3. **Une échéance déjà passée n'est pas reprojetée.** Loyer dû le 5, on est le
+   23 : le mois en cours compte 0 — la charge est soit payée (donc au journal),
+   soit en retard. Vérifié : août 0 F, septembre −50 000 F.
+
+Comme les rapports, aucun repli sur des données d'exemple : hors session
+l'écran dit pourquoi et propose la connexion. On prend des décisions d'achat
+avec ce chiffre.
+
+### Reprise des acomptes existants
+
+`pnpm db:reprise-caisse [--dry]` reconstitue une entrée par acompte antérieur au
+journal, datée de la création de la commande faute de mieux. Les lignes portent
+`backfilled: true`, l'écran les signale (« date reconstituée ») et la trésorerie
+affiche un avertissement. Idempotent, vérifié : 2 écritures pour 20 000 F, puis
+0 à la relance.
+
+⚠️ **Papercut préexistant** : `--env-file-if-exists` échoue sur Node 20.18 —
+`db:make-superadmin`, `seed:dev` et `smoke:auth` sont cassés de la même façon.
+Le nouveau script utilise `--env-file=.env` pour fonctionner ; les trois autres
+restent à corriger.
+
+### Vérifié
+
+Saisie de deux dépenses → solde 10 000 → −35 000, répartition 67/33 · charge
+fixe déclarée → prévision septembre −40 000, octobre −90 000 · versement sur
+commande → acompte et solde suivent · dépassement refusé (409 `OVERPAYMENT`,
+« il ne reste que 10 000 F ») · barre basse mobile à 6 entrées, 61 px chacune,
+sans troncature à 368 px CSS · `lint`, `typecheck`, **582 tests**.
+
+Les données de test ont été retirées : seule la reprise d'acompte légitime
+subsiste.
+
+## Audit complet — 2026-08-23
+
+### Corrections portées avant l'audit
+
+1. **Les cinq scripts CLI étaient cassés** — `--env-file-if-exists` n'existe pas
+   sur Node 20.18 (« bad option »), alors que `engines` accepte `node >= 20`.
+   `db:make-superadmin`, `seed:dev`, `smoke:auth`, `code:verif` et
+   `db:reprise-caisse` échouaient tous avant de démarrer, sur un message qui ne
+   dit rien de la cause : « node: .env.local: not found ».
+   Corrigé par `scripts/charger-env.mjs`, chargé via `--import` :
+   `process.loadEnvFile` (Node ≥ 20.6) fait le même travail depuis le code.
+   `.env.local` est lu **en premier** car `loadEnvFile` n'écrase jamais une
+   variable déjà posée — vérifié — donc le premier fichier lu l'emporte, ce qui
+   reproduit la précédence de Next.js. Les scripts n'ont pas été modifiés, donc
+   les tests qui les importent non plus.
+
+2. **Affirmations fabriquées de la page d'accueil.** Les témoignages sont vidés :
+   trois personnes nommées, avec ville et métier, n'avaient jamais rien dit. La
+   section et son lien de navigation disparaissent d'eux-mêmes. Les chiffres du
+   hero (« 50K+ », « 96 % ») et les gains des cas d'usage (« +35 % », « +60 % »)
+   sont remplacés par des faits vérifiables en ouvrant l'application. Les
+   originaux sont conservés dans `CHIFFRES_MAQUETTE` et `TEMOIGNAGES_MAQUETTE`.
+
+### Ce qui a été vérifié — vert
+
+| Contrôle | Résultat |
+|---|---|
+| 21 pages | toutes en 200 |
+| 8 routes API sans session | toutes en 401 |
+| 5 mutations sans en-tête CSRF | toutes en 403 |
+| Liens, 12 pages × 375 et 1280 px | **aucun lien mort**, aucune ancre orpheline |
+| Débordement horizontal | aucun, sur les 12 pages aux deux largeurs |
+| Validation du journal de caisse | 10 cas malformés refusés, caisse intacte |
+| Isolation entre ateliers | commande d'un autre compte → **404**, pas 403 |
+| Barre basse mobile (6 entrées) | 61 px chacune, 57 px de haut, sans troncature à 368 px |
+| `lint` · `typecheck` · tests · `build` | verts, **582 tests** |
+
+### Défauts trouvés — par gravité
+
+**1. La fiche commande affiche les données d'un client fictif.** Confirmé à
+l'écran sur la commande #001 de Salimata Zongo, cliente réelle dont le numéro en
+base est `+226 78 12 34 56` :
+
+| Affiché | Réalité |
+|---|---|
+| `+226 70 11 22 33` | faux numéro — quelqu'un l'appellerait |
+| « 6ᵉ commande » | c'est sa première |
+| « Wax hollandais orange · 6 yards » | la commande porte « Robe wax cérémonie » |
+| Mesures 96 / 76 / 102 / 138 cm | simulées — un tailleur coupe dans du tissu avec ça |
+
+Le tout sous son vrai nom, sans rien qui distingue le réel du simulé. Source :
+`clientPrincipal`, `mesuresResume`, `etapesFabrication`, `rappels` dans
+`FicheCommande.tsx`, et `clientPrincipal`, `mesuresCorporelles`,
+`recapitulatifCommande`, `tarificationCommande` dans `RecapitulatifCommande.tsx`.
+Les données réelles existent pourtant : `useClients` et `useReleveMesures` sont
+déjà branchés ailleurs.
+
+**2. L'écran Notifications est entièrement simulé.** Il annonce « 5 non lues sur
+10 » et affiche dix lignes ; la base en contient **zéro**. Le modèle
+`Notification` et la route `/api/notifications` existent — l'écran ne les lit
+pas.
+
+**3. Le nom de l'atelier est codé en dur.** `ATELIER_NOM = 'Atelier Koné'`
+s'affiche sur `/rapports`, `/tresorerie`, `/depenses` et dans les écrans
+d'authentification, quel que soit le compte connecté. Même famille que l'équipe
+d'artisans et le carnet clients, corrigés précédemment.
+
+**4. Paramètres en lecture seule.** Aucun champ modifiable ; les valeurs
+viennent de l'objet `atelier` simulé.
+
+**5. Grille tarifaire simulée** — `tarifs` dans `FormulaireNouvelleCommande`.
+
+**6. Notes d'atelier simulées** — `NotesAtelier.tsx`.
+
+### Constaté, non corrigé — arbitrage utilisateur
+
+- `REFRESH_TIMEOUT_MS = 10_000` dans `lib/api.ts` (**fichier protégé**). Neon
+  répond en 5 à 8 s sur le plan gratuit — mesuré à 7,8 s pour l'affichage de la
+  trésorerie. Le rafraîchissement de jeton peut dépasser ce délai et faire
+  basculer un écran en démonstration alors que la session est valide.
+  Correctif proposé, une ligne :
+  `const REFRESH_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_REFRESH_TIMEOUT_MS) || 10_000;`
+  — défaut inchangé, réglable par environnement.
+
+## Défaut n°1 corrigé — la fiche commande lit ses vraies données (2026-08-23)
+
+L'audit du jour l'avait classé le plus grave : la fiche de la commande #001
+affichait, sous le vrai nom de Salimata Zongo, le téléphone, le rang, le tissu
+et les mesures d'une cliente d'exemple. Un tailleur coupe dans du tissu avec ces
+chiffres.
+
+### La cause, plus bête que le symptôme
+
+`useCommandes.versUI` jetait la moitié de ce que l'API renvoyait déjà :
+`customer.id`, `fabric`, `color`, `notes`, `createdAt` étaient sélectionnés
+côté serveur et perdus à la conversion. Sans identifiant client, la fiche ne
+pouvait rejoindre ni le carnet ni le relevé de mesures — d'où le repli sur
+`clientPrincipal`, une constante figée. Le correctif tient d'abord à faire
+transiter ces champs.
+
+`Commande` gagne `sequence`, `clientId`, `tissu`, `notes`, `creeLe`.
+
+### Avant / après, sur la commande réelle #001
+
+| Affiché avant | Affiché maintenant |
+|---|---|
+| `+226 70 11 22 33` (numéro d'une autre) | `+226 78 12 34 56` — celui de sa fiche |
+| « 6ᵉ commande » | « 1ʳᵉ commande » — comptée dans ses commandes |
+| « Wax hollandais orange · 6 yards » | « Wax hollandais — 6 yards · Ankara orange & bleu » |
+| Mesures 96 / 76 / 102 / 138 cm | « Aucune mesure relevée pour Salimata Zongo. Prenez le relevé avant de tailler. » |
+| « Essayage aujourd'hui 15h » | « En cours » — le statut réel |
+| 7 étapes datées inventées | 4 jalons déduits du statut, « Commande enregistrée · 21 août » |
+| Deux rappels SMS simulés | section retirée — aucune donnée derrière |
+| Grille tarifaire à 3 lignes inventées | montant, encaissé, reste — tirés du journal de caisse |
+
+### Ce qui a été décidé, et pourquoi
+
+**Quatre jalons plutôt que sept.** Une commande porte un statut, pas un
+historique d'étapes datées. Sept étapes ne pouvaient être honnêtes qu'en
+inventant leurs dates ; quatre jalons calqués sur le statut disent ce qu'on
+sait. Les cases sans date restent vides — pas de « — » décoratif.
+
+**Les rappels disparaissent.** Rien en base ne les porte, et aucun envoi n'est
+branché. Un bloc qui annonce « SMS essayage envoyé » alors qu'aucun SMS n'est
+parti est pire qu'un bloc absent.
+
+**L'absence s'affiche.** Mesures non relevées, tissu non renseigné, artisan non
+assigné, aucune consigne : chaque cas a sa phrase. C'est la règle déjà tenue sur
+la trésorerie, étendue ici.
+
+**Les neuf constantes simulées sont supprimées** de `mock/atelier.ts`
+(`clientPrincipal`, `mesuresCorporelles`, `mesuresResume`, `etapesFabrication`,
+`rappels`, `recapitulatifCommande`, `tarificationCommande` et leurs deux types).
+Les laisser inutilisées, c'était les rendre disponibles pour la prochaine fiche.
+
+### Vérifié
+
+Écran réel, commande #001, session ouverte : les huit lignes du tableau ci-dessus
+relevées une à une, onglets « Suivi » et « Récapitulatif ». Mode démonstration
+sur `#087` : rang « 2ᵉ commande » (compté, plus déclaré), mesures annoncées non
+consultables. `lint`, `typecheck`, `build`, et **23 tests neufs** sur
+`lib/commande-fiche.ts` (rang, libellé ordinal, jalons, extrait de mesures,
+initiales) — 607 verts au total.
+
+### Reste du même écran, non traité
+
+Les notes d'atelier (défaut n°6) restent simulées : « Awa T. · 18 jan » s'affiche
+toujours sur la commande de Salimata Zongo. Les boutons « Imprimer », « WhatsApp
+cliente » et « Valider essayage » de l'en-tête n'ont jamais été branchés — non
+listés à l'audit, à trancher.
+
+## Défaut n°2 corrigé — l'écran Notifications lit la base (2026-08-24)
+
+L'écran annonçait « 5 non lues sur 10 » et affichait dix lignes ; la base en
+contenait zéro. Le modèle `Notification` et la route `/api/notifications`
+existaient depuis le starter — l'écran ne les avait jamais ouverts.
+
+### Ce qui a été branché
+
+`lib/notifications.ts` traduit la forme serveur (`type`, `data`, `readAt`,
+`createdAt`) en forme d'affichage (catégorie, icône, pastille, moment relatif).
+`lib/useNotifications.ts` lit `/api/notifications?limit=50` et poste le
+marquage « lu » en `PATCH` — même repli simulé que `useCommandes` hors session.
+
+Le marquage part désormais au serveur. Il vivait dans un `useState` : la
+pastille bleue revenait à chaque rechargement, et l'on relisait dix fois la
+même notification.
+
+### Trois choix qui tiennent l'écran honnête
+
+1. **Le sous-titre disparaît.** « N non lues sur M » était calculé sur le jeu
+   simulé. Le compte réel vit dans les onglets de filtre, à côté de ce qu'il
+   décrit — un chiffre au même endroit que sa liste ne peut plus la contredire.
+2. **Les onglets suivent les données.** « Clients », « Livraisons » ne
+   s'affichent que si une notification les porte. Un filtre qui ne peut rien
+   afficher est une promesse en l'air.
+3. **Un type inconnu reste lisible** plutôt que de casser la liste : catégorie
+   « Atelier », icône neutre. La table ne décrit que les trois types réellement
+   émis (`PAYMENT_RECEIVED`, `WITHDRAWAL_REQUESTED`, `WELCOME`) — inventer des
+   entrées pour des types sans producteur décrirait une application imaginaire.
+
+Le lien d'action ne suit que `data.commandeId`. Le `PAYMENT_RECEIVED` du starter
+porte un `orderId` qui référence le modèle `Order` générique, pas
+`TailoringOrder` : le suivre mènerait à une fiche introuvable.
+
+### Ce que l'écran affichera vraiment : rien
+
+Aucun événement de l'atelier n'émet de notification. Les trois types existants
+viennent du starter (inscription OAuth, retrait, webhook de paiement) et aucun
+ne se déclenche dans l'usage courant d'un atelier. Une session réelle verra donc
+« Aucune notification », avec la phrase qui dit pourquoi — sans elle, un écran
+nu passe pour une panne de chargement.
+
+**Le vrai manque est en amont, et n'était pas dans l'audit** : il faudrait un
+cron qui signale les commandes en retard et les livraisons du lendemain. C'est
+la seule notification utile à un tailleur seul — être averti d'un versement
+qu'on vient soi-même de saisir n'apprend rien. À décider.
+
+### Vérifié
+
+`lint`, `typecheck`, `build`, **706 tests** (dont 14 neufs sur
+`lib/notifications.ts` : apparences, lien d'action, moments relatifs, horloge
+client en avance, type inconnu). `/notifications` répond 200.
+
+**Non vérifié à l'écran** : le navigateur de test était occupé. L'état vide
+réel et l'aller-retour du marquage « lu » restent à constater.
+
+## Les cinq points d'arbitrage, tranchés (2026-08-24)
+
+### 1. Le correctif du délai de rafraîchissement était inerte
+
+`lib/api.ts` lisait bien `NEXT_PUBLIC_REFRESH_TIMEOUT_MS`, mais la variable
+n'était posée nulle part : ni `.env`, ni `.env.example`, ni le README. Le défaut
+restait donc 10 000 ms face aux 7,8 s mesurés sur Neon — un rapport de 1,3, donc
+le défaut d'origine (une session valide qui bascule en démonstration) était
+toujours vivant. Posée à **20 000 ms**, documentée dans `.env.example`.
+
+### 2. Cron `atelier-alertes` — les notifications ont enfin un producteur
+
+`lib/server/atelier/alertes.ts`, appelé chaque matin à 6h UTC : l'atelier ouvre
+avec ses retards de la veille déjà posés plutôt que de les découvrir le soir.
+
+- **Retard** — échéance strictement antérieure à aujourd'hui. Une commande due
+  aujourd'hui n'est pas en retard, elle est due.
+- **Livraison du lendemain** — fenêtre bornée à la seule journée de demain.
+- Le statut suit l'alerte : une commande signalée en retard bascule en `LATE`.
+  Sans cela la notification dirait « en retard » pendant que la fiche afficherait
+  « en cours », et rien ne dirait laquelle se trompe. C'est aussi le premier
+  producteur de `LATE` — jusqu'ici le statut existait sans que rien ne l'écrive,
+  donc le badge « urgent » ne s'allumait jamais.
+- Idempotent : `dedupeKey` porte le jour, un rejeu après incident ne réveille pas
+  l'atelier deux fois.
+
+Le versement encaissé n'émet **rien**, délibérément : être averti d'une saisie
+qu'on vient de faire soi-même n'apprend rien.
+
+### 3. Les trois boutons de la fiche commande
+
+- **Imprimer** → `window.print()`.
+- **WhatsApp** → `wa.me` sur le numéro réel du client. Sans numéro joignable, le
+  bouton reste visible mais annonce « Pas de numéro » : un `wa.me` tronqué ouvre
+  une conversation vide, ou avec le mauvais correspondant.
+- **« Valider essayage »** n'avait aucune route derrière — et plus largement,
+  **rien ne permettait de faire avancer une commande** : elle naissait « en
+  cours » et n'en bougeait plus jamais. `PATCH /api/commandes/[id]` comble ce
+  trou. Le libellé nomme le geste du jour (« Passer à l'essayage », « Valider
+  l'essayage », « Marquer livrée ») et le bouton disparaît une fois la commande
+  livrée. `deliveredAt` suit le statut dans les deux sens : une commande sortie
+  de « livrée » par correction ne garde pas sa date, sinon les rapports
+  compteraient une livraison qui n'a pas eu lieu.
+
+Le changement de statut n'est **pas** posé localement avant la réponse serveur,
+contrairement au marquage « lu » d'une notification : un statut faux se voit sur
+le planning, dans les rapports et sur la fiche client.
+
+### 4. Les notifications suivent la règle trésorerie
+
+Plus de repli sur le jeu simulé hors session. Une notification affirme un fait
+daté — « acompte reçu », « commande en retard » ; une alerte inventée se
+confondrait avec une vraie. L'écran dit pourquoi et propose la connexion, comme
+la trésorerie. Les 115 lignes de notifications d'exemple sont supprimées de
+`mock/atelier.ts`.
+
+### 5. Commité
+
+Le tout était dans l'arbre de travail depuis deux jours.
+
+### Vérifié
+
+`format`, `lint`, `typecheck`, `build`, **735 tests** — dont 11 sur la route
+`PATCH /api/commandes/[id]` (CSRF, 401, statut hors domaine, 404 pour l'atelier
+voisin, `deliveredAt` dans les deux sens) et 10 sur `signalerEcheances`
+(fenêtres de dates, bascule `LATE`, déduplication, passage à vide).
+
+Le garde-fou `vercel-json-shape.test.ts` épinglait l'inventaire des crons : il a
+correctement refusé le septième avant d'être mis à jour. La table du README en
+annonçait cinq pour six existantes — dérive antérieure, corrigée au passage.
+
+**Non vérifié à l'écran** : le navigateur de test est resté occupé. Le cron n'a
+pas été déclenché contre une vraie base, et les trois boutons n'ont pas été
+cliqués.
