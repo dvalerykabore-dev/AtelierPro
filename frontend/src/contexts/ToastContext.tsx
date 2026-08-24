@@ -55,10 +55,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               t.exiting ? 'opacity-0' : 'opacity-100'
             } ${
               t.type === 'success'
-                ? 'border-green-200 bg-white text-green-700'
+                ? 'border-success/40 bg-surface text-success'
                 : t.type === 'error'
-                  ? 'border-red-200 bg-white text-red-700'
-                  : 'border-gray-200 bg-white text-gray-700'
+                  ? 'border-danger/40 bg-surface text-danger'
+                  : 'border-border bg-surface text-foreground'
             }`}
             style={{ maxWidth: '90vw' }}
           >

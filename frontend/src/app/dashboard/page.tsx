@@ -6,6 +6,7 @@ import CommandesDuJour from '@/components/atelier/CommandesDuJour';
 import CapaciteEquipe from '@/components/atelier/CapaciteEquipe';
 import StatistiquesAtelier from '@/components/atelier/StatistiquesAtelier';
 import Avatar from '@/components/ui/Avatar';
+import BasculeTheme from '@/components/ui/BasculeTheme';
 import { ATELIER_NOM, dateDuJourFr, nombreNotifications } from '@/lib/mock/atelier';
 
 export const metadata: Metadata = {
@@ -44,6 +45,11 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-shrink-0 items-center gap-2">
+              {/* Cet en-tête est un bandeau inversé (bg-foreground) dans les deux
+                  thèmes : la bascule reprend le style de ses voisines plutôt que
+                  son habillage par défaut, illisible sur ce fond. */}
+              <BasculeTheme className="bg-background/10 text-background hover:bg-background/20 hover:text-background h-9 w-9 rounded-full" />
+
               <Link href="/notifications" className="relative" title="Notifications">
                 <span className="bg-background/10 text-background flex h-9 w-9 items-center justify-center rounded-full">
                   <Bell size={18} aria-hidden />

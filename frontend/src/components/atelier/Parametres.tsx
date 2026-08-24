@@ -2,12 +2,14 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Pencil, Plus, Trash2, UserPlus } from 'lucide-react';
+import { Moon, Pencil, Plus, Sun, Trash2, UserPlus } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { Field } from '@/components/ui/Field';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { THEMES } from '@/lib/theme';
 import { useArtisans } from '@/lib/useArtisans';
 import {
   atelier,
@@ -71,6 +73,7 @@ function Interrupteur({
 export default function Parametres() {
   const router = useRouter();
   const { logout, loggingOut } = useAuth();
+  const { theme, definir: definirTheme } = useTheme();
 
   const {
     artisans: equipe,
@@ -378,6 +381,48 @@ export default function Parametres() {
             <div className="grid gap-3 sm:grid-cols-2">
               <Champ label="Adresse e-mail" valeur="moussa.kone@atelierpro.bf" />
               <Champ label="Téléphone" valeur="+226 70 12 34 56" />
+            </div>
+
+            {/*
+              Apparence — la bascule de la barre haute suffit à l'usage courant,
+              mais c'est ici qu'on cherche une préférence. Radios natives plutôt
+              que role="radio" : la navigation aux flèches vient gratuitement et
+              sans code ARIA à maintenir.
+            */}
+            <div className="border-border mt-5 border-t pt-5">
+              <h3 className="font-headings text-foreground text-sm font-bold">Apparence</h3>
+              <p className="text-muted-foreground mt-1 mb-3 text-xs">
+                Mémorisé sur cet appareil, pas sur votre compte.
+              </p>
+              <div role="radiogroup" aria-label="Thème de l’interface" className="flex gap-2">
+                {THEMES.map((valeur) => {
+                  const actif = theme === valeur;
+                  const Icone = valeur === 'dark' ? Moon : Sun;
+                  return (
+                    <label
+                      key={valeur}
+                      className={cn(
+                        'flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors',
+                        'has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-offset-2',
+                        actif
+                          ? 'border-primary bg-muted text-foreground font-medium'
+                          : 'border-border text-muted-foreground hover:bg-muted',
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="theme-interface"
+                        value={valeur}
+                        checked={actif}
+                        onChange={() => definirTheme(valeur)}
+                        className="sr-only"
+                      />
+                      <Icone size={14} aria-hidden />
+                      {valeur === 'dark' ? 'Sombre' : 'Clair'}
+                    </label>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="border-border mt-5 flex flex-wrap gap-2 border-t pt-5">

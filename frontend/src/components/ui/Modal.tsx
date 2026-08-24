@@ -71,7 +71,7 @@ export default function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
+      className="bg-overlay fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4"
       onClick={onFermer}
     >
       <div

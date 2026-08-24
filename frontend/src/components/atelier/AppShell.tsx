@@ -3,6 +3,7 @@ import SideNav from '@/components/atelier/SideNav';
 import BottomNav from '@/components/atelier/BottomNav';
 import AuthGuard from '@/components/atelier/AuthGuard';
 import { cn } from '@/lib/utils';
+import BasculeTheme from '@/components/ui/BasculeTheme';
 
 export interface AppShellProps {
   /** Titre de la barre haute (desktop) et de l'en-tête mobile par défaut. */
@@ -51,9 +52,10 @@ export default function AppShell({
           {enteteMobile ?? (
             <header className="border-border bg-surface flex items-center justify-between gap-3 border-b px-4 py-3 lg:hidden">
               <h1 className="font-headings text-foreground truncate text-lg font-bold">{titre}</h1>
-              {actionsMobile && (
-                <div className="flex flex-shrink-0 items-center gap-2">{actionsMobile}</div>
-              )}
+              <div className="flex flex-shrink-0 items-center gap-2">
+                <BasculeTheme />
+                {actionsMobile}
+              </div>
             </header>
           )}
 
@@ -63,7 +65,10 @@ export default function AppShell({
               <h1 className="font-headings text-foreground text-xl font-bold">{titre}</h1>
               {sousTitre && <p className="text-muted-foreground text-xs">{sousTitre}</p>}
             </div>
-            {actions && <div className="flex flex-shrink-0 items-center gap-2">{actions}</div>}
+            <div className="flex flex-shrink-0 items-center gap-2">
+              <BasculeTheme />
+              {actions}
+            </div>
           </header>
 
           {sousEntete}

@@ -3,6 +3,8 @@ import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { SCRIPT_ANTI_FLASH } from '@/lib/theme';
 
 // Police du système de design Banani (--font-body et --font-headings pointent
 // tous deux dessus dans globals.css).
@@ -24,11 +26,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={spaceGrotesk.variable}>
+    // suppressHydrationWarning : le script ci-dessous pose `data-theme` sur
+    // <html> avant l'hydratation, donc l'attribut diffère forcément du HTML
+    // rendu côté serveur. C'est voulu, et le silence est limité à cet élément.
+    <html lang="fr" className={spaceGrotesk.variable} suppressHydrationWarning>
+      <head>
+        {/*
+         * Applique le thème mémorisé avant le premier pixel. Sans ce script,
+         * React ne poserait l'attribut qu'après hydratation et un utilisateur
+         * en thème clair verrait un flash bleu nuit à chaque page.
+         * Le contenu est une constante du code (lib/theme.ts), sans aucune
+         * donnée externe : rien à échapper.
+         */}
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_ANTI_FLASH }} />
+      </head>
       <body className="bg-background text-foreground font-body antialiased">
-        <ToastProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </ToastProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

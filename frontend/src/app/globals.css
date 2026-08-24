@@ -28,6 +28,13 @@
   --color-success: #3aaf7a;
   --color-warning: #e8b84b;
 
+  /*
+   * Voile des modales. Il doit rester SOMBRE dans les deux thèmes — un voile
+   * clair sur une page claire ne sépare plus rien. C'est pour ça que ce n'est
+   * pas `bg-foreground/40` : en thème sombre, foreground est le crème.
+   */
+  --color-overlay: rgb(0 0 0 / 0.6);
+
   /* Rayons */
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -48,6 +55,63 @@
   --text-2xl: 24px;
   --text-3xl: 30px;
   --text-4xl: 38px;
+}
+
+/*
+ * Thème clair « Blanc atelier ».
+ *
+ * Tailwind v4 génère `.bg-surface { background-color: var(--color-surface) }` :
+ * il suffit donc de redéfinir les variables sous ce sélecteur pour que les
+ * ~1 400 utilitaires déjà en place basculent, modificateurs d'opacité compris
+ * (`bg-primary/10` passe par color-mix sur la même variable).
+ *
+ * L'attribut est posé sur <html> par SCRIPT_ANTI_FLASH (lib/theme.ts) AVANT le
+ * premier rendu, puis maintenu par ThemeContext.
+ *
+ * Contrastes vérifiés sur fond blanc (WCAG AA, seuil 4,5:1 pour du texte) :
+ * foreground 17:1 · muted-foreground 4,8:1 · primary 5,5:1 · danger 5,4:1 ·
+ * success 5,0:1 · warning 5,0:1.
+ */
+[data-theme='light'] {
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-border: #e2e8f0;
+  --color-input: #f1f5f9;
+  /* L'or du thème sombre (#c9993a) tombe à 3,8:1 sur blanc — illisible en
+     texte. On l'assombrit sans changer la teinte. */
+  --color-primary: #8a6218;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #8a6218;
+  /* `muted` doit rester d'un cran plus soutenu que `surface` : il sert de bloc
+     en relief À L'INTÉRIEUR des cartes (tuiles de capacité, survols). Les deux
+     à la même valeur et le relief disparaît — l'échelle est donc
+     background #fff → surface #f8fafc → muted #f1f5f9. */
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-surface: #f8fafc;
+  --color-surface-foreground: #0f172a;
+  /* `accent` sert de survol à `bg-primary`. En sombre il est plus CLAIR que
+     primary ; en clair il doit être plus FONCÉ, sinon le survol donne
+     l'impression que le bouton s'éteint. */
+  --color-accent: #6d4c12;
+  --color-danger: #c0392b;
+  --color-success: #15803d;
+  --color-warning: #b45309;
+  --color-overlay: rgb(15 23 42 / 0.45);
+}
+
+/*
+ * Aligne les éléments natifs que le CSS ne touche pas — barres de défilement,
+ * sélecteurs de date, autocomplétion. Sans ça, un champ date reste sombre au
+ * milieu d'une fiche claire.
+ */
+:root {
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
 }
 
 html,
