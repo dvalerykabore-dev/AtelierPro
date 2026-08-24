@@ -46,6 +46,8 @@ model User {
   tailoringOrders   TailoringOrder[]
   workshopTasks     WorkshopTask[]
   artisans          Artisan[]
+  cashMovements     CashMovement[]
+  recurringCharges  RecurringCharge[]
 
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
@@ -431,6 +433,12 @@ model TailoringOrder {
   updatedAt   DateTime  @updatedAt
   deliveredAt DateTime?
 
+  // Encaissements rattachés à cette commande. `depositAmount` ci-dessus est
+  // maintenu égal à leur somme, dans la même transaction que leur écriture :
+  // le journal fait foi, le champ n'est qu'un raccourci de lecture pour les
+  // écrans qui affichent une commande sans charger ses mouvements.
+  cashMovements CashMovement[]
+
   @@unique([userId, sequence])
   @@index([userId, createdAt])
   @@index([userId, status])
@@ -495,4 +503,88 @@ model WorkshopTask {
 
   @@index([userId, day])
   @@index([userId, assignee, day])
+}
+
+// ---------------------------------------------------------------------------
+// Trésorerie de l'atelier
+// ---------------------------------------------------------------------------
+
+/// Journal de caisse — un seul registre pour les deux sens.
+///
+/// Deux tables (recettes d'un côté, dépenses de l'autre) auraient fini par
+/// diverger : la trésorerie est la somme signée des mouvements, elle doit se
+/// lire d'une seule requête.
+///
+/// `occurredAt` est le jour où l'argent a bougé, pas celui de la saisie. C'est
+/// toute la différence entre une comptabilité et un historique de frappe : un
+/// loyer payé le 5 et noté le 12 pèse sur le solde du 5.
+model CashMovement {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// IN = recette encaissée · OUT = dépense décaissée
+  direction String
+
+  /// Montant en francs CFA — entier, la devise n'a pas de décimales
+  /// (invariant du CLAUDE.md : jamais de décimales sur la monnaie).
+  amount Int
+
+  /// Jour du mouvement. `@db.Date` : une journée, pas un instant — sans quoi
+  /// un paiement du 31 à 23 h basculerait au mois suivant selon le fuseau.
+  occurredAt DateTime @db.Date
+
+  /// Poste de dépense. Renseigné sur les sorties, nul sur les entrées : une
+  /// recette d'atelier a une commande pour origine, pas une catégorie.
+  category String?
+
+  /// ESPECES | MOBILE_MONEY | VIREMENT | CARTE
+  method String
+
+  label String
+  notes String?
+
+  /// Commande encaissée, pour les entrées. `Cascade` : supprimer une commande
+  /// retire ses encaissements, sinon la caisse compterait l'argent d'une vente
+  /// qui n'existe plus.
+  tailoringOrderId String?
+  tailoringOrder   TailoringOrder? @relation(fields: [tailoringOrderId], references: [id], onDelete: Cascade)
+
+  /// Vrai quand la ligne a été reconstituée depuis un acompte antérieur au
+  /// journal : sa date est celle de la commande, pas celle de l'encaissement.
+  /// L'écran le signale plutôt que de faire passer une reprise pour une saisie.
+  backfilled Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, occurredAt])
+  @@index([userId, direction, occurredAt])
+  @@index([tailoringOrderId])
+}
+
+/// Charge fixe déclarée — loyer, salaires, abonnement.
+///
+/// Sert uniquement à la prévision : elle ne crée aucun mouvement toute seule.
+/// Une charge automatiquement écrite en caisse ferait apparaître un loyer payé
+/// alors qu'il ne l'est pas encore, et le solde deviendrait un mensonge.
+model RecurringCharge {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label    String
+  category String
+  amount   Int
+
+  /// Jour d'échéance dans le mois, 1 à 28 — au-delà, le mois de février
+  /// n'aurait pas d'échéance certaines années.
+  dayOfMonth Int @default(1)
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, active])
 }

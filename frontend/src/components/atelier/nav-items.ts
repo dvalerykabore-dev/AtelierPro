@@ -2,9 +2,11 @@ import {
   BarChart2,
   CalendarDays,
   LayoutDashboard,
+  Receipt,
   Ruler,
   Shirt,
   Users,
+  Wallet,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -81,10 +83,34 @@ export const entreesLaterales: EntreeNav[] = [
     icone: BarChart2,
     disponible: true,
   },
+  {
+    id: 'tresorerie',
+    href: '/tresorerie',
+    label: 'Trésorerie',
+    labelCourt: 'Caisse',
+    icone: Wallet,
+    disponible: true,
+  },
+  {
+    id: 'depenses',
+    href: '/depenses',
+    label: 'Dépenses',
+    labelCourt: 'Dépenses',
+    icone: Receipt,
+    disponible: true,
+  },
 ];
 
 /**
- * Barre basse mobile — 5 entrées (source Banani : écran « Mobile — Tableau de bord »).
- * La maquette mobile omet « Mesures », accessible depuis la fiche client.
+ * Barre basse mobile (source Banani : écran « Mobile — Tableau de bord »).
+ *
+ * Deux entrées du rail n'y figurent pas, et pour des raisons différentes :
+ * « Mesures » se rejoint depuis la fiche client, comme dans la maquette ;
+ * « Dépenses » depuis l'écran Trésorerie, qui est l'endroit où l'on se demande
+ * où l'argent est parti. La trésorerie, elle, reste dans la barre : sur
+ * téléphone il n'y a pas de rail latéral, la reléguer la rendrait
+ * inatteignable — or c'est précisément l'écran qu'on consulte debout.
  */
-export const entreesBasses: EntreeNav[] = entreesLaterales.filter((e) => e.id !== 'mesures');
+export const entreesBasses: EntreeNav[] = entreesLaterales.filter(
+  (e) => e.id !== 'mesures' && e.id !== 'depenses',
+);

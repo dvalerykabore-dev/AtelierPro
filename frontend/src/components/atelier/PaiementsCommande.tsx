@@ -1,59 +1,103 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
-import { Check, Plus } from 'lucide-react';
+import { useMemo, useState, type FormEvent } from 'react';
+import { AlertCircle, Check, Plus, Trash2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { Field, SelectField } from '@/components/ui/Field';
-import { paiements as paiementsInitiaux, type Paiement } from '@/lib/mock/atelier';
+import { MODES, libelleMode } from '@/lib/tresorerie';
+import { aujourdhuiIso, useMouvements } from '@/lib/useTresorerie';
 import { cn, formatPrice } from '@/lib/utils';
 
-const MODES = ['Mobile Money', 'Espèces', 'Virement', 'Carte'] as const;
+export interface PaiementsCommandeProps {
+  /** Identifiant de la commande — clé du journal des encaissements. */
+  commandeId: string;
+  /** Montant total dû, en francs CFA. */
+  montant: number;
+  /** Somme déjà encaissée, telle que la commande la porte. */
+  encaisse: number;
+}
+
+const MOIS_COURTS = [
+  'janv.',
+  'févr.',
+  'mars',
+  'avr.',
+  'mai',
+  'juin',
+  'juil.',
+  'août',
+  'sept.',
+  'oct.',
+  'nov.',
+  'déc.',
+];
+
+function jourLisible(iso: string): string {
+  const [, m, j] = iso.split('-');
+  return `${Number(j)} ${MOIS_COURTS[Number(m) - 1] ?? ''}`;
+}
 
 /**
- * Suivi des encaissements d'une commande.
+ * Encaissements d'une commande.
  *
- * La maquette Banani affiche le bouton « Enregistrer paiement » sans écran de
- * destination : la fenêtre de saisie est déduite du reste du système.
+ * Cet écran affichait jusqu'ici un jeu simulé : ce qu'on y saisissait
+ * disparaissait au rechargement, et la trésorerie n'avait aucune recette à
+ * compter. Chaque versement écrit désormais une entrée dans le journal de
+ * caisse, et le serveur recale l'acompte de la commande dans la même
+ * transaction — le montant affiché ici et celui de la liste des commandes ne
+ * peuvent plus se contredire.
+ *
+ * Le total encaissé se lit sur le journal, pas sur la propriété reçue : après
+ * un ajout, la commande parente n'est pas rechargée, seul le journal l'est.
  */
-export default function PaiementsCommande() {
-  const [paiements, setPaiements] = useState<Paiement[]>(paiementsInitiaux);
+export default function PaiementsCommande({
+  commandeId,
+  montant,
+  encaisse,
+}: PaiementsCommandeProps) {
+  const filtres = useMemo(() => ({ commande: commandeId }), [commandeId]);
+  const { mouvements, chargement, erreur, ajouter, supprimer } = useMouvements(filtres);
+
   const [ouvert, setOuvert] = useState(false);
-  const [montant, setMontant] = useState('');
-  const [mode, setMode] = useState<string>(MODES[0]);
+  const [saisi, setSaisi] = useState('');
+  const [date, setDate] = useState(aujourdhuiIso);
+  const [mode, setMode] = useState<string>(MODES[0].cle);
+  const [envoi, setEnvoi] = useState(false);
+  const [erreurForm, setErreurForm] = useState<string | null>(null);
 
-  const total = paiements.reduce((s, p) => s + p.montant, 0);
-  const encaisse = paiements.filter((p) => p.regle).reduce((s, p) => s + p.montant, 0);
-  const pourcentage = total > 0 ? Math.round((encaisse / total) * 100) : 0;
-  const restant = total - encaisse;
+  // Le journal fait foi dès qu'il est chargé ; la propriété sert de valeur
+  // d'attente pour éviter que la barre ne parte de zéro à chaque affichage.
+  const total = chargement ? encaisse : mouvements.reduce((s, m) => s + m.amount, 0);
+  const restant = Math.max(montant - total, 0);
+  const pourcentage = montant > 0 ? Math.min(Math.round((total / montant) * 100), 100) : 0;
 
-  function enregistrer(e: FormEvent) {
+  async function enregistrer(e: FormEvent) {
     e.preventDefault();
-    const valeur = Number.parseInt(montant, 10);
-    if (Number.isNaN(valeur) || valeur <= 0) return;
+    setErreurForm(null);
 
-    setPaiements((prec) => {
-      // Un encaissement couvrant tout le solde règle la ligne « Solde restant »
-      // au lieu d'ajouter une ligne en double.
-      const solde = prec.find((p) => !p.regle);
-      if (solde && valeur >= solde.montant) {
-        return prec.map((p) =>
-          p === solde ? { ...p, regle: true, mode, date: "Aujourd'hui" } : p,
-        );
-      }
-      return [
-        ...prec,
-        {
-          label: 'Versement complémentaire',
-          montant: valeur,
-          date: "Aujourd'hui",
-          mode,
-          regle: true,
-        },
-      ];
+    const valeur = Number.parseInt(saisi, 10);
+    if (Number.isNaN(valeur) || valeur <= 0) {
+      setErreurForm('Le montant doit être un nombre supérieur à zéro.');
+      return;
+    }
+
+    setEnvoi(true);
+    const echec = await ajouter({
+      direction: 'IN',
+      amount: valeur,
+      occurredAt: date,
+      method: mode,
+      label: `Versement — ${libelleMode(mode)}`,
+      tailoringOrderId: commandeId,
     });
+    setEnvoi(false);
 
-    setMontant('');
+    if (echec) {
+      setErreurForm(echec);
+      return;
+    }
+    setSaisi('');
     setOuvert(false);
   }
 
@@ -61,13 +105,18 @@ export default function PaiementsCommande() {
     <section className="border-border border-b px-4 py-5 lg:px-6">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="font-headings text-foreground text-sm font-bold">Paiements</h2>
-        <span className="text-muted-foreground text-xs">{formatPrice(total, 'F')} total</span>
+        <span className="text-muted-foreground text-xs">{formatPrice(montant, 'F')} dû</span>
       </div>
 
       <div className="mb-3">
         <div className="mb-1 flex items-center justify-between">
           <span className="text-muted-foreground text-xs">Encaissé</span>
-          <span className="text-success text-xs font-medium">{formatPrice(encaisse, 'F')}</span>
+          <span className="text-success text-xs font-medium">
+            {formatPrice(total, 'F')}
+            {restant > 0 && (
+              <span className="text-muted-foreground"> · reste {formatPrice(restant, 'F')}</span>
+            )}
+          </span>
         </div>
         <div
           className="bg-border h-2 overflow-hidden rounded-full"
@@ -81,36 +130,56 @@ export default function PaiementsCommande() {
         </div>
       </div>
 
+      {erreur && (
+        <p role="alert" className="text-danger mb-3 flex items-start gap-2 text-xs">
+          <AlertCircle size={13} className="mt-0.5 flex-shrink-0" aria-hidden />
+          {erreur}
+        </p>
+      )}
+
       <div className="flex flex-col gap-2">
-        {paiements.map((p, i) => (
-          <div
-            key={`${p.label}-${i}`}
-            className={cn(
-              'border-border flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5',
-              p.regle ? 'bg-surface' : 'bg-muted',
-            )}
-          >
-            <div className="min-w-0">
-              <div className="text-foreground text-xs font-medium">{p.label}</div>
-              <div className="text-muted-foreground text-xs">
-                {p.date} · {p.mode}
+        {chargement ? (
+          <p className="text-muted-foreground text-xs">Chargement des versements…</p>
+        ) : mouvements.length === 0 ? (
+          <p className="text-muted-foreground text-xs">
+            Aucun versement enregistré. La commande est entièrement due.
+          </p>
+        ) : (
+          mouvements.map((p) => (
+            <div
+              key={p.id}
+              className="border-border bg-surface flex items-center gap-3 rounded-lg border px-3 py-2.5"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="text-foreground text-xs font-medium">{p.label}</div>
+                <div className="text-muted-foreground text-xs">
+                  {jourLisible(p.occurredAt)} · {libelleMode(p.method)}
+                  {p.backfilled && <span className="text-warning"> · date reconstituée</span>}
+                </div>
               </div>
-            </div>
-            <div className="flex flex-shrink-0 flex-col items-end gap-1">
-              <span className="text-foreground text-sm font-bold">
-                {formatPrice(p.montant, 'F')}
-              </span>
-              {p.regle ? (
+              <div className="flex flex-shrink-0 flex-col items-end">
+                <span className="text-foreground text-sm font-bold">
+                  {formatPrice(p.amount, 'F')}
+                </span>
                 <span className="text-success flex items-center gap-1 text-xs font-medium">
                   <Check size={10} aria-hidden />
-                  Payé
+                  Encaissé
                 </span>
-              ) : (
-                <span className="text-muted-foreground text-xs">En attente</span>
-              )}
+              </div>
+              <button
+                type="button"
+                onClick={() => void supprimer(p.id)}
+                aria-label={`Annuler le versement de ${formatPrice(p.amount, 'F')}`}
+                className={cn(
+                  'text-muted-foreground hover:text-danger flex h-8 w-8 flex-shrink-0',
+                  'items-center justify-center rounded-md transition-colors',
+                )}
+              >
+                <Trash2 size={14} aria-hidden />
+              </button>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       <Button
@@ -118,58 +187,64 @@ export default function PaiementsCommande() {
         taille="sm"
         pleineLargeur
         className="mt-3"
+        disabled={restant === 0}
         onClick={() => {
-          setMontant(restant > 0 ? String(restant) : '');
+          setSaisi(restant > 0 ? String(restant) : '');
           setOuvert(true);
         }}
       >
         <Plus size={12} aria-hidden />
-        Enregistrer paiement
+        {restant === 0 ? 'Commande soldée' : 'Enregistrer un versement'}
       </Button>
 
       <Modal
         ouvert={ouvert}
         onFermer={() => setOuvert(false)}
-        titre="Enregistrer un paiement"
-        description={
-          restant > 0
-            ? `Reste à encaisser : ${formatPrice(restant, 'F CFA')}.`
-            : 'Cette commande est entièrement réglée.'
-        }
-        pied={
-          <>
-            <Button variante="fantome" onClick={() => setOuvert(false)}>
-              Annuler
-            </Button>
-            <Button type="submit" form="formulaire-paiement">
-              Enregistrer
-            </Button>
-          </>
-        }
+        titre="Enregistrer un versement"
+        description={`Reste à encaisser : ${formatPrice(restant, 'F CFA')}. Le versement entre aussitôt en trésorerie.`}
       >
-        <form id="formulaire-paiement" onSubmit={enregistrer} className="flex flex-col gap-4">
+        <form onSubmit={enregistrer} className="flex flex-col gap-4">
           <Field
-            label="Montant reçu"
+            label="Montant (F CFA)"
             type="number"
-            required
+            inputMode="numeric"
             min={1}
-            step={500}
-            autoFocus
-            aide="En francs CFA, sans décimales."
-            value={montant}
-            onChange={(e) => setMontant(e.target.value)}
+            max={restant}
+            required
+            value={saisi}
+            onChange={(e) => setSaisi(e.target.value)}
           />
-          <SelectField
-            label="Moyen de paiement"
-            value={mode}
-            onChange={(e) => setMode(e.target.value)}
-          >
+          <Field
+            label="Date de l’encaissement"
+            type="date"
+            required
+            aide="Le jour où l’argent est entré, pas celui de la saisie."
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+          <SelectField label="Réglé par" value={mode} onChange={(e) => setMode(e.target.value)}>
             {MODES.map((m) => (
-              <option key={m} value={m}>
-                {m}
+              <option key={m.cle} value={m.cle}>
+                {m.label}
               </option>
             ))}
           </SelectField>
+
+          {erreurForm && (
+            <p role="alert" className="text-danger flex items-start gap-2 text-sm">
+              <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
+              {erreurForm}
+            </p>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <Button type="button" variante="contour" onClick={() => setOuvert(false)}>
+              Annuler
+            </Button>
+            <Button type="submit" disabled={envoi}>
+              {envoi ? 'Enregistrement…' : 'Enregistrer'}
+            </Button>
+          </div>
         </form>
       </Modal>
     </section>
