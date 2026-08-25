@@ -18,6 +18,7 @@ export default function BottomNav() {
   return (
     <nav
       aria-label="Navigation principale"
+      data-chrome="app"
       className="border-border bg-surface sticky bottom-0 z-10 border-t lg:hidden"
     >
       <div className="flex">

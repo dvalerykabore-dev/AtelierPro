@@ -49,7 +49,10 @@ export default function AppShell({
         <div className="flex min-w-0 flex-1 flex-col">
           {/* En-tête mobile : personnalisé si fourni, sinon barre simple */}
           {enteteMobile ?? (
-            <header className="border-border bg-surface flex items-center justify-between gap-3 border-b px-4 py-3 lg:hidden">
+            <header
+              data-chrome="app"
+              className="border-border bg-surface flex items-center justify-between gap-3 border-b px-4 py-3 lg:hidden"
+            >
               <h1 className="font-headings text-foreground truncate text-lg font-bold">{titre}</h1>
               <div className="flex flex-shrink-0 items-center gap-2">
                 <BasculeTheme />
@@ -59,7 +62,10 @@ export default function AppShell({
           )}
 
           {/* Barre haute desktop */}
-          <header className="border-border bg-surface hidden items-center justify-between gap-4 border-b px-8 py-4 lg:flex">
+          <header
+            data-chrome="app"
+            className="border-border bg-surface hidden items-center justify-between gap-4 border-b px-8 py-4 lg:flex"
+          >
             <div className="min-w-0">
               <h1 className="font-headings text-foreground text-xl font-bold">{titre}</h1>
               {sousTitre && <p className="text-muted-foreground text-xs">{sousTitre}</p>}

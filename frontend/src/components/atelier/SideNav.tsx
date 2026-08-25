@@ -23,6 +23,7 @@ export default function SideNav({ initiales }: SideNavProps) {
   return (
     <nav
       aria-label="Navigation principale"
+      data-chrome="app"
       className="bg-surface border-border hidden min-h-full w-16 flex-col border-r lg:flex"
     >
       {/* Logo */}

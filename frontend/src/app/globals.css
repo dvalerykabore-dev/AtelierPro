@@ -137,3 +137,64 @@ body {
     scroll-behavior: smooth;
   }
 }
+
+/*
+ * Impression — et donc « Exporter PDF », la boîte de dialogue du navigateur
+ * offrant « Enregistrer au format PDF » comme destination.
+ *
+ * Deux choses la rendent nécessaire, l'une comme l'autre suffisant à rendre le
+ * document inutilisable :
+ *
+ * 1. Le thème par défaut est un bleu nuit. Imprimé tel quel, un rapport d'une
+ *    page sort en aplat sombre — illisible sur papier, et une cartouche d'encre
+ *    pour rien. On repasse donc sur la palette claire à l'impression, quel que
+ *    soit le thème affiché à l'écran : le PDF d'un atelier en thème sombre doit
+ *    ressembler à celui d'un atelier en thème clair.
+ * 2. Le rail de navigation, la barre haute et la barre basse suivraient sur
+ *    chaque page. Ils ne servent à rien sur un document qu'on classe ou qu'on
+ *    envoie à son comptable.
+ */
+@media print {
+  :root,
+  [data-theme='light'],
+  [data-theme='dark'] {
+    color-scheme: light;
+
+    --color-background: #ffffff;
+    --color-foreground: #0f172a;
+    --color-border: #cbd5e1;
+    --color-input: #ffffff;
+    --color-primary: #6d4c12;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #f1f5f9;
+    --color-secondary-foreground: #6d4c12;
+    --color-muted: #f1f5f9;
+    --color-muted-foreground: #475569;
+    --color-surface: #ffffff;
+    --color-surface-foreground: #0f172a;
+    --color-accent: #6d4c12;
+    --color-danger: #a5281b;
+    --color-success: #14652f;
+    --color-warning: #8a4708;
+  }
+
+  /* La navigation et les actions d'écran ne s'impriment pas. */
+  [data-chrome='app'] {
+    display: none !important;
+  }
+
+  /* Les navigateurs suppriment fonds et couleurs par défaut ; on les garde,
+     sans quoi les pastilles de statut deviennent du texte noir sur blanc et
+     « En retard » ne se distingue plus de « Livré ». */
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Une carte coupée en deux entre deux feuilles se relit mal. */
+  article,
+  section,
+  tr {
+    break-inside: avoid;
+  }
+}

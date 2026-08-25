@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { Download } from 'lucide-react';
 import AppShell from '@/components/atelier/AppShell';
 import Rapports from '@/components/atelier/Rapports';
+import BoutonImprimer from '@/components/atelier/BoutonImprimer';
 import { NomAtelier } from '@/components/atelier/IdentiteAtelier';
 
 export const metadata: Metadata = {
@@ -17,15 +17,10 @@ export default function RapportsPage() {
     <AppShell
       titre="Rapports"
       sousTitre={<NomAtelier />}
-      actions={
-        <button
-          type="button"
-          className="border-border text-foreground hover:bg-muted flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors"
-        >
-          <Download size={14} aria-hidden />
-          Exporter PDF
-        </button>
-      }
+      // Le bouton était inerte : aucun gestionnaire, aucune destination. Il
+      // passe par la boîte d'impression du navigateur, dont « Enregistrer au
+      // format PDF » donne exactement ce que le libellé promet.
+      actions={<BoutonImprimer />}
     >
       <Rapports />
     </AppShell>
