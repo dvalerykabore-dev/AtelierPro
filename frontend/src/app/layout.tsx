@@ -29,7 +29,19 @@ export default function RootLayout({
     // suppressHydrationWarning : le script ci-dessous pose `data-theme` sur
     // <html> avant l'hydratation, donc l'attribut diffère forcément du HTML
     // rendu côté serveur. C'est voulu, et le silence est limité à cet élément.
-    <html lang="fr" className={spaceGrotesk.variable} suppressHydrationWarning>
+    //
+    // data-scroll-behavior : globals.css pose `scroll-behavior: smooth` pour
+    // les ancres de la page d'accueil. Sans cet attribut, le routeur de Next
+    // ne sait pas que le défilement est animé et le laisse s'animer aussi
+    // pendant les changements de page — on voit alors la page défiler jusqu'en
+    // haut au lieu d'y être. L'attribut lui dit de le neutraliser le temps de
+    // la navigation, puis de le rendre aux ancres.
+    <html
+      lang="fr"
+      className={spaceGrotesk.variable}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         {/*
          * Applique le thème mémorisé avant le premier pixel. Sans ce script,
