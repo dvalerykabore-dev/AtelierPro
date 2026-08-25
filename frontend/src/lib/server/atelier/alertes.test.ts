@@ -25,13 +25,25 @@ function commande(partiel: Record<string, unknown> = {}) {
   };
 }
 
-function prismaFactice(retards: unknown[], livraisons: unknown[]) {
+/**
+ * @param prefs Réglages de l'atelier « user-1 ». `null` = aucun réglage
+ *              enregistré, ce qui vaut accord — on n'attend pas d'un artisan
+ *              qu'il active ses alertes avant de les recevoir.
+ */
+function prismaFactice(retards: unknown[], livraisons: unknown[], prefs: unknown = null) {
   const findMany = vi.fn().mockResolvedValueOnce(retards).mockResolvedValueOnce(livraisons);
   const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+  const prefsFindMany = vi
+    .fn()
+    .mockResolvedValue(prefs === null ? [] : [{ userId: 'user-1', prefs }]);
   return {
-    prisma: { tailoringOrder: { findMany, updateMany } } as never,
+    prisma: {
+      tailoringOrder: { findMany, updateMany },
+      notificationPreferences: { findMany: prefsFindMany },
+    } as never,
     findMany,
     updateMany,
+    prefsFindMany,
   };
 }
 
@@ -136,5 +148,72 @@ describe('signalerEcheances — passage à vide', () => {
     expect(res).toEqual({ retards: 0, livraisons: 0, marqueesEnRetard: 0 });
     expect(mockCreate).not.toHaveBeenCalled();
     expect(updateMany).not.toHaveBeenCalled();
+  });
+});
+
+describe('signalerEcheances — respect des préférences', () => {
+  it("émet quand l'atelier n'a jamais rien réglé", async () => {
+    // Absence de ligne vaut accord : on n'attend pas d'un artisan qu'il
+    // active ses alertes avant de pouvoir les recevoir.
+    const { prisma } = prismaFactice([commande()], []);
+    const r = await signalerEcheances({ prisma, maintenant: MAINTENANT });
+    expect(r.retards).toBe(1);
+  });
+
+  it("se tait quand l'atelier a coupé les alertes de retard", async () => {
+    const { prisma } = prismaFactice([commande()], [], {
+      COMMANDE_EN_RETARD: { inApp: false },
+    });
+    const r = await signalerEcheances({ prisma, maintenant: MAINTENANT });
+    expect(r.retards).toBe(0);
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it("bascule quand même la commande en LATE malgré l'alerte coupée", async () => {
+    // Le réglage porte sur l'avertissement, pas sur le fait. Une commande est
+    // en retard qu'on veuille l'entendre ou non — sinon couper l'alerte
+    // fausserait le planning et les rapports.
+    const { prisma, updateMany } = prismaFactice([commande()], [], {
+      COMMANDE_EN_RETARD: { inApp: false },
+    });
+    const r = await signalerEcheances({ prisma, maintenant: MAINTENANT });
+    expect(updateMany).toHaveBeenCalledTimes(1);
+    expect(r.marqueesEnRetard).toBe(1);
+  });
+
+  it('couper les retards ne coupe pas les livraisons du lendemain', async () => {
+    const { prisma } = prismaFactice([], [commande()], {
+      COMMANDE_EN_RETARD: { inApp: false },
+    });
+    const r = await signalerEcheances({ prisma, maintenant: MAINTENANT });
+    expect(r.livraisons).toBe(1);
+  });
+
+  it('se tait sur les livraisons quand ce canal-là est coupé', async () => {
+    const { prisma } = prismaFactice([], [commande()], {
+      LIVRAISON_DEMAIN: { inApp: false },
+    });
+    const r = await signalerEcheances({ prisma, maintenant: MAINTENANT });
+    expect(r.livraisons).toBe(0);
+  });
+
+  it("un réglage e-mail à false ne coupe pas l'alerte interne", async () => {
+    // Les deux canaux sont indépendants. Couper l'e-mail ne doit pas faire
+    // disparaître la notification de l'écran.
+    const { prisma } = prismaFactice([commande()], [], {
+      COMMANDE_EN_RETARD: { email: false },
+    });
+    const r = await signalerEcheances({ prisma, maintenant: MAINTENANT });
+    expect(r.retards).toBe(1);
+  });
+
+  it("ne lit les préférences qu'une fois par lot", async () => {
+    // Vingt commandes en retard dans le même atelier ne doivent pas coûter
+    // vingt lectures de la même ligne.
+    const lot = [commande({ id: 'c1' }), commande({ id: 'c2' }), commande({ id: 'c3' })];
+    const { prisma, prefsFindMany } = prismaFactice(lot, []);
+    await signalerEcheances({ prisma, maintenant: MAINTENANT });
+    expect(prefsFindMany).toHaveBeenCalledTimes(1);
+    expect(prefsFindMany.mock.calls[0]?.[0]?.where.userId.in).toEqual(['user-1']);
   });
 });

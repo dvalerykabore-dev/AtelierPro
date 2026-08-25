@@ -8,6 +8,7 @@ import 'server-only';
 import type { PrismaClient } from '@prisma/client';
 import { createNotification } from '@/lib/server/notifications';
 import { commandeEnRetard, livraisonDemain } from '@/lib/server/notifications/templates';
+import { isChannelEnabled, type NotificationPrefs } from '@/lib/server/notifications/prefs-merge';
 
 export interface AlertesOptions {
   prisma: PrismaClient;
@@ -68,6 +69,14 @@ export async function signalerEcheances(opts: AlertesOptions): Promise<ResultatA
     },
   });
 
+  // Préférences de tous les ateliers concernés, en une requête plutôt qu'une
+  // par commande : un atelier qui a vingt commandes en retard ne doit pas
+  // coûter vingt lectures de la même ligne.
+  const prefsParAtelier = await chargerPreferences(
+    opts.prisma,
+    enRetard.map((c) => c.userId),
+  );
+
   let retards = 0;
   let marqueesEnRetard = 0;
   for (const c of enRetard) {
@@ -80,6 +89,13 @@ export async function signalerEcheances(opts: AlertesOptions): Promise<ResultatA
         data: { status: 'LATE' },
       });
       if (u.count > 0) marqueesEnRetard += 1;
+    }
+
+    // Le réglage ne porte que sur l'avertissement. La commande reste en retard
+    // qu'on veuille l'entendre ou non : couper l'alerte ne doit pas fausser le
+    // planning ni les rapports.
+    if (!isChannelEnabled(prefsParAtelier.get(c.userId), 'COMMANDE_EN_RETARD', 'inApp')) {
+      continue;
     }
 
     const cree = await createNotification(
@@ -111,8 +127,17 @@ export async function signalerEcheances(opts: AlertesOptions): Promise<ResultatA
     },
   });
 
+  const prefsLivraison = await chargerPreferences(
+    opts.prisma,
+    demainDues.map((c) => c.userId),
+  );
+
   let livraisons = 0;
   for (const c of demainDues) {
+    if (!isChannelEnabled(prefsLivraison.get(c.userId), 'LIVRAISON_DEMAIN', 'inApp')) {
+      continue;
+    }
+
     const cree = await createNotification(
       opts.prisma,
       livraisonDemain({
@@ -128,4 +153,26 @@ export async function signalerEcheances(opts: AlertesOptions): Promise<ResultatA
   }
 
   return { retards, livraisons, marqueesEnRetard };
+}
+
+/**
+ * Préférences de notification, par atelier, en une seule lecture.
+ *
+ * Un atelier absent de la table n'a jamais rien réglé : `isChannelEnabled`
+ * traite alors l'absence comme un accord, ce qui est le bon défaut — on
+ * n'attend pas d'un artisan qu'il active ses alertes avant de les recevoir.
+ */
+async function chargerPreferences(
+  prisma: PrismaClient,
+  userIds: string[],
+): Promise<Map<string, NotificationPrefs | null>> {
+  const uniques = [...new Set(userIds)];
+  if (uniques.length === 0) return new Map();
+
+  const lignes = await prisma.notificationPreferences.findMany({
+    where: { userId: { in: uniques } },
+    select: { userId: true, prefs: true },
+  });
+
+  return new Map(lignes.map((l) => [l.userId, l.prefs as NotificationPrefs | null]));
 }

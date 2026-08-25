@@ -22,6 +22,7 @@ import { Field } from '@/components/ui/Field';
 import { useClients } from '@/lib/useClients';
 import { useCommandes } from '@/lib/useCommandes';
 import { useReleveMesures } from '@/lib/useReleveMesures';
+import { numeroWhatsApp } from '@/lib/commande-fiche';
 import {
   nombreDeChamps,
   paletteDe,
@@ -97,6 +98,7 @@ export default function CarnetClients() {
 
   const commandesDuClient = selectionne ? (parClient.get(selectionne.nom) ?? []) : [];
   const bilanClient = bilan(commandesDuClient);
+  const whatsapp = numeroWhatsApp(selectionne?.telephone);
   const commandeEnCours = commandesDuClient.find((c) => c.statut !== 'Livré');
 
   // Dernier relevé du client sélectionné. Hors session les identifiants sont
@@ -379,13 +381,31 @@ export default function CarnetClients() {
           </div>
 
           <div className="flex flex-shrink-0 items-center gap-2">
-            <button
-              type="button"
-              className="border-border text-foreground hover:bg-muted flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors"
-            >
-              <MessageCircle size={14} aria-hidden />
-              WhatsApp
-            </button>
+            {/* Le bouton n'avait aucun gestionnaire. Même logique que sur la
+                fiche de commande : sans numéro exploitable, wa.me ouvrirait une
+                conversation vide, alors on le dit plutôt que de le laisser
+                échouer une fois cliqué. */}
+            {whatsapp ? (
+              <a
+                href={`https://wa.me/${whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-border text-foreground hover:bg-muted flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors"
+              >
+                <MessageCircle size={14} aria-hidden />
+                WhatsApp
+              </a>
+            ) : (
+              <button
+                type="button"
+                disabled
+                title="Aucun numéro enregistré pour ce client."
+                className="border-border text-muted-foreground flex cursor-not-allowed items-center gap-2 rounded-md border px-3 py-2 text-sm opacity-50"
+              >
+                <MessageCircle size={14} aria-hidden />
+                Pas de numéro
+              </button>
+            )}
             <Link
               href="/commandes/nouvelle"
               className="bg-primary text-primary-foreground hover:bg-accent flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors"

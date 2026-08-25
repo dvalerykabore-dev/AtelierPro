@@ -54,7 +54,11 @@ beforeEach(() => {
   prismaMock.customer.findFirst.mockResolvedValue({ id: 'cli-1' } as never);
   // Aucune commande antérieure : la numérotation démarre à 1.
   prismaMock.tailoringOrder.findFirst.mockResolvedValue(null as never);
-  prismaMock.tailoringOrder.create.mockResolvedValue({ id: 'cmd-1', sequence: 12 } as never);
+  prismaMock.tailoringOrder.create.mockResolvedValue({
+    id: 'cmd-1',
+    sequence: 12,
+    customer: { id: 'cli-1', name: 'Awa Traoré', gender: 'FEMME' },
+  } as never);
   prismaMock.tailoringOrder.findUniqueOrThrow.mockResolvedValue(commandeRendue as never);
   prismaMock.tailoringOrder.update.mockResolvedValue(commandeRendue as never);
   prismaMock.cashMovement.create.mockResolvedValue({ id: 'mv-1' } as never);
@@ -144,10 +148,12 @@ describe('POST /api/commandes — l’acompte entre en caisse', () => {
     expect(data).not.toHaveProperty('category');
   });
 
-  it('porte le numéro de commande dans le libellé', async () => {
+  it('porte le numéro de commande et le nom du client dans le libellé', async () => {
+    // Même forme que les écritures de reprise : le journal de caisse se lit
+    // seul, sans aller rechercher à quelle commande correspond le numéro.
     await POST(makePost(COMMANDE_VALIDE));
     const data = prismaMock.cashMovement.create.mock.calls[0]?.[0]?.data;
-    expect(data?.label).toBe('Acompte commande #012');
+    expect(data?.label).toBe('Acompte commande #012 — Awa Traoré');
   });
 
   it('retient le mode de règlement demandé', async () => {

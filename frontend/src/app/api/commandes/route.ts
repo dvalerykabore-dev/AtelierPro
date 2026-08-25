@@ -188,7 +188,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 // l'acompte est versé au moment où la commande est prise.
                 occurredAt: aujourdhuiUtc(),
                 method: donnees.depositMethod ?? 'ESPECES',
-                label: `Acompte commande #${String(creee.sequence).padStart(3, '0')}`,
+                // Le nom du client fait partie du libellé, comme dans les
+                // écritures de reprise : le journal de caisse se lit seul, sans
+                // aller rechercher à quelle commande correspond le numéro.
+                label: `Acompte commande #${String(creee.sequence).padStart(3, '0')} — ${creee.customer.name}`,
                 tailoringOrderId: creee.id,
                 // `category` reste nul : une recette d'atelier a une commande
                 // pour origine, pas un poste de dépense.

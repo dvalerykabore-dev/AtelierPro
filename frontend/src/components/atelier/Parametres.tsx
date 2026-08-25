@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Moon, Pencil, Plus, Sun, Trash2, UserPlus } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
@@ -15,7 +16,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { THEMES } from '@/lib/theme';
 import { useArtisans } from '@/lib/useArtisans';
 import { useTarifs, type Tarif } from '@/lib/useTarifs';
-import { atelier, preferencesNotifications } from '@/lib/mock/atelier';
+import { usePreferencesNotifications } from '@/lib/usePreferencesNotifications';
+import { atelier } from '@/lib/mock/atelier';
 import { cn, formatPrice } from '@/lib/utils';
 
 const ONGLETS = ['Atelier', 'Équipe', 'Tarification', 'Notifications', 'Compte'] as const;
@@ -169,7 +171,17 @@ export default function Parametres() {
   } = useArtisans();
 
   const [onglet, setOnglet] = useState<Onglet>('Atelier');
-  const [preferences, setPreferences] = useState(preferencesNotifications);
+
+  const {
+    alertes,
+    estActif: alerteActive,
+    basculer: basculerAlerte,
+    chargement: chargementAlertes,
+    session: sessionAlertes,
+    erreur: erreurAlertes,
+  } = usePreferencesNotifications();
+  const [echecAlerte, setEchecAlerte] = useState<string | null>(null);
+
   const {
     tarifs,
     source: sourceTarifs,
@@ -222,8 +234,9 @@ export default function Parametres() {
     if (probleme) setEchecEquipe(probleme);
   }
 
-  function basculerPreference(id: string) {
-    setPreferences((prec) => prec.map((p) => (p.id === id ? { ...p, active: !p.active } : p)));
+  /** Comme pour l'équipe : bascule optimiste, le hook revient en arrière si le serveur refuse. */
+  async function basculerRappel(type: string) {
+    setEchecAlerte(await basculerAlerte(type));
   }
 
   function ouvrirTarif(t?: Tarif) {
@@ -458,33 +471,62 @@ export default function Parametres() {
           </section>
         )}
 
-        {/* ---------- Notifications ---------- */}
+        {/*
+          ---------- Notifications ----------
+          La liste précédente comptait cinq réglages, dont trois pour des envois
+          qui n'existent nulle part dans le code — SMS au client, alerte de
+          saturation, récapitulatif du lundi. On n'énumère que les deux alertes
+          que le passage quotidien émet vraiment : un interrupteur pour un envoi
+          qui n'a jamais lieu se coupe sans rien changer, et c'est en cas de
+          panne qu'on s'en aperçoit.
+        */}
         {onglet === 'Notifications' && (
           <section className="bg-surface border-border overflow-hidden rounded-lg border">
             <div className="border-border border-b px-5 py-3">
               <h2 className="font-headings text-foreground text-sm font-bold">
                 Rappels automatiques
               </h2>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Relevés chaque matin et déposés dans vos notifications.
+              </p>
             </div>
 
-            <ul>
-              {preferences.map((p) => (
-                <li
-                  key={p.id}
-                  className="border-border flex items-center gap-4 border-b px-5 py-3.5"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="text-foreground text-sm font-medium">{p.label}</div>
-                    <div className="text-muted-foreground text-xs">{p.description}</div>
-                  </div>
-                  <Interrupteur
-                    actif={p.active}
-                    onChange={() => basculerPreference(p.id)}
-                    label={p.label}
-                  />
-                </li>
-              ))}
-            </ul>
+            {chargementAlertes && (
+              <p className="text-muted-foreground px-5 py-6 text-sm">Chargement des réglages…</p>
+            )}
+
+            {!chargementAlertes && !sessionAlertes && (
+              <p className="text-muted-foreground px-5 py-6 text-sm">
+                Connectez-vous pour régler vos rappels.
+              </p>
+            )}
+
+            {(erreurAlertes ?? echecAlerte) && (
+              <p role="alert" className="text-danger border-border border-b px-5 py-3 text-sm">
+                {erreurAlertes ?? echecAlerte}
+              </p>
+            )}
+
+            {!chargementAlertes && sessionAlertes && (
+              <ul>
+                {alertes.map((a) => (
+                  <li
+                    key={a.type}
+                    className="border-border flex items-center gap-4 border-b px-5 py-3.5"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="text-foreground text-sm font-medium">{a.label}</div>
+                      <div className="text-muted-foreground text-xs">{a.description}</div>
+                    </div>
+                    <Interrupteur
+                      actif={alerteActive(a.type)}
+                      onChange={() => void basculerRappel(a.type)}
+                      label={a.label}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
         )}
 
@@ -549,12 +591,19 @@ export default function Parametres() {
             </div>
 
             <div className="border-border mt-5 flex flex-wrap gap-2 border-t pt-5">
-              <button
-                type="button"
+              {/*
+                Le bouton n'avait aucun gestionnaire : cliquer dessus ne faisait
+                rien, ce qui se lit comme une panne. L'écran /settings porte déjà
+                les deux cas — définir un mot de passe pour un compte ouvert via
+                Google, le changer pour les autres — plutôt que d'en refaire un
+                troisième formulaire ici.
+              */}
+              <Link
+                href="/settings"
                 className="border-border text-foreground hover:bg-muted rounded-md border px-3 py-2 text-sm transition-colors"
               >
                 Changer le mot de passe
-              </button>
+              </Link>
               <Button variante="danger" onClick={seDeconnecter} disabled={loggingOut}>
                 {loggingOut ? 'Déconnexion…' : 'Se déconnecter'}
               </Button>

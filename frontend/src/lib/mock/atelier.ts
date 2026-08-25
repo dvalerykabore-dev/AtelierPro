@@ -563,46 +563,6 @@ export const tarifs: Tarif[] = [
   { tenue: 'Chemise sur mesure', prix: 12000, unite: 'façon' },
 ];
 
-export interface PreferenceNotification {
-  id: string;
-  label: string;
-  description: string;
-  active: boolean;
-}
-
-export const preferencesNotifications: PreferenceNotification[] = [
-  {
-    id: 'p1',
-    label: 'Rappel d’essayage',
-    description: 'SMS au client 24 h avant l’essayage prévu.',
-    active: true,
-  },
-  {
-    id: 'p2',
-    label: 'Rappel de livraison',
-    description: 'SMS au client la veille de la livraison.',
-    active: true,
-  },
-  {
-    id: 'p3',
-    label: 'Alerte retard',
-    description: 'Notification interne dès qu’une commande dépasse son échéance.',
-    active: true,
-  },
-  {
-    id: 'p4',
-    label: 'Alerte saturation',
-    description: 'Prévenir lorsque l’atelier atteint 100 % de sa capacité du jour.',
-    active: false,
-  },
-  {
-    id: 'p5',
-    label: 'Récapitulatif hebdomadaire',
-    description: 'Résumé du chiffre d’affaires et des commandes chaque lundi.',
-    active: false,
-  },
-];
-
 // ---------------------------------------------------------------------------
 // Notifications
 // ---------------------------------------------------------------------------
