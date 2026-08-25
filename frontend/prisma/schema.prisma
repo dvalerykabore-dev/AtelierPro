@@ -25,19 +25,19 @@ model User {
 
   // Optional display name — populated from OAuth profile on first sign-in.
   // Email/password users can fill it later via /api/auth/me PATCH (future).
-  name              String?
+  name      String?
   // Optional avatar URL — populated from OAuth profile on first sign-in.
-  avatarUrl         String?
+  avatarUrl String?
   // App-wide role. USER is the default; ADMIN unlocks /admin back-office;
   // SUPERADMIN can promote/demote other admins. Bootstrap an initial
   // SUPERADMIN via `pnpm db:make-superadmin <email>` (see scripts).
-  role              String    @default("USER") // USER | ADMIN | SUPERADMIN
+  role      String   @default("USER") // USER | ADMIN | SUPERADMIN
   // Account status. ACTIVE = login + refresh allowed; SUSPENDED = both
   // refused with 403 ACCOUNT_SUSPENDED. Mutated via /api/admin/users/[id]/status
   // (ADMIN can suspend; only SUPERADMIN can restore).
-  status            String    @default("ACTIVE") // ACTIVE | SUSPENDED
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  status    String   @default("ACTIVE") // ACTIVE | SUSPENDED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   verificationCodes VerificationCode[]
   uploads           FileUpload[]
@@ -57,8 +57,10 @@ model User {
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
   // on their domain models.
-  ownedOrganizations Organization[]      @relation("OrgOwner")
+  ownedOrganizations Organization[]       @relation("OrgOwner")
   memberships        OrganizationMember[] @relation("OrgMembership")
+  priceItems         PriceItem[]
+  orderNotes         OrderNote[]
 
   @@index([email])
   @@index([role])
@@ -106,14 +108,14 @@ model AdminAction {
 // used as a stable URL segment.
 // ───────────────────────────────────────────────────────────────────────
 model Organization {
-  id        String   @id @default(cuid())
-  slug      String   @unique
+  id        String               @id @default(cuid())
+  slug      String               @unique
   name      String
   ownerId   String
-  owner     User     @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  owner     User                 @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   members   OrganizationMember[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
 
   @@index([ownerId])
 }
@@ -284,21 +286,21 @@ model WebhookLog {
 // at the call site — the schema is currency-agnostic.
 // ───────────────────────────────────────────────────────────────────────
 model Order {
-  id              String    @id @default(cuid())
-  userId          String? // nullable — guest checkout supported
-  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  amount          Int // gross amount, smallest unit
-  currency        String    @default("XOF") // ISO 4217
-  status          String    @default("PENDING") // PENDING | PAID | EXPIRED | FAILED | REFUNDED
-  customerEmail   String?
-  customerPhone   String?
-  customerName    String?
-  metadata        Json? // app-specific fields
+  id            String  @id @default(cuid())
+  userId        String? // nullable — guest checkout supported
+  user          User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  amount        Int // gross amount, smallest unit
+  currency      String  @default("XOF") // ISO 4217
+  status        String  @default("PENDING") // PENDING | PAID | EXPIRED | FAILED | REFUNDED
+  customerEmail String?
+  customerPhone String?
+  customerName  String?
+  metadata      Json? // app-specific fields
 
   // Stripe-grade idempotency. Required header on POST /api/orders; replay
   // with same value returns the original Order row instead of double-charging.
   // Nullable so existing rows pre-migration don't break the @unique constraint.
-  idempotencyKey  String?   @unique
+  idempotencyKey String? @unique
 
   // Provider reference
   provider         String // e.g. "bictorys"
@@ -322,12 +324,12 @@ model Order {
 }
 
 model Withdrawal {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user        User   @relation(fields: [userId], references: [id], onDelete: Restrict)
   amount      Int // requested amount, smallest unit
-  currency    String   @default("XOF")
-  status      String   @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED | CANCELLED
+  currency    String @default("XOF")
+  status      String @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED | CANCELLED
   destination Json // { method: "WAVE" | "ORANGE_MONEY" | ..., phone: "+221...", accountName?: "..." }
 
   // Provider reference
@@ -358,8 +360,8 @@ model Customer {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  name  String
-  phone String?
+  name   String
+  phone  String?
   // FEMALE | MALE — détermine la palette de mesures présentée (17 ou 23 champs).
   gender String
   loyal  Boolean @default(false)
@@ -443,6 +445,9 @@ model TailoringOrder {
   // le journal fait foi, le champ n'est qu'un raccourci de lecture pour les
   // écrans qui affichent une commande sans charger ses mouvements.
   cashMovements CashMovement[]
+  /// Notes datées de l'atelier. Distinct de `notes` ci-dessus, qui est la
+  /// consigne unique saisie à la création de la commande.
+  atelierNotes  OrderNote[]
 
   @@unique([userId, sequence])
   @@index([userId, createdAt])
@@ -592,4 +597,58 @@ model RecurringCharge {
   updatedAt DateTime @updatedAt
 
   @@index([userId, active])
+}
+
+/// Grille tarifaire de l'atelier — le prix d'une façon, par type de tenue.
+///
+/// Était une constante partagée : tous les ateliers facturaient les mêmes prix,
+/// et toute modification disparaissait au rechargement.
+model PriceItem {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Type de tenue — « Boubou bazin brodé ». Unique par atelier : deux lignes
+  /// au même nom rendraient le choix ambigu dans le formulaire de commande.
+  garment String
+
+  /// Prix en francs CFA — entier, la devise n'a pas de décimales.
+  price Int
+
+  /// Ce que le prix couvre : « façon » quand le client apporte son tissu,
+  /// « tout compris » quand l'atelier le fournit. La distinction change le
+  /// montant du simple au double et doit rester lisible sur la grille.
+  unit String @default("façon")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, garment])
+  @@index([userId])
+}
+
+/// Note d'atelier attachée à une commande.
+///
+/// Les notes vivaient dans l'état du composant : un artisan écrivait
+/// « manches plus courtes », fermait l'onglet, et l'information n'existait
+/// plus — après que le formulaire eut confirmé l'enregistrement.
+model OrderNote {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Commande commentée. `Cascade` : supprimer une commande retire ses notes,
+  /// qui n'ont pas de sens séparées de leur objet.
+  tailoringOrderId String
+  tailoringOrder   TailoringOrder @relation(fields: [tailoringOrderId], references: [id], onDelete: Cascade)
+
+  /// Nom affiché de l'auteur au moment de l'écriture, figé.
+  /// Renommer un atelier ne doit pas réattribuer ses anciennes notes.
+  author String
+
+  body String
+
+  createdAt DateTime @default(now())
+
+  @@index([tailoringOrderId, createdAt])
 }

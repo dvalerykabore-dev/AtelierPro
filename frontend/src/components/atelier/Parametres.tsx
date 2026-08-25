@@ -14,12 +14,8 @@ import { messageErreur } from '@/lib/message-erreur';
 import { useTheme } from '@/contexts/ThemeContext';
 import { THEMES } from '@/lib/theme';
 import { useArtisans } from '@/lib/useArtisans';
-import {
-  atelier,
-  preferencesNotifications,
-  tarifs as tarifsInitiaux,
-  type Tarif,
-} from '@/lib/mock/atelier';
+import { useTarifs, type Tarif } from '@/lib/useTarifs';
+import { atelier, preferencesNotifications } from '@/lib/mock/atelier';
 import { cn, formatPrice } from '@/lib/utils';
 
 const ONGLETS = ['Atelier', 'Équipe', 'Tarification', 'Notifications', 'Compte'] as const;
@@ -174,7 +170,15 @@ export default function Parametres() {
 
   const [onglet, setOnglet] = useState<Onglet>('Atelier');
   const [preferences, setPreferences] = useState(preferencesNotifications);
-  const [tarifs, setTarifs] = useState<Tarif[]>(tarifsInitiaux);
+  const {
+    tarifs,
+    source: sourceTarifs,
+    chargement: chargementTarifs,
+    ajouter: ajouterTarif,
+    modifier: modifierTarif,
+    supprimer: retirerTarif,
+  } = useTarifs();
+  const [echecTarif, setEchecTarif] = useState<string | null>(null);
 
   // Formulaire de tarif — création et édition partagent la même fenêtre.
   const [tarifOuvert, setTarifOuvert] = useState(false);
@@ -226,23 +230,28 @@ export default function Parametres() {
     setTarifEdite(t ?? null);
     setNomTenue(t?.tenue ?? '');
     setPrix(t ? String(t.prix) : '');
+    setEchecTarif(null);
     setTarifOuvert(true);
   }
 
-  function enregistrerTarif(e: FormEvent) {
+  async function enregistrerTarif(e: FormEvent) {
     e.preventDefault();
     const montant = Number.parseInt(prix, 10);
     if (!nomTenue.trim() || Number.isNaN(montant)) return;
 
-    const ligne: Tarif = { tenue: nomTenue.trim(), prix: montant, unite: 'façon' };
-    setTarifs((prec) =>
-      tarifEdite ? prec.map((t) => (t.tenue === tarifEdite.tenue ? ligne : t)) : [...prec, ligne],
-    );
-    setTarifOuvert(false);
+    const entree = { tenue: nomTenue.trim(), prix: montant, unite: 'façon' };
+    // La fenêtre ne se ferme qu'en cas de succès : la refermer sur un échec
+    // ferait croire le tarif enregistré, et il faudrait tout retaper.
+    const message = tarifEdite
+      ? await modifierTarif(tarifEdite.id, entree)
+      : await ajouterTarif(entree);
+    if (message) setEchecTarif(message);
+    else setTarifOuvert(false);
   }
 
-  function supprimerTarif(tenue: string) {
-    setTarifs((prec) => prec.filter((t) => t.tenue !== tenue));
+  async function supprimerTarif(t: Tarif) {
+    const message = await retirerTarif(t.id);
+    if (message) setEchecTarif(message);
   }
 
   async function seDeconnecter() {
@@ -394,12 +403,32 @@ export default function Parametres() {
               </button>
             </div>
 
+            {chargementTarifs && (
+              <p className="text-muted-foreground px-5 py-6 text-sm">Chargement de la grille…</p>
+            )}
+
+            {!chargementTarifs && sourceTarifs === 'demonstration' && (
+              <p className="text-muted-foreground border-border border-b px-5 py-3 text-xs">
+                Grille d’exemple — connectez-vous pour composer la vôtre.
+              </p>
+            )}
+
+            {!chargementTarifs && sourceTarifs === 'serveur' && tarifs.length === 0 && (
+              <p className="text-muted-foreground px-5 py-6 text-sm">
+                Aucun tarif enregistré. Ajoutez vos prix de façon : ils seront proposés à chaque
+                nouvelle commande.
+              </p>
+            )}
+
+            {echecTarif && !tarifOuvert && (
+              <p role="alert" className="text-danger border-border border-b px-5 py-3 text-sm">
+                {echecTarif}
+              </p>
+            )}
+
             <ul>
               {tarifs.map((t) => (
-                <li
-                  key={t.tenue}
-                  className="border-border flex items-center gap-3 border-b px-5 py-3"
-                >
+                <li key={t.id} className="border-border flex items-center gap-3 border-b px-5 py-3">
                   <div className="min-w-0 flex-1">
                     <div className="text-foreground truncate text-sm font-medium">{t.tenue}</div>
                     <div className="text-muted-foreground text-xs">Prix de {t.unite}</div>
@@ -417,7 +446,7 @@ export default function Parametres() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => supprimerTarif(t.tenue)}
+                    onClick={() => void supprimerTarif(t)}
                     className="text-muted-foreground hover:text-danger"
                   >
                     <Trash2 size={13} aria-hidden />
@@ -551,7 +580,11 @@ export default function Parametres() {
           </>
         }
       >
-        <form id="formulaire-tarif" onSubmit={enregistrerTarif} className="flex flex-col gap-4">
+        <form
+          id="formulaire-tarif"
+          onSubmit={(e) => void enregistrerTarif(e)}
+          className="flex flex-col gap-4"
+        >
           <Field
             label="Type de tenue"
             required
@@ -571,6 +604,11 @@ export default function Parametres() {
             value={prix}
             onChange={(e) => setPrix(e.target.value)}
           />
+          {echecTarif && (
+            <p role="alert" className="text-danger text-sm">
+              {echecTarif}
+            </p>
+          )}
         </form>
       </Modal>
 

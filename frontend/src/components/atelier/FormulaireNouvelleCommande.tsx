@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -18,13 +18,13 @@ import { api, ApiError } from '@/lib/api';
 import { useClients } from '@/lib/useClients';
 import { useArtisans } from '@/lib/useArtisans';
 import { MODES, type ModeCle } from '@/lib/tresorerie';
+import { useTarifs } from '@/lib/useTarifs';
 import {
   etapeCourante,
   etapesNouvelleCommande,
   livraisonEstimee,
   nombreDeChamps,
   paletteDe,
-  tarifs,
 } from '@/lib/mock/atelier';
 import { cn, formatPrice } from '@/lib/utils';
 
@@ -55,7 +55,11 @@ export default function FormulaireNouvelleCommande() {
   const surServeur = source === 'serveur';
 
   const [clientId, setClientId] = useState<string | null>(null);
-  const [typeTenue, setTypeTenue] = useState<string>(tarifs[0]!.tenue);
+  const { tarifs, chargement: chargementTarifs } = useTarifs();
+  // Vide au premier rendu : la grille vient du serveur. Le premier tarif reçu
+  // est retenu par l'effet ci-dessous plutôt que par une valeur initiale, qui
+  // se figerait sur une liste encore absente.
+  const [typeTenue, setTypeTenue] = useState<string>('');
   const [tissu, setTissu] = useState('Wax hollandais — 6 yards');
   const [couleur, setCouleur] = useState<string>(COULEURS[0]!.label);
   const [assigne, setAssigne] = useState<string>('');
@@ -73,22 +77,35 @@ export default function FormulaireNouvelleCommande() {
 
   const client = clients.find((c) => c.id === clientId) ?? clients[0];
   const artisan = equipe.find((a) => a.id === assigne) ?? equipe[0];
-  const tarif = tarifs.find((t) => t.tenue === typeTenue) ?? tarifs[0]!;
+  const tarif = tarifs.find((t) => t.tenue === typeTenue) ?? tarifs[0] ?? null;
+  const prixTenue = tarif?.prix ?? 0;
+
+  // La grille arrive après le premier rendu : on retient sa première ligne dès
+  // qu'elle est là, une seule fois. La condition sur `typeTenue` empêche
+  // d'écraser un choix déjà fait par l'utilisateur.
+  useEffect(() => {
+    if (!typeTenue && tarifs[0]) setTypeTenue(tarifs[0].tenue);
+  }, [tarifs, typeTenue]);
   const palette = paletteDe(client?.genre ?? 'Femme');
   const couleurChoisie = COULEURS.find((c) => c.label === couleur) ?? COULEURS[0]!;
 
   const acompteVerse = Number.parseInt(acompte, 10) || 0;
-  const resteAPayer = Math.max(0, tarif.prix - acompteVerse);
+  const resteAPayer = Math.max(0, prixTenue - acompteVerse);
 
   /** L'artisan est-il déjà saturé aujourd'hui ? Sans équipe, la question ne se pose pas. */
   const surcharge = artisan ? artisan.heuresAujourdhui >= artisan.capacite : false;
 
   const problemes = useMemo(() => {
     const liste: string[] = [];
+    // Sans grille, aucun prix : mieux vaut le dire ici que d'enregistrer une
+    // commande à 0 F qu'il faudrait retrouver et corriger.
+    if (!chargementTarifs && !tarif) {
+      liste.push('Aucun tarif dans votre grille — ajoutez-en un dans Paramètres › Tarification.');
+    }
     if (!tissu.trim()) liste.push('Le tissu n’est pas renseigné.');
-    if (acompteVerse > tarif.prix) liste.push('L’acompte dépasse le montant de la commande.');
+    if (acompteVerse > prixTenue) liste.push('L’acompte dépasse le montant de la commande.');
     return liste;
-  }, [tissu, acompteVerse, tarif.prix]);
+  }, [tissu, acompteVerse, prixTenue, tarif, chargementTarifs]);
 
   async function confirmer(e: FormEvent) {
     e.preventDefault();
@@ -113,7 +130,7 @@ export default function FormulaireNouvelleCommande() {
           garment: typeTenue,
           fabric: tissu,
           color: couleur,
-          priceAmount: tarif.prix,
+          priceAmount: prixTenue,
           depositAmount: acompteVerse,
           depositMethod: acompteVerse > 0 ? modeAcompte : undefined,
           assignee: artisan?.initiales ?? undefined,
@@ -236,7 +253,7 @@ export default function FormulaireNouvelleCommande() {
                 label="Type de tenue"
                 value={typeTenue}
                 onChange={(e) => modifier(setTypeTenue)(e.target.value)}
-                aide={`Tarif de façon : ${formatPrice(tarif.prix, 'F')}`}
+                aide={`Tarif de façon : ${formatPrice(prixTenue, 'F')}`}
               >
                 {tarifs.map((t) => (
                   <option key={t.tenue} value={t.tenue}>
@@ -432,8 +449,10 @@ export default function FormulaireNouvelleCommande() {
             <h2 className="font-headings text-foreground mb-3 text-sm font-bold">Tarification</h2>
             <dl className="flex flex-col gap-2">
               <div className="flex items-center justify-between gap-3 text-xs">
-                <dt className="text-muted-foreground">Façon {tarif.tenue.toLowerCase()}</dt>
-                <dd className="text-foreground">{formatPrice(tarif.prix, 'F')}</dd>
+                <dt className="text-muted-foreground">
+                  Façon {(tarif?.tenue ?? '').toLowerCase()}
+                </dt>
+                <dd className="text-foreground">{formatPrice(prixTenue, 'F')}</dd>
               </div>
               <div className="flex items-center justify-between gap-3 text-xs">
                 <dt className="text-muted-foreground">Acompte versé</dt>
@@ -471,8 +490,8 @@ export default function FormulaireNouvelleCommande() {
                 <p className="text-success flex items-start gap-2 text-sm">
                   <CheckCircle2 size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
                   {reference
-                    ? `Commande ${reference} enregistrée pour ${client.nom} — ${tarif.tenue}.`
-                    : `Commande confirmée pour ${client.nom} — ${tarif.tenue}, livraison ${livraisonEstimee.date}.`}
+                    ? `Commande ${reference} enregistrée pour ${client.nom} — ${tarif?.tenue ?? ''}.`
+                    : `Commande confirmée pour ${client.nom} — ${tarif?.tenue ?? ''}, livraison ${livraisonEstimee.date}.`}
                 </p>
                 {/* Sans numéro, c'est que rien n'est parti en base : on le dit
                     plutôt que de laisser croire à un enregistrement. */}

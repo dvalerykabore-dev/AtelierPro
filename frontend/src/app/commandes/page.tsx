@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ChevronsUpDown, Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import AppShell from '@/components/atelier/AppShell';
 import ListeCommandes from '@/components/atelier/ListeCommandes';
 
@@ -13,16 +13,18 @@ export default function CommandesPage() {
     <AppShell
       titre="Commandes"
       sousTitre="Suivi de confection"
+      /*
+       * Un champ « Rechercher… » et un sélecteur « Livraison » figuraient ici,
+       * en <span> stylés comme des contrôles : bordure, fond et rembourrage
+       * d'un champ de saisie, mais inertes. La vraie recherche vit dans
+       * ListeCommandes, juste en dessous — l'utilisateur cliquait donc
+       * d'abord sur le leurre et concluait qu'elle était cassée.
+       *
+       * Retirés plutôt que réimplémentés : dupliquer la recherche en tête
+       * poserait la question de laquelle fait autorité.
+       */
       actions={
         <>
-          <span className="bg-input border-border flex w-56 items-center gap-2 rounded-md border px-3 py-2">
-            <Search size={13} className="text-muted-foreground" aria-hidden />
-            <span className="text-muted-foreground text-sm">Rechercher…</span>
-          </span>
-          <span className="bg-input border-border flex w-36 items-center justify-between rounded-md border px-3 py-2">
-            <span className="text-foreground text-sm">Livraison</span>
-            <ChevronsUpDown size={13} className="text-muted-foreground" aria-hidden />
-          </span>
           <Link
             href="/commandes/nouvelle"
             className="bg-primary text-primary-foreground hover:bg-accent flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors"

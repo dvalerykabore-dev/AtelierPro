@@ -354,7 +354,7 @@ export default function FicheCommande({ id }: { id: string }) {
                 </ol>
               </section>
 
-              <NotesAtelier />
+              <NotesAtelier commandeId={commande.id} />
             </div>
 
             {/* ---- Colonne latérale ---- */}
