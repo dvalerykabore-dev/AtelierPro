@@ -16,6 +16,8 @@ import { requireAuth } from '@/lib/server/middleware';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { log } from '@/lib/server/observability/log';
 import { prisma } from '@/lib/server/prisma';
+import { aujourdhuiUtc, recalerAcompte } from '@/lib/server/tresorerie/journal';
+import { CLES_MODES } from '@/lib/tresorerie';
 
 const STATUTS = ['IN_PROGRESS', 'FITTING', 'DELIVERY', 'LATE', 'DELIVERED'] as const;
 
@@ -28,6 +30,11 @@ const creationSchema = z.object({
   // Entiers : le franc CFA n'a pas de décimales (invariant du CLAUDE.md).
   priceAmount: z.number().int().nonnegative(),
   depositAmount: z.number().int().nonnegative().optional(),
+  /**
+   * Mode de règlement de l'acompte. Facultatif pour ne pas casser les appels
+   * sans acompte ; `ESPECES` par défaut, qui est le cas courant en atelier.
+   */
+  depositMethod: z.enum(CLES_MODES).optional(),
   assignee: z.string().trim().max(80).optional(),
   dueDate: z.string().datetime().optional(),
   notes: z.string().trim().max(2000).optional(),
@@ -140,24 +147,61 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       });
 
       try {
-        const commande = await prisma.tailoringOrder.create({
-          data: {
-            userId: auth.user.sub,
-            customerId: donnees.customerId,
-            sequence: (derniere?.sequence ?? 0) + 1,
-            garment: donnees.garment,
-            priceAmount: donnees.priceAmount,
-            ...(donnees.fabric ? { fabric: donnees.fabric } : {}),
-            ...(donnees.color ? { color: donnees.color } : {}),
-            ...(donnees.status ? { status: donnees.status } : {}),
-            ...(donnees.depositAmount === undefined
-              ? {}
-              : { depositAmount: donnees.depositAmount }),
-            ...(donnees.assignee ? { assignee: donnees.assignee } : {}),
-            ...(donnees.dueDate ? { dueDate: new Date(donnees.dueDate) } : {}),
-            ...(donnees.notes ? { notes: donnees.notes } : {}),
-          },
-          select: SELECTION,
+        // Transaction : l'acompte doit exister comme mouvement de caisse, pas
+        // seulement comme nombre sur la commande. `CashMovement` est la source
+        // de vérité de l'argent de l'atelier ; `depositAmount` n'en est qu'un
+        // raccourci de lecture, recalculé par `recalerAcompte`. Écrit à la
+        // main, il faisait dire à la fiche « 20 000 F encaissés » pendant que la
+        // caisse affichait 0 F de recettes, sans moyen de savoir qui avait tort.
+        //
+        // Elle est courte — trois écritures — et son coût est assumé malgré la
+        // connexion unique de Neon : une collision de numéro annule proprement
+        // le mouvement avec la commande, là où deux requêtes séparées
+        // laisseraient un encaissement orphelin.
+        const commande = await prisma.$transaction(async (tx) => {
+          const creee = await tx.tailoringOrder.create({
+            data: {
+              userId: auth.user.sub,
+              customerId: donnees.customerId,
+              sequence: (derniere?.sequence ?? 0) + 1,
+              garment: donnees.garment,
+              priceAmount: donnees.priceAmount,
+              ...(donnees.fabric ? { fabric: donnees.fabric } : {}),
+              ...(donnees.color ? { color: donnees.color } : {}),
+              ...(donnees.status ? { status: donnees.status } : {}),
+              ...(donnees.assignee ? { assignee: donnees.assignee } : {}),
+              ...(donnees.dueDate ? { dueDate: new Date(donnees.dueDate) } : {}),
+              ...(donnees.notes ? { notes: donnees.notes } : {}),
+            },
+            select: { ...SELECTION, sequence: true },
+          });
+
+          // Un acompte nul n'est pas un encaissement : une ligne à 0 F
+          // encombrerait le journal sans rien apprendre.
+          if (donnees.depositAmount && donnees.depositAmount > 0) {
+            await tx.cashMovement.create({
+              data: {
+                userId: auth.user.sub,
+                direction: 'IN',
+                amount: donnees.depositAmount,
+                // Le jour où l'argent passe de main en main, c'est aujourd'hui :
+                // l'acompte est versé au moment où la commande est prise.
+                occurredAt: aujourdhuiUtc(),
+                method: donnees.depositMethod ?? 'ESPECES',
+                label: `Acompte commande #${String(creee.sequence).padStart(3, '0')}`,
+                tailoringOrderId: creee.id,
+                // `category` reste nul : une recette d'atelier a une commande
+                // pour origine, pas un poste de dépense.
+              },
+            });
+            // Seul chemin autorisé vers `depositAmount`.
+            await recalerAcompte(tx, creee.id);
+          }
+
+          return tx.tailoringOrder.findUniqueOrThrow({
+            where: { id: creee.id },
+            select: SELECTION,
+          });
         });
 
         log.info('commande de couture créée', {

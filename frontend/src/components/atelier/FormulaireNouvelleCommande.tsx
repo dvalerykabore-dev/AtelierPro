@@ -17,6 +17,7 @@ import { Field, SelectField, TextareaField } from '@/components/ui/Field';
 import { api, ApiError } from '@/lib/api';
 import { useClients } from '@/lib/useClients';
 import { useArtisans } from '@/lib/useArtisans';
+import { MODES, type ModeCle } from '@/lib/tresorerie';
 import {
   etapeCourante,
   etapesNouvelleCommande,
@@ -60,6 +61,11 @@ export default function FormulaireNouvelleCommande() {
   const [assigne, setAssigne] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [acompte, setAcompte] = useState<string>(String(ACOMPTE_PAR_DEFAUT));
+  // L'acompte devient une ligne du journal de caisse : il lui faut un mode de
+  // règlement. Espèces par défaut — le cas courant en atelier — mais il est
+  // demandé plutôt que supposé, parce que le rapprochement de caisse en fin de
+  // mois se fait mode par mode.
+  const [modeAcompte, setModeAcompte] = useState<ModeCle>('ESPECES');
   const [confirmee, setConfirmee] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
@@ -109,6 +115,7 @@ export default function FormulaireNouvelleCommande() {
           color: couleur,
           priceAmount: tarif.prix,
           depositAmount: acompteVerse,
+          depositMethod: acompteVerse > 0 ? modeAcompte : undefined,
           assignee: artisan?.initiales ?? undefined,
           notes: notes || undefined,
         },
@@ -293,8 +300,24 @@ export default function FormulaireNouvelleCommande() {
                 step={500}
                 value={acompte}
                 onChange={(e) => modifier(setAcompte)(e.target.value)}
-                aide="En francs CFA."
+                aide="En francs CFA. Enregistré comme recette dans la caisse."
               />
+
+              {/* Le mode n'a de sens que s'il y a de l'argent à encaisser. */}
+              {acompteVerse > 0 && (
+                <SelectField
+                  label="Réglé en"
+                  value={modeAcompte}
+                  onChange={(e) => modifier(setModeAcompte)(e.target.value as ModeCle)}
+                  aide="Sert au rapprochement de caisse en fin de mois."
+                >
+                  {MODES.map((m) => (
+                    <option key={m.cle} value={m.cle}>
+                      {m.label}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
             </div>
 
             <div className="mt-4">
