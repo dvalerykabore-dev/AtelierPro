@@ -27,7 +27,12 @@ export interface EntreeNav {
 }
 
 /**
- * Rail latéral desktop — 6 entrées (source Banani : /components/SideNav.jsx).
+ * Rail latéral desktop (source Banani : /components/SideNav.jsx).
+ *
+ * L'ordre suit le déroulé d'une journée : ce qu'on fait, pour qui, puis ce que
+ * ça rapporte. Trésorerie et Dépenses restent voisines — on ouvre la seconde
+ * depuis la première — et Rapports ferme la liste : c'est le seul écran qu'on
+ * consulte à froid, jamais au milieu d'une prise de commande.
  *
  * « Mesures » n'existait pas dans la maquette Banani — l'entrée y renvoyait au
  * carnet clients, où les mesures sont en lecture seule. `/mesures` est un écran
@@ -76,14 +81,6 @@ export const entreesLaterales: EntreeNav[] = [
     disponible: true,
   },
   {
-    id: 'rapports',
-    href: '/rapports',
-    label: 'Rapports',
-    labelCourt: 'Rapports',
-    icone: BarChart2,
-    disponible: true,
-  },
-  {
     id: 'tresorerie',
     href: '/tresorerie',
     label: 'Trésorerie',
@@ -97,6 +94,14 @@ export const entreesLaterales: EntreeNav[] = [
     label: 'Dépenses',
     labelCourt: 'Dépenses',
     icone: Receipt,
+    disponible: true,
+  },
+  {
+    id: 'rapports',
+    href: '/rapports',
+    label: 'Rapports',
+    labelCourt: 'Rapports',
+    icone: BarChart2,
     disponible: true,
   },
 ];
