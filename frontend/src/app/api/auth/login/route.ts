@@ -11,7 +11,14 @@
 //   5. No-user branch: dummy bcrypt compare → INVALID_CREDENTIALS (no recordFailure)
 //   6. verifyPassword → on fail recordFailure → LOCKED_OUT or INVALID_CREDENTIALS
 //   7. emailVerifiedAt check (after credential match — D-24)
-//   8. recordSuccess + issue 3 cookies
+//   8. recordSuccess
+//   9. ouvre un défi par e-mail — AUCUN cookie ici (voir plus bas)
+//
+// AtelierPro — la route ne connecte plus à elle seule. Le mot de passe validé
+// ouvre un code à usage unique envoyé à l'adresse du compte ; c'est
+// `/api/auth/verify-login` qui pose les cookies une fois le code saisi. Les
+// étapes 1 à 7 sont inchangées, y compris leur ordre : c'est lui qui rend la
+// route résistante à l'énumération, et il ne se réarrange pas sans conséquence.
 export const runtime = 'nodejs';
 
 import 'server-only';
@@ -25,6 +32,8 @@ import {
   verifyPassword,
 } from '@/lib/server/auth';
 import { isLockedOut, recordFailure, recordSuccess } from '@/lib/server/auth/lockout';
+import { ouvrirDefi } from '@/lib/server/auth/login-challenge';
+import { envoyerCodeConnexion } from '@/lib/server/auth/envoi-code-connexion';
 import { dummyBcryptCompare } from '@/lib/server/auth/dummy-bcrypt';
 import { createEmailLimiter } from '@/lib/server/middleware/rate-limit-by-email';
 import { getRedis } from '@/lib/server/redis';
@@ -162,20 +171,64 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // 8. Reset failure count and issue cookies.
+    // 8. Reset failure count. Le mot de passe est bon — le compteur de
+    //    verrouillage n'a plus rien à retenir, que le second facteur aboutisse
+    //    ou non. Le laisser courir punirait une adresse e-mail lente.
     await recordSuccess(email);
 
-    const accessToken = await createAccessToken({
-      sub: user.id,
-      email: user.email,
-      tokenVersion: user.tokenVersion,
+    // 9. Second facteur — un code envoyé à l'adresse du compte.
+    //
+    //    Aucun cookie n'est posé ici : le mot de passe prouve ce qu'on sait, le
+    //    code prouve qu'on a accès à la boîte. Ouvrir la session dès maintenant
+    //    reviendrait à n'avoir qu'un seul facteur, et le code ne serait plus
+    //    qu'une formalité qu'on peut ignorer.
+    const defi = await ouvrirDefi(prisma, user.id);
+    const envoi = await envoyerCodeConnexion({
+      to: user.email,
+      code: defi.code,
+      expiresAt: defi.expiresAt,
     });
-    const refreshToken = await createRefreshToken(user.id, user.tokenVersion);
-    await setAuthCookies(accessToken, refreshToken);
-    await setCsrfCookie();
 
+    if (envoi.etat === 'echec') {
+      // Le code existe en base mais n'est pas parti. Le dire, plutôt que de
+      // laisser attendre un e-mail qui ne viendra pas — une nouvelle tentative
+      // en émettra un autre et invalidera celui-ci.
+      return NextResponse.json(
+        {
+          error: 'LOGIN_CODE_NOT_SENT',
+          message: 'Could not send the login code. Try again.',
+        },
+        { status: 502, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    if (envoi.etat === 'non-configure') {
+      // Aucun fournisseur d'e-mail : personne ne recevrait jamais de code, et
+      // exiger le second facteur fermerait l'application à tout le monde, y
+      // compris en développement local. On ouvre la session avec le seul mot de
+      // passe, et `anomaliesProduction` signale le cas au démarrage pour qu'un
+      // déploiement réel ne tourne pas dans cet état sans le savoir.
+      log.warn('connexion sans second facteur : aucun fournisseur d’e-mail configuré', {
+        userId: user.id,
+      });
+      const accessToken = await createAccessToken({
+        sub: user.id,
+        email: user.email,
+        tokenVersion: user.tokenVersion,
+      });
+      const refreshToken = await createRefreshToken(user.id, user.tokenVersion);
+      await setAuthCookies(accessToken, refreshToken);
+      await setCsrfCookie();
+
+      return NextResponse.json(
+        { ok: true, user: { sub: user.id, email: user.email } },
+        { status: 200, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    log.info('code de connexion envoyé', { userId: user.id });
     return NextResponse.json(
-      { ok: true, user: { sub: user.id, email: user.email } },
+      { ok: true, challenge: true, email: user.email },
       { status: 200, headers: { 'x-request-id': ctx.requestId } },
     );
   });

@@ -8,6 +8,7 @@ function prodSaine(): NodeJS.ProcessEnv {
     APP_URL: 'https://atelierpro.example',
     EMAIL_FROM: 'contact@atelierpro.example',
     AUTH_PROTECTED_PREFIXES: '/dashboard,/commandes',
+    RESEND_API_KEY: 're_cle_de_production',
   } as NodeJS.ProcessEnv;
 }
 
@@ -99,6 +100,26 @@ describe('anomaliesProduction — pages protégées', () => {
   });
 });
 
+describe('anomaliesProduction — RESEND_API_KEY', () => {
+  it('accepte une cle presente', () => {
+    expect(variables(prodSaine())).not.toContain('RESEND_API_KEY');
+  });
+
+  it('signale son absence : la connexion se ferait sans second facteur', () => {
+    // Sans cle d'envoi, /api/auth/login retombe sur le mot de passe seul
+    // plutot que de fermer l'application a tout le monde. Le repli est le bon
+    // comportement en local et le mauvais en production, ou il retire le
+    // second facteur sans que rien ne le dise a l'ecran.
+    const sans = prodSaine();
+    delete sans.RESEND_API_KEY;
+    expect(variables(sans)).toContain('RESEND_API_KEY');
+  });
+
+  it('signale une cle vide comme une cle absente', () => {
+    expect(variables({ ...prodSaine(), RESEND_API_KEY: '' })).toContain('RESEND_API_KEY');
+  });
+});
+
 describe('anomaliesProduction — forme du rapport', () => {
   it('donne un correctif actionnable pour chaque anomalie', () => {
     const nue = { NODE_ENV: 'production' } as NodeJS.ProcessEnv;
@@ -114,6 +135,11 @@ describe('anomaliesProduction — forme du rapport', () => {
 
   it('cumule les défauts au lieu de s’arrêter au premier', () => {
     const nue = { NODE_ENV: 'production' } as NodeJS.ProcessEnv;
-    expect(variables(nue).sort()).toEqual(['APP_URL', 'AUTH_PROTECTED_PREFIXES', 'EMAIL_FROM']);
+    expect(variables(nue).sort()).toEqual([
+      'APP_URL',
+      'AUTH_PROTECTED_PREFIXES',
+      'EMAIL_FROM',
+      'RESEND_API_KEY',
+    ]);
   });
 });

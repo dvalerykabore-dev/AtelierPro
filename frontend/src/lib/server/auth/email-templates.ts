@@ -40,6 +40,13 @@ export interface ResetPasswordEmailArgs {
   expiresAt?: string;
 }
 
+export interface LoginCodeEmailArgs {
+  code: string;
+  email: string;
+  /** Optional ISO-8601 expiry; falls back to "soon" wording when omitted. */
+  expiresAt?: string;
+}
+
 /**
  * Minimal HTML escape for template interpolation. Covers the OWASP-recommended
  * five-character set (`& < > " '`). Apply to EVERY user-controlled (or
@@ -96,5 +103,53 @@ export function resetPasswordEmail(args: ResetPasswordEmailArgs): EmailTemplate 
     subject: 'Reset your password',
     html: `<p>Hi,</p><p>Your password reset code is <strong>${code}</strong>.</p><p>It expires ${ttl}. If you did not request this, ignore this email.</p>`,
     text: `Your password reset code is ${args.code}. It expires ${ttl}. If you did not request this, ignore this email.`,
+  };
+}
+
+/**
+ * Rend la fenêtre de validité en français — « dans 9 minutes ».
+ *
+ * `ttlWording` rend de l'anglais, qui convient aux deux modèles du starter.
+ * Celui-ci part à un artisan francophone au moment où il attend son code : la
+ * phrase doit se lire sans traduction mentale.
+ */
+function delaiFr(expiresAtIso: string | undefined): string {
+  if (!expiresAtIso) return 'sous peu';
+  const expiresMs = Date.parse(expiresAtIso);
+  if (Number.isNaN(expiresMs)) return 'sous peu';
+  const restantMs = expiresMs - Date.now();
+  if (restantMs <= 0) return 'sous peu';
+  const minutes = Math.floor(restantMs / 60_000);
+  if (minutes < 1) return 'dans moins d’une minute';
+  if (minutes < 60) return `dans ${minutes} minute${minutes === 1 ? '' : 's'}`;
+  const heures = Math.floor(minutes / 60);
+  return `dans ${heures} heure${heures === 1 ? '' : 's'}`;
+}
+
+/**
+ * Code de confirmation d'une connexion.
+ *
+ * Il ne dit pas seulement « voici votre code » : il annonce qu'une connexion a
+ * été demandée avec le bon mot de passe. Pour qui n'en est pas à l'origine,
+ * c'est l'avertissement que son mot de passe est connu de quelqu'un d'autre —
+ * d'où la consigne de le changer, et pas seulement d'ignorer le message. Les
+ * deux autres modèles peuvent se contenter d'un « ignorez cet e-mail » ; ici ce
+ * serait un mauvais conseil.
+ */
+export function loginCodeEmail(args: LoginCodeEmailArgs): EmailTemplate {
+  const code = htmlEscape(args.code);
+  const delai = delaiFr(args.expiresAt);
+  return {
+    subject: `Code de connexion : ${args.code}`,
+    html:
+      `<p>Bonjour,</p>` +
+      `<p>Votre code de connexion est <strong>${code}</strong>.</p>` +
+      `<p>Il expire ${delai}.</p>` +
+      `<p>Si vous n’êtes pas à l’origine de cette connexion, quelqu’un connaît ` +
+      `votre mot de passe : changez-le sans attendre.</p>`,
+    text:
+      `Votre code de connexion est ${args.code}. Il expire ${delai}.\n\n` +
+      `Si vous n’êtes pas à l’origine de cette connexion, quelqu’un connaît ` +
+      `votre mot de passe : changez-le sans attendre.`,
   };
 }

@@ -182,6 +182,13 @@ export default function Parametres() {
   } = usePreferencesNotifications();
   const [echecAlerte, setEchecAlerte] = useState<string | null>(null);
 
+  // La déconnexion demande confirmation. Le bouton est collé au reste des
+  // réglages, et depuis que la reconnexion passe par un code envoyé par
+  // e-mail, un clic de travers ne coûte plus un mot de passe à retaper mais
+  // une boîte mail à aller consulter — parfois sur un téléphone resté à la
+  // maison, au milieu d'une journée d'atelier.
+  const [deconnexionOuverte, setDeconnexionOuverte] = useState(false);
+
   const {
     tarifs,
     source: sourceTarifs,
@@ -268,6 +275,7 @@ export default function Parametres() {
   }
 
   async function seDeconnecter() {
+    setDeconnexionOuverte(false);
     await logout();
     router.push('/connexion');
   }
@@ -604,13 +612,45 @@ export default function Parametres() {
               >
                 Changer le mot de passe
               </Link>
-              <Button variante="danger" onClick={seDeconnecter} disabled={loggingOut}>
+              <Button
+                variante="danger"
+                onClick={() => setDeconnexionOuverte(true)}
+                disabled={loggingOut}
+              >
                 {loggingOut ? 'Déconnexion…' : 'Se déconnecter'}
               </Button>
             </div>
           </section>
         )}
       </div>
+
+      {/*
+        Confirmation de déconnexion.
+        La description dit ce que la déconnexion coûte réellement plutôt que de
+        demander « êtes-vous sûr ? » : c'est le retour par un code envoyé par
+        e-mail qui décide si l'on clique, pas la question elle-même.
+      */}
+      <Modal
+        ouvert={deconnexionOuverte}
+        onFermer={() => setDeconnexionOuverte(false)}
+        titre="Se déconnecter ?"
+        description="Pour revenir, il faudra retaper votre mot de passe puis saisir un code envoyé à votre adresse e-mail."
+        pied={
+          <>
+            <Button variante="fantome" onClick={() => setDeconnexionOuverte(false)}>
+              Rester connecté
+            </Button>
+            <Button variante="danger" onClick={() => void seDeconnecter()} disabled={loggingOut}>
+              {loggingOut ? 'Déconnexion…' : 'Se déconnecter'}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-muted-foreground text-sm">
+          Les commandes, la caisse et les mesures restent enregistrées — c’est l’accès depuis cet
+          appareil qui se ferme.
+        </p>
+      </Modal>
 
       {/* Création / édition d'un tarif — écran absent des maquettes Banani. */}
       <Modal

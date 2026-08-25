@@ -73,6 +73,21 @@ export function anomaliesProduction(vars: NodeJS.ProcessEnv): AnomalieConfig[] {
     });
   }
 
+  // Sans clé d'envoi, la connexion retombe sur le mot de passe seul plutôt que
+  // de fermer l'application à tout le monde (voir `/api/auth/login`). C'est le
+  // bon comportement en développement et le mauvais en production : le second
+  // facteur disparaît sans que rien ne le dise à l'écran.
+  if ((vars['RESEND_API_KEY'] ?? '') === '') {
+    anomalies.push({
+      variable: 'RESEND_API_KEY',
+      probleme: 'aucune clé d’envoi d’e-mail : la connexion se fait sans code de confirmation',
+      correctif:
+        'Poser la clé du fournisseur d’e-mail. Tant qu’elle manque, un mot de passe ' +
+        'deviné suffit à ouvrir la session — le code envoyé par e-mail, qui est le ' +
+        'second facteur, n’est jamais demandé.',
+    });
+  }
+
   if (demo !== '') {
     anomalies.push({
       variable: 'NEXT_PUBLIC_ATELIER_DEMO',
