@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
+import { useEtatMemorise } from '@/lib/etat-memorise';
 import { api, ApiError } from '@/lib/api';
 import { avecReessai401 } from '@/lib/api-repli';
 import { messageErreur } from '@/lib/message-erreur';
@@ -82,8 +83,21 @@ type Retour = Promise<string | null>;
  * on prend des décisions d'achat avec ce chiffre.
  */
 export function useTresorerie() {
-  const [donnees, setDonnees] = useState<Tresorerie | null>(null);
-  const [chargement, setChargement] = useState(true);
+  const [donnees, poserDonnees, dejaCharge] = useEtatMemorise<Tresorerie | null>(
+    '/api/tresorerie',
+    null,
+  );
+  const [chargement, setChargement] = useState(!dejaCharge);
+  /**
+   * Vrai tant qu'on revalide un solde déjà affiché.
+   *
+   * Les autres écrans peuvent revalider en silence. Pas celui-ci : un solde de
+   * caisse se lit comme le solde de l'instant, et sert à décider d'un achat.
+   * Montrer sans rien dire un chiffre vieux de trois minutes, c'est répondre à
+   * une question qu'on n'a pas posée. L'écran affiche donc une mention
+   * discrète — pas un squelette, qui reprendrait le chiffre pour rien.
+   */
+  const [revalidation, setRevalidation] = useState(dejaCharge);
   const [erreur, setErreur] = useState<string | null>(null);
   const [session, setSession] = useState(true);
   const [rafraichissement, setRafraichissement] = useState(0);
@@ -94,27 +108,34 @@ export function useTresorerie() {
       try {
         const res = await avecReessai401<Tresorerie>('/api/tresorerie');
         if (annule) return;
-        setDonnees(res);
+        poserDonnees(res);
         setSession(true);
       } catch (err) {
         if (annule) return;
-        if (err instanceof ApiError && err.status === 401) setSession(false);
-        else setErreur(messageErreur(err, 'Trésorerie indisponible.'));
+        if (err instanceof ApiError && err.status === 401) {
+          // Session finie : on efface le solde mémorisé plutôt que de le
+          // laisser sur un poste que quelqu'un d'autre peut reprendre.
+          poserDonnees(null);
+          setSession(false);
+        } else setErreur(messageErreur(err, 'Trésorerie indisponible.'));
       } finally {
-        if (!annule) setChargement(false);
+        if (!annule) {
+          setChargement(false);
+          setRevalidation(false);
+        }
       }
     })();
     return () => {
       annule = true;
     };
-  }, [rafraichissement]);
+  }, [rafraichissement, poserDonnees]);
 
   const recharger = useCallback(() => {
     setChargement(true);
     setRafraichissement((n) => n + 1);
   }, []);
 
-  return { donnees, chargement, erreur, session, recharger };
+  return { donnees, chargement, revalidation, erreur, session, recharger };
 }
 
 export interface FiltresMouvements {
@@ -133,13 +154,36 @@ export interface FiltresMouvements {
  * à afficher — même contrat que `useClients.ajouter`, pour que tous les
  * formulaires de l'atelier se traitent de la même façon.
  */
+interface EtatMouvements {
+  mouvements: Mouvement[];
+  /**
+   * Filtres que décrit la liste. Peindre une liste mémorisée sous d'autres
+   * filtres montrerait précisément les écritures que l'utilisateur vient
+   * d'exclure — le contraire de ce qu'il a demandé.
+   */
+  signature: string;
+}
+
+const MOUVEMENTS_VIDES: EtatMouvements = { mouvements: [], signature: 'rien-en-memoire' };
+
 export function useMouvements(filtres: FiltresMouvements = {}) {
-  const [mouvements, setMouvements] = useState<Mouvement[]>([]);
-  const [chargement, setChargement] = useState(true);
+  const { mois, sens, poste, commande } = filtres;
+  const signature = [mois, sens, poste, commande].map((f) => f ?? '').join('|');
+
+  const [memorise, poserEtat, dejaCharge] = useEtatMemorise<EtatMouvements>(
+    '/api/tresorerie/mouvements',
+    MOUVEMENTS_VIDES,
+  );
+  const mouvements = memorise.signature === signature ? memorise.mouvements : [];
+
+  // Figé au premier rendu : « ai-je de quoi peindre tout de suite ? ». La
+  // question ne se pose qu'une fois, et la réponse ne doit pas changer au
+  // milieu d'un chargement.
+  const [demarreChaud] = useState(dejaCharge && memorise.signature === signature);
+  const [chargement, setChargement] = useState(!demarreChaud);
   const [erreur, setErreur] = useState<string | null>(null);
   const [session, setSession] = useState(true);
-
-  const { mois, sens, poste, commande } = filtres;
+  const premierPassage = useRef(true);
 
   const charger = useCallback(async (): Promise<Mouvement[] | null> => {
     const params = new URLSearchParams();
@@ -157,18 +201,24 @@ export function useMouvements(filtres: FiltresMouvements = {}) {
 
   useEffect(() => {
     let annule = false;
-    setChargement(true);
+    // Un changement de filtre est une demande explicite : le squelette est
+    // attendu. Le premier affichage d'une liste déjà connue, lui, ne doit rien
+    // clignoter.
+    if (!(premierPassage.current && demarreChaud)) setChargement(true);
+    premierPassage.current = false;
     void (async () => {
       try {
         const liste = await charger();
         if (annule || liste === null) return;
-        setMouvements(liste);
+        poserEtat({ mouvements: liste, signature });
         setSession(true);
         setErreur(null);
       } catch (err) {
         if (annule) return;
-        if (err instanceof ApiError && err.status === 401) setSession(false);
-        else setErreur(messageErreur(err, 'Journal indisponible.'));
+        if (err instanceof ApiError && err.status === 401) {
+          poserEtat(MOUVEMENTS_VIDES);
+          setSession(false);
+        } else setErreur(messageErreur(err, 'Journal indisponible.'));
       } finally {
         if (!annule) setChargement(false);
       }
@@ -176,7 +226,7 @@ export function useMouvements(filtres: FiltresMouvements = {}) {
     return () => {
       annule = true;
     };
-  }, [charger]);
+  }, [charger, poserEtat, signature, demarreChaud]);
 
   const ajouter = useCallback(
     async (entree: {
@@ -203,9 +253,12 @@ export function useMouvements(filtres: FiltresMouvements = {}) {
           (!sens || res.mouvement.direction === sens) &&
           (!poste || res.mouvement.category === poste);
         if (dansLaFenetre) {
-          setMouvements((prec) =>
-            [res.mouvement, ...prec].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt)),
-          );
+          poserEtat((prec) => ({
+            ...prec,
+            mouvements: [res.mouvement, ...prec.mouvements].sort((a, b) =>
+              b.occurredAt.localeCompare(a.occurredAt),
+            ),
+          }));
         }
         return null;
       } catch (err) {
@@ -215,25 +268,25 @@ export function useMouvements(filtres: FiltresMouvements = {}) {
         return messageErreur(err, 'Impossible d’enregistrer l’écriture.');
       }
     },
-    [mois, sens, poste],
+    [mois, sens, poste, poserEtat],
   );
 
   const supprimer = useCallback(
     async (id: string): Retour => {
       const precedent = mouvements;
-      setMouvements((prec) => prec.filter((m) => m.id !== id));
+      poserEtat((prec) => ({ ...prec, mouvements: prec.mouvements.filter((m) => m.id !== id) }));
       try {
         await api(`/api/tresorerie/mouvements/${id}`, { method: 'DELETE' });
         return null;
       } catch (err) {
         // Retour à l'état antérieur : une ligne de caisse qui disparaît de
         // l'écran sans avoir été supprimée en base fausserait toute lecture.
-        setMouvements(precedent);
+        poserEtat((prec) => ({ ...prec, mouvements: precedent }));
         return messageErreur(err, 'Suppression impossible.');
       }
       // `mouvements` est lu pour le retour arrière : la dépendance est voulue.
     },
-    [mouvements],
+    [mouvements, poserEtat],
   );
 
   return { mouvements, chargement, erreur, session, ajouter, supprimer };
@@ -241,8 +294,11 @@ export function useMouvements(filtres: FiltresMouvements = {}) {
 
 /** Les charges fixes déclarées — la base de la prévision des sorties. */
 export function useCharges() {
-  const [charges, setCharges] = useState<Charge[]>([]);
-  const [chargement, setChargement] = useState(true);
+  const [charges, poserCharges, dejaCharge] = useEtatMemorise<Charge[]>(
+    '/api/tresorerie/charges',
+    [],
+  );
+  const [chargement, setChargement] = useState(!dejaCharge);
   const [erreur, setErreur] = useState<string | null>(null);
   const [session, setSession] = useState(true);
 
@@ -252,12 +308,14 @@ export function useCharges() {
       try {
         const res = await avecReessai401<{ charges: Charge[] }>('/api/tresorerie/charges');
         if (annule) return;
-        setCharges(res.charges);
+        poserCharges(res.charges);
         setSession(true);
       } catch (err) {
         if (annule) return;
-        if (err instanceof ApiError && err.status === 401) setSession(false);
-        else setErreur(messageErreur(err, 'Charges indisponibles.'));
+        if (err instanceof ApiError && err.status === 401) {
+          poserCharges([]);
+          setSession(false);
+        } else setErreur(messageErreur(err, 'Charges indisponibles.'));
       } finally {
         if (!annule) setChargement(false);
       }
@@ -265,7 +323,7 @@ export function useCharges() {
     return () => {
       annule = true;
     };
-  }, []);
+  }, [poserCharges]);
 
   const ajouter = useCallback(
     async (entree: {
@@ -279,40 +337,43 @@ export function useCharges() {
           method: 'POST',
           body: entree,
         });
-        setCharges((prec) => [...prec, res.charge].sort((a, b) => a.dayOfMonth - b.dayOfMonth));
+        poserCharges((prec) => [...prec, res.charge].sort((a, b) => a.dayOfMonth - b.dayOfMonth));
         return null;
       } catch (err) {
         return messageErreur(err, 'Impossible d’enregistrer la charge.');
       }
     },
-    [],
+    [poserCharges],
   );
 
   /** Active ou suspend une charge — un abonnement résilié cesse d'être projeté. */
-  const basculer = useCallback(async (id: string, active: boolean): Retour => {
-    setCharges((prec) => prec.map((c) => (c.id === id ? { ...c, active } : c)));
-    try {
-      await api(`/api/tresorerie/charges/${id}`, { method: 'PATCH', body: { active } });
-      return null;
-    } catch (err) {
-      setCharges((prec) => prec.map((c) => (c.id === id ? { ...c, active: !active } : c)));
-      return messageErreur(err, 'Modification impossible.');
-    }
-  }, []);
+  const basculer = useCallback(
+    async (id: string, active: boolean): Retour => {
+      poserCharges((prec) => prec.map((c) => (c.id === id ? { ...c, active } : c)));
+      try {
+        await api(`/api/tresorerie/charges/${id}`, { method: 'PATCH', body: { active } });
+        return null;
+      } catch (err) {
+        poserCharges((prec) => prec.map((c) => (c.id === id ? { ...c, active: !active } : c)));
+        return messageErreur(err, 'Modification impossible.');
+      }
+    },
+    [poserCharges],
+  );
 
   const supprimer = useCallback(
     async (id: string): Retour => {
       const precedent = charges;
-      setCharges((prec) => prec.filter((c) => c.id !== id));
+      poserCharges((prec) => prec.filter((c) => c.id !== id));
       try {
         await api(`/api/tresorerie/charges/${id}`, { method: 'DELETE' });
         return null;
       } catch (err) {
-        setCharges(precedent);
+        poserCharges(precedent);
         return messageErreur(err, 'Suppression impossible.');
       }
     },
-    [charges],
+    [charges, poserCharges],
   );
 
   return { charges, chargement, erreur, session, ajouter, basculer, supprimer };

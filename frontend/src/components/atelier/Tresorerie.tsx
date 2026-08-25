@@ -49,7 +49,7 @@ function Signe({ valeur, gras = false }: { valeur: number; gras?: boolean }) {
  *   projection est une projection, et son bloc le dit.
  */
 export default function Tresorerie() {
-  const { donnees, chargement, erreur, session, recharger } = useTresorerie();
+  const { donnees, chargement, revalidation, erreur, session, recharger } = useTresorerie();
   const { charges, ajouter: ajouterCharge, basculer, supprimer: supprimerCharge } = useCharges();
 
   const [ouvert, setOuvert] = useState(false);
@@ -201,6 +201,20 @@ export default function Tresorerie() {
         <p className="text-muted-foreground mt-2 text-xs">
           Argent réellement encaissé, moins les dépenses décaissées, depuis l’ouverture du journal.
         </p>
+        {/*
+         * Au retour sur cet écran, le solde affiché est le dernier connu et la
+         * vérification est en cours. Les autres écrans revalident en silence ;
+         * pas celui-ci. Ce chiffre sert à décider d'un achat : le montrer sans
+         * dire qu'il n'est pas encore reconfirmé, c'est répondre à une question
+         * qu'on n'a pas posée. Une mention, pas un squelette — masquer le solde
+         * pour le réafficher identique une seconde plus tard ne rend service à
+         * personne.
+         */}
+        {revalidation && (
+          <p className="text-muted-foreground mt-1 text-[11px] italic" aria-live="polite">
+            Dernier solde connu — vérification en cours…
+          </p>
+        )}
       </section>
 
       {/* Mois en cours */}

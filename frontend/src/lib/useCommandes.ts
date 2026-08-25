@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useEtatMemorise } from '@/lib/etat-memorise';
 import { api, ApiError } from '@/lib/api';
 import { avecReessai401 } from '@/lib/api-repli';
 import {
@@ -97,32 +98,45 @@ export type SourceCommandes = 'serveur' | 'demonstration';
  * Même repli que pour les clients : sans session l'API répond 401 et l'on
  * retombe sur le jeu simulé, en l'annonçant. Voir `useClients`.
  */
-export function useCommandes() {
-  const [commandes, setCommandes] = useState<Commande[]>(commandesSimulees);
-  const [source, setSource] = useState<SourceCommandes>('demonstration');
-  const [chargement, setChargement] = useState(true);
+interface EtatCommandes {
+  commandes: Commande[];
+  source: SourceCommandes;
+}
 
-  const recharger = useCallback(async () => {
-    setChargement(true);
-    try {
-      const res = await avecReessai401<{ commandes: CommandeApi[] }>('/api/commandes');
-      setCommandes(res.commandes.map(versUI));
-      setSource('serveur');
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        setCommandes(commandesSimulees);
-        setSource('demonstration');
+export function useCommandes() {
+  const [etat, poserEtat, dejaCharge] = useEtatMemorise<EtatCommandes>('/api/commandes', {
+    commandes: commandesSimulees,
+    source: 'demonstration',
+  });
+  const { commandes, source } = etat;
+  const [chargement, setChargement] = useState(!dejaCharge);
+
+  // `silencieux` : au retour sur un écran déjà visité on revalide sans
+  // squelette. Un rechargement demandé à la main doit rester visible, sinon le
+  // bouton semble n'avoir rien fait.
+  const recharger = useCallback(
+    async (silencieux = false) => {
+      if (!silencieux) setChargement(true);
+      try {
+        const res = await avecReessai401<{ commandes: CommandeApi[] }>('/api/commandes');
+        poserEtat({ commandes: res.commandes.map(versUI), source: 'serveur' });
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          poserEtat({ commandes: commandesSimulees, source: 'demonstration' });
+        }
+        // Toute autre panne laisse la liste précédente en place : mieux vaut des
+        // données un peu anciennes qu'un écran vide en plein service.
+      } finally {
+        setChargement(false);
       }
-      // Toute autre panne laisse la liste précédente en place : mieux vaut des
-      // données un peu anciennes qu'un écran vide en plein service.
-    } finally {
-      setChargement(false);
-    }
-  }, []);
+    },
+    [poserEtat],
+  );
 
   useEffect(() => {
-    void recharger();
-  }, [recharger]);
+    void recharger(dejaCharge);
+    // `dejaCharge` est figé au premier rendu : le relire ici ne relance rien.
+  }, [recharger, dejaCharge]);
 
   /**
    * Fait avancer une commande d'un jalon.
@@ -132,15 +146,21 @@ export function useCommandes() {
    * rapports et sur la fiche client. Mieux vaut un bouton qui attend une
    * seconde qu'un atelier qui croit une commande livrée.
    */
-  const changerStatut = useCallback(async (id: string, statut: StatutCommande) => {
-    const res = await api<{ commande: CommandeApi }>(`/api/commandes/${id}`, {
-      method: 'PATCH',
-      body: { status: STATUT_API[statut] },
-    });
-    const maj = versUI(res.commande);
-    setCommandes((prec) => prec.map((c) => (c.id === id ? maj : c)));
-    return maj;
-  }, []);
+  const changerStatut = useCallback(
+    async (id: string, statut: StatutCommande) => {
+      const res = await api<{ commande: CommandeApi }>(`/api/commandes/${id}`, {
+        method: 'PATCH',
+        body: { status: STATUT_API[statut] },
+      });
+      const maj = versUI(res.commande);
+      poserEtat((prec) => ({
+        ...prec,
+        commandes: prec.commandes.map((c) => (c.id === id ? maj : c)),
+      }));
+      return maj;
+    },
+    [poserEtat],
+  );
 
   return { commandes, source, chargement, recharger, changerStatut };
 }

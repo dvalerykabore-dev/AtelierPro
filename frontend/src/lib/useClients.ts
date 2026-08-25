@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useEtatMemorise } from '@/lib/etat-memorise';
 import { api, ApiError } from '@/lib/api';
 import { avecReessai401 } from '@/lib/api-repli';
 import { messageErreur } from '@/lib/message-erreur';
@@ -59,34 +60,47 @@ export type SourceDonnees = 'serveur' | 'demonstration';
  * simulé. Le mode démonstration doit rester consultable — mais l'écran annonce
  * la source, pour qu'on ne prenne jamais des données d'exemple pour de vraies.
  */
+interface EtatClients {
+  clients: Client[];
+  source: SourceDonnees;
+}
+
 export function useClients() {
-  const [clients, setClients] = useState<Client[]>(clientsSimules);
-  const [source, setSource] = useState<SourceDonnees>('demonstration');
-  const [chargement, setChargement] = useState(true);
+  const [etat, poserEtat, dejaCharge] = useEtatMemorise<EtatClients>('/api/clients', {
+    clients: clientsSimules,
+    source: 'demonstration',
+  });
+  const { clients, source } = etat;
+  const [chargement, setChargement] = useState(!dejaCharge);
   const [erreur, setErreur] = useState<string | null>(null);
 
-  const recharger = useCallback(async () => {
-    setChargement(true);
-    setErreur(null);
-    try {
-      const res = await avecReessai401<{ clients: ClientApi[] }>('/api/clients');
-      setClients(res.clients.map(versUI));
-      setSource('serveur');
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        setClients(clientsSimules);
-        setSource('demonstration');
-      } else {
-        setErreur(messageErreur(err, 'Impossible de joindre le serveur.'));
+  // `silencieux` distingue les deux façons d'arriver ici. Au montage sur un
+  // écran déjà visité, on revalide sans squelette. Un rechargement demandé à la
+  // main, lui, doit se voir : sinon le bouton semble n'avoir rien fait.
+  const recharger = useCallback(
+    async (silencieux = false) => {
+      if (!silencieux) setChargement(true);
+      setErreur(null);
+      try {
+        const res = await avecReessai401<{ clients: ClientApi[] }>('/api/clients');
+        poserEtat({ clients: res.clients.map(versUI), source: 'serveur' });
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          poserEtat({ clients: clientsSimules, source: 'demonstration' });
+        } else {
+          setErreur(messageErreur(err, 'Impossible de joindre le serveur.'));
+        }
+      } finally {
+        setChargement(false);
       }
-    } finally {
-      setChargement(false);
-    }
-  }, []);
+    },
+    [poserEtat],
+  );
 
   useEffect(() => {
-    void recharger();
-  }, [recharger]);
+    void recharger(dejaCharge);
+    // `dejaCharge` est figé au premier rendu : le relire ici ne relance rien.
+  }, [recharger, dejaCharge]);
 
   /**
    * Enregistre un client. Renvoie `null` en cas de succès, sinon le message à
@@ -95,20 +109,23 @@ export function useClients() {
   const ajouter = useCallback(
     async (nouveau: NouveauClient): Promise<string | null> => {
       const localement = (): null => {
-        setClients((prec) => [
-          {
-            id: `local-${Date.now()}`,
-            nom: nouveau.nom,
-            initiales: initialesDe(nouveau.nom),
-            telephone: nouveau.telephone,
-            genre: nouveau.genre,
-            nbCommandes: 0,
-            derniereCommande: '—',
-            fidele: false,
-            totalFacture: 0,
-          },
+        poserEtat((prec) => ({
           ...prec,
-        ]);
+          clients: [
+            {
+              id: `local-${Date.now()}`,
+              nom: nouveau.nom,
+              initiales: initialesDe(nouveau.nom),
+              telephone: nouveau.telephone,
+              genre: nouveau.genre,
+              nbCommandes: 0,
+              derniereCommande: '—',
+              fidele: false,
+              totalFacture: 0,
+            },
+            ...prec.clients,
+          ],
+        }));
         return null;
       };
 
@@ -123,7 +140,7 @@ export function useClients() {
             gender: nouveau.genre === 'Homme' ? 'MALE' : 'FEMALE',
           },
         });
-        setClients((prec) => [versUI(res.client), ...prec]);
+        poserEtat((prec) => ({ ...prec, clients: [versUI(res.client), ...prec.clients] }));
         return null;
       } catch (err) {
         if (err instanceof ApiError) {
@@ -133,7 +150,7 @@ export function useClients() {
         return messageErreur(err, 'Impossible de joindre le serveur.');
       }
     },
-    [source],
+    [source, poserEtat],
   );
 
   return { clients, source, chargement, erreur, ajouter, recharger };

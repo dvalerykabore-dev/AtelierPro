@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useEtatMemorise } from '@/lib/etat-memorise';
 import { api, ApiError } from '@/lib/api';
 import { avecReessai401 } from '@/lib/api-repli';
 import { messageErreur } from '@/lib/message-erreur';
@@ -114,14 +115,41 @@ function semaineExemple(): { semaine: JourSemaine[]; taches: TachePlanifiee[] } 
  * sont le seul écran à refuser ce repli : un chiffre faux y serait plus grave
  * qu'une grille vide.
  */
+interface EtatPlanning {
+  semaine: JourSemaine[];
+  taches: TachePlanifiee[];
+  source: SourcePlanning;
+  /**
+   * Semaine que décrivent `semaine` et `taches` — `null` pour la semaine
+   * courante. Sans ce repère, revenir sur le planning après avoir feuilleté
+   * jusqu'en octobre afficherait octobre en le présentant comme aujourd'hui.
+   */
+  debutAffiche: string | null;
+}
+
+const PLANNING_VIDE: EtatPlanning = {
+  semaine: [],
+  taches: [],
+  source: 'serveur',
+  debutAffiche: null,
+};
+
 export function usePlanning() {
-  const [semaine, setSemaine] = useState<JourSemaine[]>([]);
-  const [taches, setTaches] = useState<TachePlanifiee[]>([]);
-  const [source, setSource] = useState<SourcePlanning>('serveur');
-  const [chargement, setChargement] = useState(true);
+  const [memorise, poserEtat, dejaCharge] = useEtatMemorise<EtatPlanning>(
+    '/api/planning',
+    PLANNING_VIDE,
+  );
   const [erreur, setErreur] = useState<string | null>(null);
   /** Lundi demandé au serveur ; `null` = semaine courante, selon son horloge. */
   const [debut, setDebut] = useState<string | null>(null);
+
+  // On ne peint la valeur mémorisée que si elle décrit bien la semaine
+  // demandée. Le reste du temps la grille reste vide et le squelette tient :
+  // une semaine étiquetée « cette semaine » qui n'en est pas une serait pire
+  // qu'une attente.
+  const etat = memorise.debutAffiche === debut ? memorise : PLANNING_VIDE;
+  const { semaine, taches, source } = etat;
+  const [chargement, setChargement] = useState(!(dejaCharge && memorise.debutAffiche === null));
 
   useEffect(() => {
     let annule = false;
@@ -132,9 +160,9 @@ export function usePlanning() {
           debut ? `/api/planning?debut=${debut}` : '/api/planning',
         );
         if (annule) return;
-        setSemaine(res.semaine.map((j) => decore(j.iso, j.aujourdhui)));
-        setTaches(
-          res.taches.map((t) => ({
+        poserEtat({
+          semaine: res.semaine.map((j) => decore(j.iso, j.aujourdhui)),
+          taches: res.taches.map((t) => ({
             id: t.id,
             assignee: t.assignee,
             iso: t.day,
@@ -142,15 +170,19 @@ export function usePlanning() {
             label: t.label,
             statut: estStatutApi(t.status) ? VERS_FRANCAIS[t.status] : 'Planifié',
           })),
-        );
-        setSource('serveur');
+          source: 'serveur',
+          debutAffiche: debut,
+        });
       } catch (err) {
         if (annule) return;
         if (err instanceof ApiError && err.status === 401) {
           const exemple = semaineExemple();
-          setSemaine(exemple.semaine);
-          setTaches(exemple.taches);
-          setSource('demonstration');
+          poserEtat({
+            semaine: exemple.semaine,
+            taches: exemple.taches,
+            source: 'demonstration',
+            debutAffiche: debut,
+          });
         } else {
           setErreur(messageErreur(err, 'Planning indisponible.'));
         }
@@ -162,7 +194,7 @@ export function usePlanning() {
     return () => {
       annule = true;
     };
-  }, [debut]);
+  }, [debut, poserEtat]);
 
   /**
    * Décale la fenêtre de `semaines` (négatif = passé). Le calcul part du lundi
@@ -200,7 +232,10 @@ export function usePlanning() {
       statut: StatutTache;
     }): Promise<string | null> => {
       if (source === 'demonstration') {
-        setTaches((prec) => [...prec, { id: `local-${Date.now()}`, ...entree }]);
+        poserEtat((prec) => ({
+          ...prec,
+          taches: [...prec.taches, { id: `local-${Date.now()}`, ...entree }],
+        }));
         return null;
       }
 
@@ -219,17 +254,20 @@ export function usePlanning() {
           },
         });
         const t = res.tache;
-        setTaches((prec) => [
+        poserEtat((prec) => ({
           ...prec,
-          {
-            id: t.id,
-            assignee: t.assignee,
-            iso: t.day,
-            duree: t.hours,
-            label: t.label,
-            statut: estStatutApi(t.status) ? VERS_FRANCAIS[t.status] : 'Planifié',
-          },
-        ]);
+          taches: [
+            ...prec.taches,
+            {
+              id: t.id,
+              assignee: t.assignee,
+              iso: t.day,
+              duree: t.hours,
+              label: t.label,
+              statut: estStatutApi(t.status) ? VERS_FRANCAIS[t.status] : 'Planifié',
+            },
+          ],
+        }));
         return null;
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
@@ -238,7 +276,7 @@ export function usePlanning() {
         return messageErreur(err, 'Impossible d’enregistrer la tâche.');
       }
     },
-    [source],
+    [source, poserEtat],
   );
 
   return {

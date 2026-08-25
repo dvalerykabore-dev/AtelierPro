@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useEtatMemorise } from '@/lib/etat-memorise';
 import { ApiError } from '@/lib/api';
 import { avecReessai401 } from '@/lib/api-repli';
 import { messageErreur } from '@/lib/message-erreur';
@@ -34,10 +35,18 @@ export type SourceRapports = 'serveur' | 'demonstration';
  * simulées : un rapport chiffré est soit exact, soit absent. Afficher un
  * chiffre d'affaires d'exemple serait le pire des mensonges de cette interface.
  */
+interface EtatRapports {
+  rapports: Rapports | null;
+  source: SourceRapports;
+}
+
 export function useRapports() {
-  const [rapports, setRapports] = useState<Rapports | null>(null);
-  const [source, setSource] = useState<SourceRapports>('serveur');
-  const [chargement, setChargement] = useState(true);
+  const [etat, poserEtat, dejaCharge] = useEtatMemorise<EtatRapports>('/api/rapports', {
+    rapports: null,
+    source: 'serveur',
+  });
+  const { rapports, source } = etat;
+  const [chargement, setChargement] = useState(!dejaCharge);
   const [erreur, setErreur] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,14 +55,14 @@ export function useRapports() {
     void (async () => {
       try {
         const res = await avecReessai401<Rapports>('/api/rapports');
-        if (!annule) {
-          setRapports(res);
-          setSource('serveur');
-        }
+        if (!annule) poserEtat({ rapports: res, source: 'serveur' });
       } catch (err) {
         if (annule) return;
         if (err instanceof ApiError && err.status === 401) {
-          setSource('demonstration');
+          // Pas de repli chiffré : un rapport est exact ou absent. On efface
+          // aussi la valeur mémorisée — la session a expiré, ces chiffres ne
+          // sont plus les nôtres à montrer.
+          poserEtat({ rapports: null, source: 'demonstration' });
         } else {
           setErreur(messageErreur(err, 'Impossible de calculer les indicateurs.'));
         }
@@ -65,7 +74,7 @@ export function useRapports() {
     return () => {
       annule = true;
     };
-  }, []);
+  }, [poserEtat]);
 
   return { rapports, source, chargement, erreur };
 }
