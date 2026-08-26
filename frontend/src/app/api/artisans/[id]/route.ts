@@ -20,6 +20,7 @@ import { requireAuth } from '@/lib/server/middleware';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { log } from '@/lib/server/observability/log';
 import { prisma } from '@/lib/server/prisma';
+import { zTelephone } from '@/lib/server/telephone';
 
 const HEURES_MIN = 1;
 const HEURES_MAX = 16;
@@ -29,6 +30,7 @@ const majSchema = z
     role: z.string().trim().min(1).max(60).optional(),
     dailyHours: z.number().int().min(HEURES_MIN).max(HEURES_MAX).optional(),
     active: z.boolean().optional(),
+    phone: zTelephone.optional(),
   })
   .refine((o) => Object.keys(o).length > 0, { message: 'Aucune modification fournie' });
 
@@ -43,6 +45,7 @@ const SELECTION = {
   initials: true,
   dailyHours: true,
   active: true,
+  phone: true,
 } as const;
 
 export async function PATCH(
@@ -95,13 +98,15 @@ export async function PATCH(
     // `parsed.data` : sous `exactOptionalPropertyTypes`, une clé présente et
     // valant `undefined` n'est pas la même chose qu'une clé absente, et Prisma
     // n'accepte que la seconde.
-    const { role, dailyHours, active } = parsed.data;
+    const { role, dailyHours, active, phone } = parsed.data;
     const artisan = await prisma.artisan.update({
       where: { id: cible.id },
       data: {
         ...(role === undefined ? {} : { role }),
         ...(dailyHours === undefined ? {} : { dailyHours }),
         ...(active === undefined ? {} : { active }),
+        // Une chaine vide efface le numero : c est un retrait volontaire.
+        ...(phone === undefined ? {} : { phone: phone === '' ? null : phone }),
       },
       select: SELECTION,
     });

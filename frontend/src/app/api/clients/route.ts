@@ -16,13 +16,15 @@ import { requireAuth } from '@/lib/server/middleware';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { log } from '@/lib/server/observability/log';
 import { prisma } from '@/lib/server/prisma';
+import { zTelephone } from '@/lib/server/telephone';
 
 /** Genres acceptés — miroir de la palette de mesures présentée à l'écran. */
 const GENRES = ['FEMALE', 'MALE'] as const;
 
 const creationSchema = z.object({
   name: z.string().trim().min(1, 'Le nom est requis').max(120),
-  phone: z.string().trim().max(40).optional(),
+  // Numero international, meme controle qu a l ecran.
+  phone: zTelephone.optional(),
   gender: z.enum(GENRES),
   loyal: z.boolean().optional(),
   notes: z.string().trim().max(2000).optional(),

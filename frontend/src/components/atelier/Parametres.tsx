@@ -8,6 +8,9 @@ import Avatar from '@/components/ui/Avatar';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { Field } from '@/components/ui/Field';
+import ChampTelephone from '@/components/ui/ChampTelephone';
+import { formaterAffichage, validerInternational } from '@/lib/indicatifs';
+import { InitialesAtelier } from '@/components/atelier/IdentiteAtelier';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import { NOM_ATELIER_DEFAUT } from '@/lib/atelier-identite';
@@ -97,6 +100,85 @@ function ChampEnregistrable({
   );
 }
 
+/**
+ * Téléphone de l'atelier, enregistrable.
+ *
+ * Même forme que `ChampEnregistrable` — bouton dédié, la saisie ne part pas à
+ * chaque frappe — mais bâti sur `ChampTelephone` pour l'indicatif. Le numéro
+ * s'affiche à deux endroits de cet écran, l'onglet Atelier et l'onglet Compte :
+ * les deux lisent `user.phone` et écrivent au même endroit, donc ils ne peuvent
+ * pas diverger.
+ */
+function TelephoneEnregistrable({
+  label,
+  valeur,
+  aide,
+  onEnregistrer,
+}: {
+  label: string;
+  valeur: string;
+  aide?: string;
+  onEnregistrer: (valeur: string) => Promise<void>;
+}) {
+  const [saisie, setSaisie] = useState(valeur);
+  const [envoi, setEnvoi] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [enregistre, setEnregistre] = useState(false);
+
+  // La valeur du serveur reprend la main quand elle arrive après le montage.
+  useEffect(() => {
+    setSaisie(valeur);
+  }, [valeur]);
+
+  const modifie = saisie !== valeur;
+  const invalide = validerInternational(saisie) !== null;
+
+  async function soumettre() {
+    setEnvoi(true);
+    setErreur(null);
+    try {
+      await onEnregistrer(saisie);
+      setEnregistre(true);
+    } catch (err) {
+      setErreur(messageErreur(err, 'Le numéro n’a pas pu être enregistré.'));
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <ChampTelephone
+        label={label}
+        valeur={saisie}
+        onChange={(v) => {
+          setSaisie(v);
+          setEnregistre(false);
+        }}
+        {...(aide === undefined ? {} : { aide })}
+      />
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          taille="sm"
+          onClick={() => void soumettre()}
+          disabled={!modifie || envoi || invalide}
+        >
+          {envoi ? 'Enregistrement…' : 'Enregistrer'}
+        </Button>
+        {erreur && (
+          <span role="alert" className="text-danger text-xs">
+            {erreur}
+          </span>
+        )}
+        {enregistre && !modifie && !erreur && (
+          <span className="text-success text-xs">Enregistré.</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Champ({ label, valeur }: { label: string; valeur: string }) {
   return (
     <div>
@@ -160,6 +242,12 @@ export default function Parametres() {
     await api('/api/atelier', { method: 'PATCH', body: { workshopName: nom } });
     await refresh();
   }
+  /** Même chemin que le nom : on écrit, puis on relit la session, seule source. */
+  async function enregistrerTelephone(numero: string) {
+    await api('/api/atelier', { method: 'PATCH', body: { phone: numero } });
+    await refresh();
+  }
+
   const { theme, definir: definirTheme } = useTheme();
 
   const {
@@ -210,6 +298,7 @@ export default function Parametres() {
   const [nomArtisan, setNomArtisan] = useState('');
   const [roleArtisan, setRoleArtisan] = useState('Couturière');
   const [capaciteArtisan, setCapaciteArtisan] = useState('8');
+  const [telArtisan, setTelArtisan] = useState('');
   const [echecEquipe, setEchecEquipe] = useState<string | null>(null);
   const [envoiArtisan, setEnvoiArtisan] = useState(false);
 
@@ -224,6 +313,7 @@ export default function Parametres() {
       nom: nomArtisan.trim(),
       role: roleArtisan.trim(),
       capacite,
+      telephone: telArtisan,
     });
     setEnvoiArtisan(false);
 
@@ -232,6 +322,7 @@ export default function Parametres() {
       return;
     }
     setNomArtisan('');
+    setTelArtisan('');
     setArtisanOuvert(false);
   }
 
@@ -325,10 +416,13 @@ export default function Parametres() {
                   placeholder={NOM_ATELIER_DEFAUT}
                   onEnregistrer={enregistrerNom}
                 />
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Champ label="Téléphone" valeur={atelier.telephone} />
-                  <Champ label="Ville" valeur={atelier.ville} />
-                </div>
+                <TelephoneEnregistrable
+                  label="Téléphone de l’atelier"
+                  valeur={user?.phone ?? ''}
+                  aide="Le numéro sur lequel on joint l’atelier."
+                  onEnregistrer={enregistrerTelephone}
+                />
+                <Champ label="Ville" valeur={atelier.ville} />
               </div>
             </div>
 
@@ -388,6 +482,7 @@ export default function Parametres() {
                     <div className="text-foreground truncate text-sm font-medium">{m.nom}</div>
                     <div className="text-muted-foreground text-xs">
                       {m.role} · {m.capacite} h / jour
+                      {m.telephone ? ` · ${formaterAffichage(m.telephone)}` : ''}
                     </div>
                   </div>
                   <span
@@ -543,17 +638,35 @@ export default function Parametres() {
           <section className="bg-surface border-border rounded-lg border p-5">
             <h2 className="font-headings text-foreground mb-4 text-sm font-bold">Votre compte</h2>
 
+            {/*
+              Le nom, l’adresse et le numéro étaient écrits en dur — « Moussa
+              Koné », « moussa.kone@atelierpro.bf ». Chaque atelier voyait donc
+              l’identité de quelqu’un d’autre sur SON écran de compte, jusqu’à
+              croire s’être trompé de session.
+            */}
             <div className="mb-5 flex items-center gap-4">
-              <Avatar initiales="MK" taille="lg" className="h-12 w-12 text-base" accentue />
-              <div>
-                <div className="text-foreground text-sm font-medium">Moussa Koné</div>
-                <div className="text-muted-foreground text-xs">Propriétaire · Tailleur senior</div>
+              <Avatar
+                initiales={<InitialesAtelier />}
+                taille="lg"
+                className="h-12 w-12 text-base"
+                accentue
+              />
+              <div className="min-w-0">
+                <div className="text-foreground truncate text-sm font-medium">
+                  {user?.workshopName?.trim() || NOM_ATELIER_DEFAUT}
+                </div>
+                <div className="text-muted-foreground text-xs">Propriétaire de l’atelier</div>
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Champ label="Adresse e-mail" valeur="moussa.kone@atelierpro.bf" />
-              <Champ label="Téléphone" valeur="+226 70 12 34 56" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Champ label="Adresse e-mail" valeur={user?.email ?? '—'} />
+              <TelephoneEnregistrable
+                label="Téléphone"
+                valeur={user?.phone ?? ''}
+                aide="Le même que celui de l’onglet Atelier."
+                onEnregistrer={enregistrerTelephone}
+              />
             </div>
 
             {/*
@@ -747,6 +860,13 @@ export default function Parametres() {
             aide="Un apprenti ne tient pas les 8 h d’un tailleur senior — le planning s’appuie sur ce chiffre."
             value={capaciteArtisan}
             onChange={(e) => setCapaciteArtisan(e.target.value)}
+          />
+
+          <ChampTelephone
+            label="Téléphone (facultatif)"
+            valeur={telArtisan}
+            onChange={setTelArtisan}
+            aide="Pour joindre l’artisan quand une tenue est promise pour le lendemain."
           />
 
           {echecEquipe && (

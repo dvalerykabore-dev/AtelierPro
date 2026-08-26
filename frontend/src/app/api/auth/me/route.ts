@@ -43,6 +43,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         email: true,
         emailVerifiedAt: true,
         workshopName: true,
+        phone: true,
         createdAt: true,
         updatedAt: true,
         passwordHash: true,
@@ -72,6 +73,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           : dbUser.updatedAt
         : null,
       workshopName: dbUser?.workshopName ?? null,
+      phone: dbUser?.phone ?? null,
       hasPassword: !!dbUser?.passwordHash,
       linkedProviders: (dbUser?.oauthAccounts ?? []).map((a) => a.provider),
     };

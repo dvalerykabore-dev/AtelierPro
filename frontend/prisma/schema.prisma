@@ -22,6 +22,8 @@ model User {
   // Nullable : un compte fraîchement créé n'en a pas encore, et l'écran doit
   // dire « Mon atelier » plutôt que d'inventer une raison sociale.
   workshopName      String?
+  // Numero de l'atelier, au format international (+22670123456).
+  phone             String?
 
   // Optional display name — populated from OAuth profile on first sign-in.
   // Email/password users can fill it later via /api/auth/me PATCH (future).
@@ -462,6 +464,11 @@ model Artisan {
 
   name String
   role String
+
+  // Numero de contact, au format international (+22670123456). Un artisan
+  // absent se joint : c'est la premiere chose qu'on cherche quand une tenue
+  // est promise pour le lendemain.
+  phone String?
 
   // Initiales affichées dans les pastilles, et surtout clé de rapprochement :
   // `TailoringOrder.assignee` et `WorkshopTask.assignee` les stockent. D'où

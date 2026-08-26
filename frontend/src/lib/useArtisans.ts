@@ -15,6 +15,8 @@ export interface Artisan {
   /** Capacité quotidienne en heures. */
   capacite: number;
   actif: boolean;
+  /** Numéro international, ou chaîne vide. Facultatif : tous n’en laissent pas un. */
+  telephone: string;
   /** Heures déjà engagées aujourd'hui, calculées depuis les tâches du jour. */
   heuresAujourdhui: number;
 }
@@ -26,6 +28,7 @@ interface ArtisanApi {
   initials: string;
   dailyHours: number;
   active: boolean;
+  phone: string | null;
   heuresAujourdhui: number;
 }
 
@@ -39,6 +42,7 @@ function versUI(a: ArtisanApi): Artisan {
     initiales: a.initials,
     capacite: a.dailyHours,
     actif: a.active,
+    telephone: a.phone ?? '',
     heuresAujourdhui: a.heuresAujourdhui,
   };
 }
@@ -92,6 +96,7 @@ export function useArtisans() {
               initiales: a.initiales,
               capacite: a.heuresTotal,
               actif: true,
+              telephone: '',
               heuresAujourdhui: a.heuresUtilisees,
             })),
             source: 'demonstration',
@@ -111,14 +116,26 @@ export function useArtisans() {
 
   /** Renvoie `null` en cas de succès, sinon le message à afficher. */
   const ajouter = useCallback(
-    async (nouveau: { nom: string; role: string; capacite: number }): Promise<string | null> => {
+    async (nouveau: {
+      nom: string;
+      role: string;
+      capacite: number;
+      telephone?: string;
+    }): Promise<string | null> => {
       if (source === 'demonstration') {
         return 'Connectez-vous pour composer votre équipe.';
       }
       try {
         const res = await api<{ artisan: ArtisanApi }>('/api/artisans', {
           method: 'POST',
-          body: { name: nouveau.nom, role: nouveau.role, dailyHours: nouveau.capacite },
+          body: {
+            name: nouveau.nom,
+            role: nouveau.role,
+            dailyHours: nouveau.capacite,
+            // Absent plutôt que vide : la route distingue « pas fourni » de
+            // « effacé », et une création n’a rien à effacer.
+            ...(nouveau.telephone ? { phone: nouveau.telephone } : {}),
+          },
         });
         poserEtat((prec) => ({ ...prec, artisans: [...prec.artisans, versUI(res.artisan)] }));
         return null;

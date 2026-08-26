@@ -19,10 +19,12 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import GenreToggle from '@/components/ui/GenreToggle';
 import { Field } from '@/components/ui/Field';
+import ChampTelephone from '@/components/ui/ChampTelephone';
 import { useClients } from '@/lib/useClients';
 import { useCommandes } from '@/lib/useCommandes';
 import { useReleveMesures } from '@/lib/useReleveMesures';
 import { numeroWhatsApp } from '@/lib/commande-fiche';
+import { formaterAffichage } from '@/lib/indicatifs';
 import {
   nombreDeChamps,
   paletteDe,
@@ -186,13 +188,18 @@ export default function CarnetClients() {
           value={nouveauNom}
           onChange={(e) => setNouveauNom(e.target.value)}
         />
-        <Field
+        {/*
+          L'aide annonçait « Sert aux rappels d'essayage et de livraison par
+          SMS » : aucun envoi SMS n'existe dans le code, et rien n'était prévu
+          pour en écrire. Elle dit maintenant l'usage réel — c'est par WhatsApp
+          et par appel que l'atelier joint ses clients, depuis la fiche du
+          carnet et celle de la commande.
+        */}
+        <ChampTelephone
           label="Téléphone"
-          type="tel"
-          placeholder="+226 70 00 00 00"
-          aide="Sert aux rappels d’essayage et de livraison par SMS."
-          value={nouveauTelephone}
-          onChange={(e) => setNouveauTelephone(e.target.value)}
+          valeur={nouveauTelephone}
+          onChange={setNouveauTelephone}
+          aide="Sert au bouton WhatsApp de la fiche client et de la commande."
         />
 
         <div className="flex flex-col gap-1.5">
@@ -364,7 +371,7 @@ export default function CarnetClients() {
               <div className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-3 text-xs">
                 <span className="flex items-center gap-1">
                   <Phone size={11} aria-hidden />
-                  {selectionne.telephone}
+                  {formaterAffichage(selectionne.telephone)}
                 </span>
                 <span aria-hidden>·</span>
                 <span className="flex items-center gap-1">
@@ -582,7 +589,7 @@ export default function CarnetClients() {
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-muted-foreground text-xs">Téléphone</span>
                   <span className="text-foreground text-sm font-medium">
-                    {selectionne.telephone}
+                    {formaterAffichage(selectionne.telephone)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">

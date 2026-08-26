@@ -17,6 +17,7 @@ import { requireAuth } from '@/lib/server/middleware';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { log } from '@/lib/server/observability/log';
 import { prisma } from '@/lib/server/prisma';
+import { zTelephone } from '@/lib/server/telephone';
 
 /** Bornes de capacité quotidienne — au-delà, c'est une erreur de saisie. */
 const HEURES_MIN = 1;
@@ -26,6 +27,7 @@ const creationSchema = z.object({
   name: z.string().trim().min(1, 'Le nom est requis').max(120),
   role: z.string().trim().min(1, 'Le rôle est requis').max(60),
   dailyHours: z.number().int().min(HEURES_MIN).max(HEURES_MAX).optional(),
+  phone: zTelephone.optional(),
 });
 
 function formatIssues(err: z.ZodError) {
@@ -71,6 +73,7 @@ const SELECTION = {
   initials: true,
   dailyHours: true,
   active: true,
+  phone: true,
 } as const;
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -133,7 +136,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { name, role, dailyHours } = parsed.data;
+    const { name, role, dailyHours, phone } = parsed.data;
 
     const existants = await prisma.artisan.findMany({
       where: { userId: auth.user.sub },
@@ -156,6 +159,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         role,
         initials,
         ...(dailyHours === undefined ? {} : { dailyHours }),
+        ...(phone ? { phone } : {}),
       },
       select: SELECTION,
     });
