@@ -1,9 +1,46 @@
 'use client';
 
+import Link from 'next/link';
 import { Clock } from 'lucide-react';
 import CapacityBar, { chargeArtisan } from '@/components/ui/CapacityBar';
 import { useArtisans } from '@/lib/useArtisans';
 import { cn } from '@/lib/utils';
+
+export interface EtatBadge {
+  chargement: boolean;
+  /** Nombre d'artisans actifs. Zéro n'est pas « de la place », c'est personne. */
+  effectif: number;
+  /** Artisans qui ont encore des heures devant eux aujourd'hui. */
+  disponibles: number;
+  chargeGlobale: number;
+}
+
+export interface LibelleBadge {
+  texte: string;
+  /** Rouge : plus rien à donner aujourd'hui. */
+  alerte: boolean;
+}
+
+/**
+ * Ce qu'annonce la pastille de la barre haute.
+ *
+ * Extrait du composant pour être vérifiable seul. Le cas qui motive cette
+ * extraction est l'atelier sans artisan : la condition de saturation exigeait
+ * `effectif > 0`, si bien qu'un atelier vide tombait dans la branche « il reste
+ * de la place ». La barre haute annonçait des disponibilités alors qu'il n'y
+ * avait personne pour coudre — le pire des deux sens possibles.
+ */
+export function libelleBadge(etat: EtatBadge): LibelleBadge {
+  if (etat.chargement) return { texte: 'Calcul…', alerte: false };
+  if (etat.effectif === 0) return { texte: 'Aucun artisan', alerte: true };
+  if (etat.chargeGlobale >= 100 || etat.disponibles === 0) {
+    return { texte: 'Journée saturée', alerte: true };
+  }
+  // Le compte plutôt que « Places disponibles » : savoir s'il en reste une ou
+  // quatre change ce qu'on accepte de promettre à un client au comptoir.
+  const s = etat.disponibles > 1 ? 's' : '';
+  return { texte: `${etat.disponibles} place${s} disponible${s}`, alerte: false };
+}
 
 export interface CapaciteEquipeProps {
   /**
@@ -50,19 +87,36 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
     // Le seuil se lit sur la charge globale, pas sur un décompte fixe de trois
     // artisans saturés : un atelier de deux personnes n'atteindrait jamais ce
     // chiffre et se croirait disponible en permanence.
-    const complet = equipe.length > 0 && chargeGlobale >= 100;
+    const { texte, alerte } = libelleBadge({
+      chargement,
+      effectif: equipe.length,
+      disponibles,
+      chargeGlobale,
+    });
+
+    // Un lien, plus un `<span>`.
+    //
+    // La pastille est posée dans la barre haute, contre le bouton « Nouvelle
+    // commande », avec la même forme et la même taille : elle se lit comme un
+    // bouton et on clique dessus. Elle ne faisait rien. Le planning est la
+    // suite naturelle — c'est là qu'on voit qui a des heures devant lui et
+    // qu'on lui donne le travail.
     return (
-      <span
+      <Link
+        href="/planning"
+        title={
+          chargement
+            ? 'Calcul de la charge du jour…'
+            : `${heuresUtilisees} h engagées sur ${heuresTotal} h — voir le planning`
+        }
         className={cn(
-          'flex items-center gap-2 rounded-md border px-3 py-1.5',
-          complet ? 'border-danger bg-danger' : 'border-success bg-success',
+          'flex items-center gap-2 rounded-md border px-3 py-1.5 transition-opacity hover:opacity-85',
+          alerte ? 'border-danger bg-danger' : 'border-success bg-success',
         )}
       >
         <span className="bg-background h-2 w-2 rounded-full" aria-hidden />
-        <span className="text-background text-xs font-medium">
-          {chargement ? 'Calcul…' : complet ? 'Journée saturée' : 'Places disponibles'}
-        </span>
-      </span>
+        <span className="text-background text-xs font-medium">{texte}</span>
+      </Link>
     );
   }
 
