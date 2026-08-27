@@ -11,6 +11,7 @@ import {
   chiffres,
   composer,
   decomposer,
+  drapeau,
   formaterAffichage,
   paysDe,
   sansZeroInitial,
@@ -258,5 +259,38 @@ describe('formaterAffichage', () => {
 
   it('met en forme dès que l’indicatif est là', () => {
     expect(formaterAffichage('0022670123456')).toBe('+226 70 12 34 56');
+  });
+});
+
+describe('drapeau', () => {
+  it('déduit le drapeau du code ISO', () => {
+    // Un drapeau Unicode est une paire d'indicateurs régionaux : 🇧🇫 = 🇧 + 🇫.
+    expect(drapeau('BF')).toBe('\u{1F1E7}\u{1F1EB}');
+    expect(drapeau('CI')).toBe('\u{1F1E8}\u{1F1EE}');
+  });
+
+  it('accepte un code en minuscules', () => {
+    expect(drapeau('fr')).toBe(drapeau('FR'));
+  });
+
+  it('rend une chaîne vide plutôt qu’un caractère absurde sur un code invalide', () => {
+    expect(drapeau('')).toBe('');
+    expect(drapeau('BFA')).toBe('');
+    expect(drapeau('1F')).toBe('');
+  });
+
+  it('donne un drapeau distinct à chaque pays de la liste', () => {
+    // Deux pays au même drapeau rendraient la liste indéchiffrable, puisque le
+    // nom n'y figure plus.
+    const drapeaux = PAYS.map((p) => drapeau(p.code));
+    expect(new Set(drapeaux).size).toBe(PAYS.length);
+    for (const d of drapeaux) expect(d).not.toBe('');
+  });
+
+  it('ne remplace pas l’indicatif — il reste lisible sans police à drapeaux', () => {
+    // Windows ne livre pas ces glyphes et affiche « BF » à la place du drapeau.
+    // C'est pourquoi l'indicatif est écrit à côté dans le menu : la ligne garde
+    // son sens là où le dessin n'apparaît pas.
+    for (const p of PAYS) expect(p.indicatif).not.toBe('');
   });
 });

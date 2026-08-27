@@ -1,7 +1,15 @@
 'use client';
 
 import { useId, useMemo } from 'react';
-import { PAYS, PAYS_DEFAUT, composer, decomposer, paysDe, valider } from '@/lib/indicatifs';
+import {
+  PAYS,
+  PAYS_DEFAUT,
+  composer,
+  decomposer,
+  drapeau,
+  paysDe,
+  valider,
+} from '@/lib/indicatifs';
 import { cn } from '@/lib/utils';
 
 export interface ChampTelephoneProps {
@@ -68,15 +76,22 @@ export default function ChampTelephone({
           aAfficher && 'border-danger',
         )}
       >
+        {/*
+          Drapeau + indicatif, sans le nom du pays.
+          L'indicatif reste écrit : sous Windows, qui ne livre pas les glyphes
+          de drapeau, la paire de lettres s'affiche telle quelle (« BF ») et la
+          ligne doit rester lisible sans lui. C'est aussi ce qui permet de
+          reconnaître son pays d'un coup d'œil une fois la liste refermée.
+        */}
         <select
           aria-label="Indicatif du pays"
           value={codePays}
           onChange={(e) => onChange(composer(e.target.value, national))}
-          className="text-foreground border-border max-w-[9.5rem] border-r bg-transparent py-2.5 pr-1 pl-3 text-sm focus:outline-none"
+          className="text-foreground border-border w-[6.5rem] flex-shrink-0 border-r bg-transparent py-2.5 pr-1 pl-3 text-sm focus:outline-none"
         >
           {PAYS.map((p) => (
-            <option key={p.code} value={p.code}>
-              +{p.indicatif} {p.nom}
+            <option key={p.code} value={p.code} label={`${drapeau(p.code)} +${p.indicatif}`}>
+              {drapeau(p.code)} +{p.indicatif}
             </option>
           ))}
         </select>
@@ -97,10 +112,19 @@ export default function ChampTelephone({
         />
       </div>
 
+      {/*
+        Le nom du pays a quitté la liste : il se lit ici. Sans lui, on ne sait
+        plus lequel on a sélectionné dès que le drapeau ne s'affiche pas, ou
+        qu'on hésite entre deux drapeaux voisins.
+      */}
       <p id={idAide} className={cn('text-xs', aAfficher ? 'text-danger' : 'text-muted-foreground')}>
-        {aAfficher ??
-          aide ??
-          (pays ? `Sans le 0 de tête — exemple : ${pays.exemple}.` : 'Choisissez un pays.')}
+        {aAfficher ?? (
+          <>
+            {pays && <span className="text-foreground font-medium">{pays.nom}</span>}
+            {pays && ' — '}
+            {aide ?? (pays ? `exemple : ${pays.exemple}` : 'Choisissez un pays.')}
+          </>
+        )}
       </p>
     </div>
   );

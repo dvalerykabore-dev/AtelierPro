@@ -308,6 +308,31 @@ export function paysDe(code: string): Pays | undefined {
   return PAR_CODE.get(code);
 }
 
+/** Première lettre des indicateurs régionaux Unicode : 🇦 vaut U+1F1E6. */
+const INDICATEUR_A = 0x1f1e6;
+const LETTRE_A = 'A'.codePointAt(0)!;
+
+/**
+ * Drapeau d'un pays, déduit de son code ISO.
+ *
+ * Un drapeau Unicode est une paire d'« indicateurs régionaux » — deux lettres
+ * spéciales que la police assemble en drapeau. Le déduire du code plutôt que de
+ * le stocker garantit qu'il ne peut pas contredire le pays : ajouter une ligne
+ * à la table suffit, sans risque de coller le mauvais drapeau à un indicatif.
+ *
+ * ATTENTION à ce que la police en fait. Android, iOS et macOS dessinent le
+ * drapeau ; Windows ne livre pas ces glyphes et affiche les deux lettres — on
+ * lit « BF » au lieu de 🇧🇫. C'est pour cela que l'indicatif reste écrit à côté :
+ * la ligne garde son sens là où le drapeau ne s'affiche pas.
+ */
+export function drapeau(code: string): string {
+  const iso = code.toUpperCase();
+  if (!/^[A-Z]{2}$/.test(iso)) return '';
+  return [...iso]
+    .map((c) => String.fromCodePoint(INDICATEUR_A + (c.codePointAt(0)! - LETTRE_A)))
+    .join('');
+}
+
 /** Ne garde que les chiffres — l'utilisateur colle des espaces, des points, des tirets. */
 export function chiffres(valeur: string): string {
   return [...valeur].filter((c) => c >= '0' && c <= '9').join('');
