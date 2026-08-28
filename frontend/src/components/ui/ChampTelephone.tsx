@@ -1,15 +1,13 @@
 'use client';
 
-import { useId, useMemo } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { PAYS, drapeau, paysDe, valider } from '@/lib/indicatifs';
 import {
-  PAYS,
-  PAYS_DEFAUT,
-  composer,
-  decomposer,
-  drapeau,
-  paysDe,
-  valider,
-} from '@/lib/indicatifs';
+  choisirPays as transitionPays,
+  etatInitial,
+  resynchroniser,
+  taper as transitionFrappe,
+} from '@/lib/champ-telephone-etat';
 import { cn } from '@/lib/utils';
 
 export interface ChampTelephoneProps {
@@ -30,19 +28,24 @@ export interface ChampTelephoneProps {
 /**
  * Indicatif au menu déroulant, numéro à côté.
  *
- * Le champ précédent était un `<input type="tel">` libre où l'on tapait ce
- * qu'on voulait : on y trouve aujourd'hui « 752000 » aussi bien que
- * « +226 70 12 34 56 ». Un numéro sans indicatif ne se compose pas depuis
- * l'étranger et ouvre un lien WhatsApp mort — or c'est par là que l'atelier
- * prévient un client que sa tenue est prête.
+ * Le pays et le numéro tapé sont tenus ICI, en état local, et non déduits de la
+ * valeur remontée. La première version les déduisait, et deux choses ne
+ * marchaient pas — les deux invisibles à la relecture du code, évidentes dès
+ * qu'on se sert du champ :
  *
- * `<select>` natif volontairement : il descend en liste système sur téléphone,
- * se navigue aux flèches et se cherche en tapant les premières lettres, sans
- * une ligne de code ARIA à maintenir. Une liste déroulante maison ferait moins
- * bien pour beaucoup plus cher.
+ *   - choisir un pays AVANT de taper le numéro ne tenait pas. Sans chiffres,
+ *     `composer` rend une chaîne vide ; le pays n'avait nulle part où vivre et
+ *     le menu retombait aussitôt sur le Burkina. C'est pourtant l'ordre naturel :
+ *     on déroule l'indicatif, puis on tape.
+ *   - le zéro de tête disparaissait sous les doigts. En France il est retiré à
+ *     la composition, donc taper « 0 » ne produisait rien à l'écran.
  *
- * La valeur remontée est toujours le numéro international complet ; le
- * découpage pays/national ne vit que le temps de l'affichage.
+ * La valeur remontée reste le numéro international normalisé ; ce que l'on
+ * affiche est ce que la personne a tapé. Les deux ne coïncident pas toujours,
+ * et c'est le but.
+ *
+ * `<select>` natif volontairement : liste système sur téléphone, navigation aux
+ * flèches, sans une ligne d'ARIA à maintenir.
  */
 export default function ChampTelephone({
   label,
@@ -57,12 +60,27 @@ export default function ChampTelephone({
   const id = useId();
   const idAide = `${id}-aide`;
 
-  const { codePays, national } = useMemo(() => decomposer(valeur, PAYS_DEFAUT), [valeur]);
-  const pays = paysDe(codePays);
+  // L'état de départ ne se recalcule pas : la suite est pilotée par les
+  // transitions, et repartir de `valeur` à chaque rendu ramènerait le défaut.
+  const [etat, setEtat] = useState(useRef(etatInitial(valeur)).current);
 
-  // Erreur imposée par l'appelant, sinon celle que la longueur révèle.
-  const probleme = erreur ?? valider(codePays, national);
-  const aAfficher = probleme && national !== '' ? probleme : null;
+  /**
+   * La valeur a changé côté formulaire — arrivée du serveur, ou remise à zéro
+   * après enregistrement. `resynchroniser` rend `null` quand il n'y a rien à
+   * faire, ce qui est le cas de chaque frappe.
+   */
+  useEffect(() => {
+    setEtat((courant) => resynchroniser(valeur, courant) ?? courant);
+  }, [valeur]);
+
+  function appliquer(t: { etat: typeof etat; valeur: string }) {
+    setEtat(t.etat);
+    onChange(t.valeur);
+  }
+
+  const pays = paysDe(etat.codePays);
+  const probleme = erreur ?? valider(etat.codePays, etat.saisie);
+  const aAfficher = probleme && etat.saisie.trim() !== '' ? probleme : null;
 
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
@@ -80,17 +98,16 @@ export default function ChampTelephone({
           Drapeau + indicatif, sans le nom du pays.
           L'indicatif reste écrit : sous Windows, qui ne livre pas les glyphes
           de drapeau, la paire de lettres s'affiche telle quelle (« BF ») et la
-          ligne doit rester lisible sans lui. C'est aussi ce qui permet de
-          reconnaître son pays d'un coup d'œil une fois la liste refermée.
+          ligne doit rester lisible sans lui.
         */}
         <select
           aria-label="Indicatif du pays"
-          value={codePays}
-          onChange={(e) => onChange(composer(e.target.value, national))}
+          value={etat.codePays}
+          onChange={(e) => appliquer(transitionPays(e.target.value, etat))}
           className="text-foreground border-border w-[6.5rem] flex-shrink-0 border-r bg-transparent py-2.5 pr-1 pl-3 text-sm focus:outline-none"
         >
           {PAYS.map((p) => (
-            <option key={p.code} value={p.code} label={`${drapeau(p.code)} +${p.indicatif}`}>
+            <option key={p.code} value={p.code}>
               {drapeau(p.code)} +{p.indicatif}
             </option>
           ))}
@@ -106,8 +123,8 @@ export default function ChampTelephone({
           aria-invalid={aAfficher ? true : undefined}
           aria-describedby={idAide}
           placeholder={pays?.exemple ?? ''}
-          value={national}
-          onChange={(e) => onChange(composer(codePays, e.target.value))}
+          value={etat.saisie}
+          onChange={(e) => appliquer(transitionFrappe(e.target.value, etat))}
           className="text-foreground placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm focus:outline-none"
         />
       </div>
