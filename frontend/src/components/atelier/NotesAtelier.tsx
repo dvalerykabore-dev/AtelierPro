@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { AlertCircle, Plus, Send } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
 import Button from '@/components/ui/Button';
-import { InitialesAtelier } from '@/components/atelier/IdentiteAtelier';
+import { PastilleAtelier } from '@/components/atelier/IdentiteAtelier';
 import { useNotesCommande } from '@/lib/useNotesCommande';
 
 export interface NotesAtelierProps {
@@ -100,7 +100,7 @@ export default function NotesAtelier({ commandeId }: NotesAtelierProps) {
         {session && (
           <form onSubmit={soumettre} className="flex flex-col gap-2">
             <div className="flex items-start gap-3">
-              <Avatar initiales={<InitialesAtelier />} taille="sm" className="mt-1" />
+              <PastilleAtelier taille="sm" className="mt-1" />
               <div className="bg-input border-border focus-within:border-primary flex min-h-12 flex-1 items-end gap-2 rounded-lg border px-3 py-2 transition-colors">
                 <textarea
                   id="nouvelle-note"

@@ -4,7 +4,6 @@ import BottomNav from '@/components/atelier/BottomNav';
 import AuthGuard from '@/components/atelier/AuthGuard';
 import { cn } from '@/lib/utils';
 import BasculeTheme from '@/components/ui/BasculeTheme';
-import { InitialesAtelier } from '@/components/atelier/IdentiteAtelier';
 
 export interface AppShellProps {
   /** Titre de la barre haute (desktop) et de l'en-tête mobile par défaut. */
@@ -44,7 +43,7 @@ export default function AppShell({
   return (
     <AuthGuard>
       <div className="bg-background font-body flex min-h-screen">
-        <SideNav initiales={<InitialesAtelier />} />
+        <SideNav />
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* En-tête mobile : personnalisé si fourni, sinon barre simple */}

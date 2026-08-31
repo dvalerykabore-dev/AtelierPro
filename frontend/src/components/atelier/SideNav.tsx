@@ -1,23 +1,23 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Settings } from 'lucide-react';
-import Avatar from '@/components/ui/Avatar';
+import { BoutonAtelierPro } from '@/components/marque/LogoAtelierPro';
+import { PastilleAtelier } from '@/components/atelier/IdentiteAtelier';
 import { entreesLaterales } from '@/components/atelier/nav-items';
 import { cn } from '@/lib/utils';
-
-export interface SideNavProps {
-  /** Initiales de l'utilisateur connecté, en pied de rail. */
-  initiales: ReactNode;
-}
 
 /**
  * Rail de navigation vertical, icônes seules — desktop uniquement.
  * Source Banani : /components/SideNav.jsx
+ *
+ * La pastille du pied lit la session elle-même. Elle recevait ses initiales en
+ * prop depuis `AppShell`, ce qui obligeait chaque appelant à savoir de quoi
+ * l'identité de l'atelier est faite — devenu faux le jour où elle a pu être un
+ * logo.
  */
-export default function SideNav({ initiales }: SideNavProps) {
+export default function SideNav() {
   const pathname = usePathname();
 
   return (
@@ -26,11 +26,10 @@ export default function SideNav({ initiales }: SideNavProps) {
       data-chrome="app"
       className="bg-surface border-border hidden min-h-full w-16 flex-col border-r lg:flex"
     >
-      {/* Logo */}
+      {/* Marque du produit — celle de l'atelier est la pastille du pied. */}
       <div className="border-border flex flex-col items-center border-b py-6">
-        <span className="bg-primary flex h-9 w-9 items-center justify-center rounded-md">
-          <span className="text-primary-foreground font-headings text-base font-bold">A</span>
-        </span>
+        <BoutonAtelierPro taille={34} className="text-primary" />
+        <span className="sr-only">AtelierPro</span>
       </div>
 
       {/* Entrées */}
@@ -82,7 +81,7 @@ export default function SideNav({ initiales }: SideNavProps) {
         >
           <Settings size={18} aria-hidden />
         </Link>
-        <Avatar initiales={initiales} taille="sm" accentue />
+        <PastilleAtelier taille="sm" accentue />
       </div>
     </nav>
   );

@@ -95,3 +95,104 @@ describe('PATCH /api/atelier', () => {
     expect(source).toMatch(/export const runtime = 'nodejs'/);
   });
 });
+
+// La ville, l'adresse, les horaires et le logo s'affichaient en constantes
+// tirées du jeu d'exemple — « Ouagadougou », « Secteur 15, rue 15.42 »,
+// « 08h00 — 18h00 », un « A » sur fond or — identiques pour tous les comptes.
+describe('PATCH /api/atelier — ville et adresse', () => {
+  it('enregistre la ville et l’adresse sur le compte connecté', async () => {
+    const res = await PATCH(makePatch({ city: 'Bobo-Dioulasso', address: 'Secteur 4, rue 4.12' }));
+    expect(res.status).toBe(200);
+    const data = prismaMock.user.update.mock.calls[0]?.[0]?.data;
+    expect(data?.workshopCity).toBe('Bobo-Dioulasso');
+    expect(data?.workshopAddress).toBe('Secteur 4, rue 4.12');
+  });
+
+  it('une chaîne vide efface la ville', async () => {
+    await PATCH(makePatch({ city: '  ' }));
+    expect(prismaMock.user.update.mock.calls[0]?.[0]?.data?.workshopCity).toBeNull();
+  });
+
+  it('ne touche pas au nom quand seule la ville est envoyée', async () => {
+    // `exactOptionalPropertyTypes` : une clé absente doit rester absente, sinon
+    // enregistrer une ville effacerait le nom de l'atelier au passage.
+    await PATCH(makePatch({ city: 'Ouagadougou' }));
+    const data = prismaMock.user.update.mock.calls[0]?.[0]?.data;
+    expect(data).not.toHaveProperty('workshopName');
+    expect(data).not.toHaveProperty('phone');
+  });
+
+  it('refuse une adresse trop longue', async () => {
+    const res = await PATCH(makePatch({ address: 'a'.repeat(241) }));
+    expect(res.status).toBe(400);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('PATCH /api/atelier — horaires', () => {
+  it('enregistre l’ouverture et la fermeture', async () => {
+    const res = await PATCH(makePatch({ opensAt: '08:00', closesAt: '18:00' }));
+    expect(res.status).toBe(200);
+    const data = prismaMock.user.update.mock.calls[0]?.[0]?.data;
+    expect(data?.workshopOpensAt).toBe('08:00');
+    expect(data?.workshopClosesAt).toBe('18:00');
+  });
+
+  it('refuse une heure seule', async () => {
+    // N'écrire que l'ouverture laisserait la fermeture à sa valeur précédente
+    // et pourrait composer « 19h00 — 18h00 », que personne n'a demandé.
+    const res = await PATCH(makePatch({ opensAt: '08:00' }));
+    expect(res.status).toBe(400);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+
+  it('refuse une fermeture antérieure à l’ouverture', async () => {
+    const res = await PATCH(makePatch({ opensAt: '18:00', closesAt: '08:00' }));
+    expect(res.status).toBe(400);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+
+  it('refuse une heure hors format', async () => {
+    const res = await PATCH(makePatch({ opensAt: '8h', closesAt: '18:00' }));
+    expect(res.status).toBe(400);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+
+  it('accepte de vider les deux — c’est un retrait volontaire', async () => {
+    const res = await PATCH(makePatch({ opensAt: '', closesAt: '' }));
+    expect(res.status).toBe(200);
+    const data = prismaMock.user.update.mock.calls[0]?.[0]?.data;
+    expect(data?.workshopOpensAt).toBeNull();
+    expect(data?.workshopClosesAt).toBeNull();
+  });
+});
+
+describe('PATCH /api/atelier — logo', () => {
+  const LOGO = 'https://res.cloudinary.com/demo/image/upload/v1/user-1/abc.png';
+
+  it('enregistre une URL issue de l’envoi', async () => {
+    const res = await PATCH(makePatch({ logoUrl: LOGO }));
+    expect(res.status).toBe(200);
+    expect(prismaMock.user.update.mock.calls[0]?.[0]?.data?.workshopLogoUrl).toBe(LOGO);
+  });
+
+  it('refuse une adresse extérieure au stockage', async () => {
+    // Le logo est chargé par un `<img src>` sur chaque écran de l'atelier :
+    // une adresse tierce verrait passer son IP à chaque affichage.
+    const res = await PATCH(makePatch({ logoUrl: 'https://exemple.net/pixel.png' }));
+    expect(res.status).toBe(400);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+
+  it('refuse un schéma qui ne charge pas une image distante', async () => {
+    const res = await PATCH(makePatch({ logoUrl: 'javascript:alert(1)' }));
+    expect(res.status).toBe(400);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+
+  it('une chaîne vide retire le logo', async () => {
+    const res = await PATCH(makePatch({ logoUrl: '' }));
+    expect(res.status).toBe(200);
+    expect(prismaMock.user.update.mock.calls[0]?.[0]?.data?.workshopLogoUrl).toBeNull();
+  });
+});

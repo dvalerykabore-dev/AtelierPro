@@ -10,39 +10,43 @@ import Modal from '@/components/ui/Modal';
 import { Field } from '@/components/ui/Field';
 import ChampTelephone from '@/components/ui/ChampTelephone';
 import { formaterAffichage, validerInternational } from '@/lib/indicatifs';
-import { InitialesAtelier } from '@/components/atelier/IdentiteAtelier';
+import { PastilleAtelier } from '@/components/atelier/IdentiteAtelier';
+import LogoAtelier from '@/components/atelier/LogoAtelier';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import { NOM_ATELIER_DEFAUT } from '@/lib/atelier-identite';
+import { CRENEAUX, formaterHeure, validerHoraires } from '@/lib/horaires';
 import { messageErreur } from '@/lib/message-erreur';
 import { useTheme } from '@/contexts/ThemeContext';
 import { THEMES } from '@/lib/theme';
 import { useArtisans } from '@/lib/useArtisans';
 import { useTarifs, type Tarif } from '@/lib/useTarifs';
 import { usePreferencesNotifications } from '@/lib/usePreferencesNotifications';
-import { atelier } from '@/lib/mock/atelier';
 import { cn, formatPrice } from '@/lib/utils';
 
 const ONGLETS = ['Atelier', 'Équipe', 'Tarification', 'Notifications', 'Compte'] as const;
 type Onglet = (typeof ONGLETS)[number];
 
-/** Champ en lecture seule — la maquette ne prévoit pas de saisie active. */
 /**
- * Champ enregistrable — le seul de cet écran, pour l'instant.
+ * Champ texte enregistrable — nom, ville, adresse de l'atelier.
  *
- * Les autres restent en lecture : ils affichent des valeurs simulées et rien
- * en base ne les porte. Les rendre modifiables donnerait l'impression de
- * réglages qui ne survivraient pas au rechargement.
+ * Bouton dédié plutôt qu'enregistrement à la frappe : chaque lettre partirait
+ * sinon en requête, et une saisie interrompue laisserait une ville à moitié
+ * tapée sur le compte.
  */
 function ChampEnregistrable({
   label,
   valeur,
   placeholder,
+  aide,
+  messageEchec,
   onEnregistrer,
 }: {
   label: string;
   valeur: string;
   placeholder: string;
+  aide?: string;
+  messageEchec: string;
   onEnregistrer: (valeur: string) => Promise<void>;
 }) {
   const [saisie, setSaisie] = useState(valeur);
@@ -64,7 +68,7 @@ function ChampEnregistrable({
       await onEnregistrer(saisie.trim());
       setEnregistre(true);
     } catch (err) {
-      setErreur(messageErreur(err, 'Le nom n’a pas pu être enregistré.'));
+      setErreur(messageErreur(err, messageEchec));
     } finally {
       setEnvoi(false);
     }
@@ -88,12 +92,132 @@ function ChampEnregistrable({
           {envoi ? 'Enregistrement…' : 'Enregistrer'}
         </Button>
       </div>
+      {aide && !erreur && <p className="text-muted-foreground mt-1 text-xs">{aide}</p>}
       {erreur && (
         <p role="alert" className="text-danger mt-1 text-xs">
           {erreur}
         </p>
       )}
       {enregistre && !modifie && !erreur && (
+        <p className="text-success mt-1 text-xs">Enregistré.</p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Heures d'ouverture, choisies dans deux dérouleurs.
+ *
+ * Deux listes plutôt qu'un champ libre : « 8h-18h », « 08:00 à 18h00 » et
+ * « du matin au soir » sont tous des saisies plausibles, et aucune ne se
+ * compare à une échéance. Les créneaux couvrent la journée entière, par
+ * demi-heures.
+ *
+ * Les deux heures partent ensemble, en un seul enregistrement. La route refuse
+ * d'ailleurs d'en écrire une seule : bouger l'ouverture sans la fermeture
+ * pourrait produire « 19h00 — 18h00 », un intervalle que personne n'a demandé.
+ */
+function HorairesEnregistrables({
+  ouverture,
+  fermeture,
+  onEnregistrer,
+}: {
+  ouverture: string;
+  fermeture: string;
+  onEnregistrer: (ouverture: string, fermeture: string) => Promise<void>;
+}) {
+  const [debut, setDebut] = useState(ouverture);
+  const [fin, setFin] = useState(fermeture);
+  const [envoi, setEnvoi] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [enregistre, setEnregistre] = useState(false);
+
+  // Les valeurs du serveur reprennent la main quand elles arrivent.
+  useEffect(() => {
+    setDebut(ouverture);
+    setFin(fermeture);
+  }, [ouverture, fermeture]);
+
+  const probleme = validerHoraires(debut, fin);
+  const modifie = debut !== ouverture || fin !== fermeture;
+
+  async function soumettre() {
+    setEnvoi(true);
+    setErreur(null);
+    try {
+      await onEnregistrer(debut, fin);
+      setEnregistre(true);
+    } catch (err) {
+      setErreur(messageErreur(err, 'Les horaires n’ont pas pu être enregistrés.'));
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
+  const styleListe =
+    'bg-input border-border text-foreground rounded-md border px-2 py-2.5 text-sm focus:border-primary focus:outline-none';
+
+  return (
+    <div>
+      <span className="text-muted-foreground mb-1 block text-xs">Horaires</span>
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={debut}
+          aria-label="Heure d’ouverture"
+          onChange={(e) => {
+            setDebut(e.target.value);
+            setEnregistre(false);
+          }}
+          className={styleListe}
+        >
+          <option value="">—</option>
+          {CRENEAUX.map((c) => (
+            <option key={c} value={c}>
+              {formaterHeure(c)}
+            </option>
+          ))}
+        </select>
+
+        <span className="text-muted-foreground text-sm">à</span>
+
+        <select
+          value={fin}
+          aria-label="Heure de fermeture"
+          onChange={(e) => {
+            setFin(e.target.value);
+            setEnregistre(false);
+          }}
+          className={styleListe}
+        >
+          <option value="">—</option>
+          {CRENEAUX.map((c) => (
+            <option key={c} value={c}>
+              {formaterHeure(c)}
+            </option>
+          ))}
+        </select>
+
+        <Button
+          type="button"
+          taille="sm"
+          onClick={() => void soumettre()}
+          disabled={!modifie || envoi || probleme !== null}
+        >
+          {envoi ? 'Enregistrement…' : 'Enregistrer'}
+        </Button>
+      </div>
+
+      {probleme && (
+        <p role="alert" className="text-danger mt-1 text-xs">
+          {probleme}
+        </p>
+      )}
+      {erreur && !probleme && (
+        <p role="alert" className="text-danger mt-1 text-xs">
+          {erreur}
+        </p>
+      )}
+      {enregistre && !modifie && !erreur && !probleme && (
         <p className="text-success mt-1 text-xs">Enregistré.</p>
       )}
     </div>
@@ -245,6 +369,28 @@ export default function Parametres() {
   /** Même chemin que le nom : on écrit, puis on relit la session, seule source. */
   async function enregistrerTelephone(numero: string) {
     await api('/api/atelier', { method: 'PATCH', body: { phone: numero } });
+    await refresh();
+  }
+  async function enregistrerVille(ville: string) {
+    await api('/api/atelier', { method: 'PATCH', body: { city: ville } });
+    await refresh();
+  }
+  async function enregistrerAdresse(adresse: string) {
+    await api('/api/atelier', { method: 'PATCH', body: { address: adresse } });
+    await refresh();
+  }
+  /**
+   * Les deux heures partent dans le même PATCH.
+   *
+   * La route refuse d'en écrire une seule : n'envoyer que l'ouverture
+   * laisserait la fermeture à sa valeur précédente et pourrait composer
+   * « 19h00 — 18h00 » sans que personne ne l'ait demandé.
+   */
+  async function enregistrerHoraires(ouverture: string, fermeture: string) {
+    await api('/api/atelier', {
+      method: 'PATCH',
+      body: { opensAt: ouverture, closesAt: fermeture },
+    });
     await refresh();
   }
 
@@ -402,18 +548,14 @@ export default function Parametres() {
             </h2>
 
             <div className="mb-4 flex flex-col gap-5 sm:flex-row">
-              <div className="bg-muted border-border flex h-20 w-20 flex-shrink-0 flex-col items-center justify-center gap-1 rounded-lg border">
-                <span className="bg-primary flex h-8 w-8 items-center justify-center rounded-md">
-                  <span className="text-primary-foreground font-headings text-lg font-bold">A</span>
-                </span>
-                <span className="text-muted-foreground text-xs">Logo</span>
-              </div>
+              <LogoAtelier />
 
               <div className="flex flex-1 flex-col gap-3">
                 <ChampEnregistrable
                   label="Nom de l’atelier"
                   valeur={user?.workshopName ?? ''}
                   placeholder={NOM_ATELIER_DEFAUT}
+                  messageEchec="Le nom n’a pas pu être enregistré."
                   onEnregistrer={enregistrerNom}
                 />
                 <TelephoneEnregistrable
@@ -422,14 +564,45 @@ export default function Parametres() {
                   aide="Le numéro sur lequel on joint l’atelier."
                   onEnregistrer={enregistrerTelephone}
                 />
-                <Champ label="Ville" valeur={atelier.ville} />
+                <ChampEnregistrable
+                  label="Ville"
+                  valeur={user?.workshopCity ?? ''}
+                  placeholder="Ouagadougou"
+                  messageEchec="La ville n’a pas pu être enregistrée."
+                  onEnregistrer={enregistrerVille}
+                />
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Champ label="Adresse" valeur={atelier.adresse} />
-              <Champ label="Horaires" valeur={atelier.heuresOuverture} />
-              <Champ label="Devise" valeur={atelier.devise} />
+            <div className="grid gap-4 sm:grid-cols-3">
+              <ChampEnregistrable
+                label="Adresse"
+                valeur={user?.workshopAddress ?? ''}
+                placeholder="Secteur 15, rue 15.42"
+                messageEchec="L’adresse n’a pas pu être enregistrée."
+                onEnregistrer={enregistrerAdresse}
+              />
+              <HorairesEnregistrables
+                ouverture={user?.workshopOpensAt ?? ''}
+                fermeture={user?.workshopClosesAt ?? ''}
+                onEnregistrer={enregistrerHoraires}
+              />
+              {/*
+                La devise reste fixe, et c'est délibéré. Tous les montants déjà
+                enregistrés — commandes, acomptes, journal de caisse — sont des
+                entiers en francs CFA. Changer l'étiquette sans convertir ferait
+                lire « 25 000 € » là où l'atelier a encaissé 25 000 F : les
+                chiffres seraient inchangés, leur sens faux.
+              */}
+              <div>
+                <span className="text-muted-foreground mb-1 block text-xs">Devise</span>
+                <div className="bg-input border-border rounded-md border px-3 py-2.5">
+                  <span className="text-foreground text-sm">F CFA</span>
+                </div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Tous les montants enregistrés sont en francs CFA.
+                </p>
+              </div>
             </div>
           </section>
         )}
@@ -645,12 +818,7 @@ export default function Parametres() {
               croire s’être trompé de session.
             */}
             <div className="mb-5 flex items-center gap-4">
-              <Avatar
-                initiales={<InitialesAtelier />}
-                taille="lg"
-                className="h-12 w-12 text-base"
-                accentue
-              />
+              <PastilleAtelier taille="lg" className="h-12 w-12 text-base" accentue />
               <div className="min-w-0">
                 <div className="text-foreground truncate text-sm font-medium">
                   {user?.workshopName?.trim() || NOM_ATELIER_DEFAUT}

@@ -16,6 +16,14 @@ export interface User {
   workshopName: string | null;
   /** Numero de l atelier, au format international. */
   phone: string | null;
+  /** Ville et adresse de l'atelier. `null` tant que rien n'est renseigné. */
+  workshopCity: string | null;
+  workshopAddress: string | null;
+  /** Heures d'ouverture et de fermeture, au format « HH:MM ». Toujours les deux, ou aucune. */
+  workshopOpensAt: string | null;
+  workshopClosesAt: string | null;
+  /** Logo de l'atelier — URL de livraison du stockage. `null` = pastille d'initiales. */
+  workshopLogoUrl: string | null;
   /** false when the account was created via OAuth and never set a password. */
   hasPassword: boolean;
   /** Provider names already linked, e.g. ['google']. Empty for pure email/password accounts. */

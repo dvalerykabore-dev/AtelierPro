@@ -5,11 +5,10 @@ import AppShell from '@/components/atelier/AppShell';
 import CommandesDuJour from '@/components/atelier/CommandesDuJour';
 import CapaciteEquipe from '@/components/atelier/CapaciteEquipe';
 import StatistiquesAtelier from '@/components/atelier/StatistiquesAtelier';
-import Avatar from '@/components/ui/Avatar';
 import BasculeTheme from '@/components/ui/BasculeTheme';
 import { dateDuJourFr } from '@/lib/mock/atelier';
 import ClocheNotifications from '@/components/atelier/ClocheNotifications';
-import { InitialesAtelier, NomAtelier } from '@/components/atelier/IdentiteAtelier';
+import { NomAtelier, PastilleAtelier } from '@/components/atelier/IdentiteAtelier';
 
 export const metadata: Metadata = {
   title: 'Tableau de bord — AtelierPro',
@@ -51,7 +50,7 @@ export default function DashboardPage() {
 
               <ClocheNotifications />
               <Link href="/parametres" title="Paramètres">
-                <Avatar initiales={<InitialesAtelier />} taille="md" />
+                <PastilleAtelier taille="md" />
               </Link>
             </div>
           </div>

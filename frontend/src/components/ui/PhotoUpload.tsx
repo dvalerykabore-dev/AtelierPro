@@ -3,7 +3,7 @@
 import { useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import Image from 'next/image';
 import { ImagePlus, Loader2, Trash2, TriangleAlert } from 'lucide-react';
-import { COOKIE_PREFIX } from '@/lib/constants';
+import { envoyerFichier } from '@/lib/envoi-fichier';
 import { cn } from '@/lib/utils';
 
 export interface PhotoEnvoyee {
@@ -22,23 +22,6 @@ export interface PhotoUploadProps {
   /** Au-delà, le sélecteur se désactive. `1` donne un emplacement unique. */
   maximum?: number;
   className?: string;
-}
-
-/**
- * Jeton CSRF du projet.
- *
- * `getCsrfToken` n'est pas exporté par `lib/api.ts`, fichier protégé par le
- * CLAUDE.md : on relit donc le cookie ici plutôt que de le modifier. Même
- * source, même nom — seul le point de lecture change.
- */
-function jetonCsrf(): string | null {
-  if (typeof window === 'undefined') return null;
-  const cle = `${COOKIE_PREFIX}-csrf`;
-  const depuisStockage = localStorage.getItem(cle);
-  if (depuisStockage) return depuisStockage;
-  const echappe = cle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const trouve = document.cookie.match(new RegExp(`(?:^|;\\s*)${echappe}=([^;]*)`));
-  return trouve && trouve[1] ? decodeURIComponent(trouve[1]) : null;
 }
 
 const MIMES_ACCEPTES = 'image/jpeg,image/png,image/webp,image/heic,image/heif';
@@ -91,35 +74,27 @@ export default function PhotoUpload({
       };
 
       try {
-        const donnees = new FormData();
-        donnees.append('file', fichier);
+        const resultat = await envoyerFichier(fichier);
 
-        const entetes: Record<string, string> = {};
-        const csrf = jetonCsrf();
-        if (csrf) entetes['x-csrf-token'] = csrf;
-
-        const rep = await fetch('/api/upload', {
-          method: 'POST',
-          body: donnees,
-          credentials: 'include',
-          headers: entetes,
-        });
-
-        if (rep.ok) {
-          const corps = (await rep.json()) as { id: string; url: string; filename: string };
+        if (resultat.ok) {
           URL.revokeObjectURL(apercuLocal);
-          entree = { id: corps.id, url: corps.url, nomFichier: corps.filename, locale: false };
-        } else if (rep.status === 401 || rep.status === 403) {
+          entree = {
+            id: resultat.id,
+            url: resultat.url,
+            nomFichier: resultat.nomFichier,
+            locale: false,
+          };
+        } else if (resultat.statut === 401 || resultat.statut === 403) {
           setAvertissement(
             'Photo affichée localement seulement — connectez-vous pour l’enregistrer durablement.',
           );
-        } else if (rep.status === 503) {
+        } else if (resultat.statut === 503) {
           setAvertissement('Le stockage d’images n’est pas configuré sur ce serveur.');
-        } else if (rep.status === 413) {
+        } else if (resultat.statut === 413) {
           setAvertissement(`« ${fichier.name} » dépasse la taille maximale autorisée.`);
           URL.revokeObjectURL(apercuLocal);
           continue;
-        } else if (rep.status === 415) {
+        } else if (resultat.statut === 415) {
           setAvertissement(`« ${fichier.name} » n’est pas une image acceptée (JPEG, PNG, WebP).`);
           URL.revokeObjectURL(apercuLocal);
           continue;

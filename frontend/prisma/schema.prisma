@@ -24,6 +24,22 @@ model User {
   workshopName      String?
   // Numero de l'atelier, au format international (+22670123456).
   phone             String?
+  // Ville et adresse de l'atelier — affichées sur l'écran de réglages et
+  // destinées aux documents remis au client. Nullable : un compte qui vient
+  // d'ouvrir ne les a pas encore renseignées.
+  workshopCity      String?
+  workshopAddress   String?
+  // Heures d'ouverture et de fermeture, au format « HH:MM » sur 24 h.
+  //
+  // Deux colonnes et non une chaîne « 08h00 — 18h00 » : le planning devra
+  // savoir comparer une échéance à une heure de fermeture, et un libellé libre
+  // ne se compare pas. Les deux vont ensemble — la route refuse d'en écrire
+  // une seule, un atelier qui ouvre sans fermer ne veut rien dire.
+  workshopOpensAt   String?
+  workshopClosesAt  String?
+  // Logo de l'atelier — URL de livraison Cloudinary produite par /api/upload.
+  // À défaut, l'interface retombe sur les initiales du nom.
+  workshopLogoUrl   String?
 
   // Optional display name — populated from OAuth profile on first sign-in.
   // Email/password users can fill it later via /api/auth/me PATCH (future).

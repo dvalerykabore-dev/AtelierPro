@@ -1,5 +1,6 @@
 'use client';
 
+import Avatar from '@/components/ui/Avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { initialesAtelierDe, nomAtelierDe } from '@/lib/atelier-identite';
 
@@ -18,4 +19,34 @@ export function NomAtelier() {
 export function InitialesAtelier() {
   const { user } = useAuth();
   return <>{initialesAtelierDe(user)}</>;
+}
+
+/**
+ * Pastille de l'atelier : son logo s'il en a posé un, ses initiales sinon.
+ *
+ * Le logo se règle dans Paramètres › Atelier, mais c'est ici qu'il sert — le
+ * rail, l'en-tête du tableau de bord, la signature d'une note. Le poser sans
+ * qu'il n'apparaisse nulle part n'aurait été qu'une vignette de plus dans un
+ * écran de réglages.
+ */
+export function PastilleAtelier({
+  taille = 'md',
+  accentue = false,
+  className,
+}: {
+  taille?: 'sm' | 'md' | 'lg';
+  accentue?: boolean;
+  className?: string;
+}) {
+  const { user } = useAuth();
+  return (
+    <Avatar
+      initiales={initialesAtelierDe(user)}
+      image={user?.workshopLogoUrl ?? null}
+      imageAlt={user?.workshopLogoUrl ? `Logo de ${nomAtelierDe(user)}` : ''}
+      taille={taille}
+      accentue={accentue}
+      {...(className === undefined ? {} : { className })}
+    />
+  );
 }
