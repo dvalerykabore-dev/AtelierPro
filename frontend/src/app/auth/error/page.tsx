@@ -42,8 +42,14 @@ function AuthErrorBody() {
       <p className="text-sm text-foreground">{message}</p>
       {code && <p className="font-mono text-xs text-muted-foreground/60">code: {code}</p>}
       <div className="flex flex-col gap-2">
+        {/*
+          Le lien pointait sur /login, qui n'existe pas dans cette application —
+          la page de connexion est /connexion. Le bouton menait donc à un 404,
+          et précisément au moment où une connexion vient d'échouer : on arrive
+          ici pour réessayer, pas pour tomber sur une seconde erreur.
+        */}
         <Link
-          href="/login"
+          href="/connexion"
           className="rounded-md bg-primary px-5 py-2.5 text-center text-sm font-medium text-primary-foreground hover:bg-accent"
         >
           Retour à la connexion

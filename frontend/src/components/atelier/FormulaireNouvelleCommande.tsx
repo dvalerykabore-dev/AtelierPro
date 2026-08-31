@@ -17,15 +17,18 @@ import { Field, SelectField, TextareaField } from '@/components/ui/Field';
 import { api, ApiError } from '@/lib/api';
 import { useClients } from '@/lib/useClients';
 import { useArtisans } from '@/lib/useArtisans';
+import { useReleveMesures } from '@/lib/useReleveMesures';
 import { MODES, type ModeCle } from '@/lib/tresorerie';
 import { useTarifs } from '@/lib/useTarifs';
+import { nombreDeChamps, paletteDe } from '@/lib/mock/atelier';
+import { etapesDe } from '@/lib/etapes-commande';
 import {
-  etapeCourante,
-  etapesNouvelleCommande,
-  livraisonEstimee,
-  nombreDeChamps,
-  paletteDe,
-} from '@/lib/mock/atelier';
+  aujourdhuiISO,
+  delaiEnJours,
+  libelleEcheance,
+  validerEcheance,
+  versISO,
+} from '@/lib/echeance';
 import { cn, formatPrice } from '@/lib/utils';
 
 /** Couleurs de tissu proposées — pastille + libellé, comme la maquette. */
@@ -64,6 +67,8 @@ export default function FormulaireNouvelleCommande() {
   const [couleur, setCouleur] = useState<string>(COULEURS[0]!.label);
   const [assigne, setAssigne] = useState<string>('');
   const [notes, setNotes] = useState('');
+  // Echeance : saisie, et surtout ENVOYEE. Le formulaire n en demandait aucune.
+  const [echeance, setEcheance] = useState('');
   const [acompte, setAcompte] = useState<string>(String(ACOMPTE_PAR_DEFAUT));
   // L'acompte devient une ligne du journal de caisse : il lui faut un mode de
   // règlement. Espèces par défaut — le cas courant en atelier — mais il est
@@ -92,6 +97,22 @@ export default function FormulaireNouvelleCommande() {
   const acompteVerse = Number.parseInt(acompte, 10) || 0;
   const resteAPayer = Math.max(0, prixTenue - acompteVerse);
 
+  const aujourdhui = aujourdhuiISO();
+  const echeanceProbleme = validerEcheance(echeance, aujourdhui);
+
+  // Le client a-t-il un releve au dossier ? Le fil d etapes en depend, et
+  // c est aussi ce qui distingue une commande prete a coudre d une commande
+  // qu il faudra reprendre au comptoir.
+  const { charge: releve } = useReleveMesures(client?.id ?? null, surServeur && Boolean(client));
+
+  // Le fil d etapes dit ce qui manque, au lieu d etats ecrits en dur.
+  const etapes = etapesDe({
+    client: Boolean(client),
+    modele: Boolean(typeTenue) && tissu.trim() !== '',
+    mesures: Boolean(releve),
+    planning: echeance !== '' && !echeanceProbleme,
+  });
+
   /** L'artisan est-il déjà saturé aujourd'hui ? Sans équipe, la question ne se pose pas. */
   const surcharge = artisan ? artisan.heuresAujourdhui >= artisan.capacite : false;
 
@@ -104,8 +125,9 @@ export default function FormulaireNouvelleCommande() {
     }
     if (!tissu.trim()) liste.push('Le tissu n’est pas renseigné.');
     if (acompteVerse > prixTenue) liste.push('L’acompte dépasse le montant de la commande.');
+    if (echeanceProbleme) liste.push(echeanceProbleme);
     return liste;
-  }, [tissu, acompteVerse, prixTenue, tarif, chargementTarifs]);
+  }, [tissu, acompteVerse, prixTenue, tarif, chargementTarifs, echeanceProbleme]);
 
   async function confirmer(e: FormEvent) {
     e.preventDefault();
@@ -135,6 +157,7 @@ export default function FormulaireNouvelleCommande() {
           depositMethod: acompteVerse > 0 ? modeAcompte : undefined,
           assignee: artisan?.initiales ?? undefined,
           notes: notes || undefined,
+          dueDate: versISO(echeance) ?? undefined,
         },
       });
       setReference(`#${String(res.commande.sequence).padStart(3, '0')}`);
@@ -189,8 +212,8 @@ export default function FormulaireNouvelleCommande() {
       {/* Fil d'étapes */}
       <div className="border-border bg-background border-b">
         <ol className="flex items-center gap-4 overflow-x-auto px-4 py-4 lg:gap-8 lg:px-8">
-          {etapesNouvelleCommande.map((etape, i) => {
-            const active = etape.numero === etapeCourante;
+          {etapes.map((etape, i) => {
+            const active = etape.active;
             return (
               <li key={etape.numero} className="flex flex-shrink-0 items-center gap-2">
                 <span
@@ -217,7 +240,7 @@ export default function FormulaireNouvelleCommande() {
                 >
                   {etape.label}
                 </span>
-                {i < etapesNouvelleCommande.length - 1 && (
+                {i < etapes.length - 1 && (
                   <span className="bg-border ml-2 hidden h-px w-12 lg:block" aria-hidden />
                 )}
               </li>
@@ -421,26 +444,55 @@ export default function FormulaireNouvelleCommande() {
 
           <div className="bg-border mx-5 h-px" />
 
+          {/*
+            Ce bloc annonçait « Date de livraison calculée — basée sur la
+            capacité réelle de l'équipe » au-dessus d'une date constante du jeu
+            d'exemple : « Mardi 28 jan », identique pour toutes les commandes et
+            reprise telle quelle dans le message de confirmation. Pire, la
+            commande partait en base SANS échéance — le formulaire n'en envoyait
+            aucune. Toutes les commandes enregistrées jusqu'ici ont `dueDate`
+            nul, si bien qu'aucune ne peut être signalée en retard par le
+            passage quotidien, et que le planning n'a rien à quoi se raccrocher.
+
+            La date est désormais saisie et enregistrée. Elle n'est pas
+            calculée : l'estimer demanderait de connaître les heures que la
+            tenue réclame, que ce formulaire ne demande pas. On affiche donc la
+            charge réelle de l'artisan à côté, ce qui est vrai, plutôt qu'un
+            calcul qui ne l'était pas.
+          */}
           <div className="px-5">
             <h2 className="font-headings text-foreground mb-1 text-sm font-bold">
-              Date de livraison calculée
+              Date de livraison
             </h2>
-            <p className="text-muted-foreground mb-4 text-xs">
-              Basée sur la capacité réelle de l’équipe
+            <p className="text-muted-foreground mb-3 text-xs">
+              C’est la date promise au client — elle sert au planning et aux alertes de retard.
             </p>
 
-            <div className="bg-muted border-border rounded-lg border p-4">
-              <div className="mb-2 flex items-center gap-2">
+            <Field
+              label="Livraison prévue"
+              type="date"
+              value={echeance}
+              min={aujourdhui}
+              onChange={(e) => setEcheance(e.target.value)}
+              {...(echeanceProbleme ? { erreur: echeanceProbleme } : {})}
+              aide={
+                artisan
+                  ? `${artisan.nom} — ${artisan.heuresAujourdhui}/${artisan.capacite} h engagées aujourd’hui`
+                  : 'Aucun artisan assigné.'
+              }
+            />
+
+            {echeance && !echeanceProbleme && (
+              <div className="bg-muted border-border mt-3 flex items-center gap-2 rounded-lg border p-3">
                 <CalendarCheck size={15} className="text-muted-foreground" aria-hidden />
-                <span className="text-muted-foreground text-xs">Livraison estimée</span>
+                <div className="min-w-0">
+                  <div className="text-foreground text-sm font-medium">
+                    {libelleEcheance(echeance)}
+                  </div>
+                  <div className="text-muted-foreground text-xs">{delaiEnJours(echeance)}</div>
+                </div>
               </div>
-              <div className="font-headings text-primary text-2xl font-bold">
-                {livraisonEstimee.date}
-              </div>
-              <div className="text-muted-foreground mt-1 text-xs">
-                {livraisonEstimee.dureeEstimee} · {artisan?.nom ?? 'non assigné'}
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="bg-border mx-5 h-px" />
@@ -489,9 +541,19 @@ export default function FormulaireNouvelleCommande() {
               <div className="flex flex-col gap-3">
                 <p className="text-success flex items-start gap-2 text-sm">
                   <CheckCircle2 size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
+                  {/*
+                    Le message annonçait « livraison Mardi 28 jan » — la date
+                    constante du jeu d'exemple, la même pour toutes les
+                    commandes. On n'annonce plus que l'échéance réellement
+                    saisie, et rien du tout quand il n'y en a pas.
+                  */}
                   {reference
-                    ? `Commande ${reference} enregistrée pour ${client.nom} — ${tarif?.tenue ?? ''}.`
-                    : `Commande confirmée pour ${client.nom} — ${tarif?.tenue ?? ''}, livraison ${livraisonEstimee.date}.`}
+                    ? `Commande ${reference} enregistrée pour ${client.nom} — ${tarif?.tenue ?? ''}${
+                        echeance ? `, livraison ${libelleEcheance(echeance)}` : ''
+                      }.`
+                    : `Commande confirmée pour ${client.nom} — ${tarif?.tenue ?? ''}${
+                        echeance ? `, livraison ${libelleEcheance(echeance)}` : ''
+                      }.`}
                 </p>
                 {/* Sans numéro, c'est que rien n'est parti en base : on le dit
                     plutôt que de laisser croire à un enregistrement. */}

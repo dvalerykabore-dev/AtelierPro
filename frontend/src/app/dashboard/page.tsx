@@ -1,21 +1,19 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Bell, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import AppShell from '@/components/atelier/AppShell';
 import CommandesDuJour from '@/components/atelier/CommandesDuJour';
 import CapaciteEquipe from '@/components/atelier/CapaciteEquipe';
 import StatistiquesAtelier from '@/components/atelier/StatistiquesAtelier';
 import Avatar from '@/components/ui/Avatar';
 import BasculeTheme from '@/components/ui/BasculeTheme';
-import { dateDuJourFr, nombreNotifications } from '@/lib/mock/atelier';
-import { NomAtelier } from '@/components/atelier/IdentiteAtelier';
+import { dateDuJourFr } from '@/lib/mock/atelier';
+import ClocheNotifications from '@/components/atelier/ClocheNotifications';
+import { InitialesAtelier, NomAtelier } from '@/components/atelier/IdentiteAtelier';
 
 export const metadata: Metadata = {
   title: 'Tableau de bord — AtelierPro',
 };
-
-/** Le bandeau mobile utilise un triangle d'alerte là où le desktop met un cercle. */
-const UTILISATEUR_INITIALES = 'MK';
 
 export default function DashboardPage() {
   return (
@@ -51,19 +49,9 @@ export default function DashboardPage() {
                   son habillage par défaut, illisible sur ce fond. */}
               <BasculeTheme className="bg-background/10 text-background hover:bg-background/20 hover:text-background h-9 w-9 rounded-full" />
 
-              <Link href="/notifications" className="relative" title="Notifications">
-                <span className="bg-background/10 text-background flex h-9 w-9 items-center justify-center rounded-full">
-                  <Bell size={18} aria-hidden />
-                </span>
-                {nombreNotifications > 0 && (
-                  <span className="bg-danger text-background absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold">
-                    {nombreNotifications}
-                  </span>
-                )}
-                <span className="sr-only">{nombreNotifications} notifications non lues</span>
-              </Link>
+              <ClocheNotifications />
               <Link href="/parametres" title="Paramètres">
-                <Avatar initiales={UTILISATEUR_INITIALES} taille="md" />
+                <Avatar initiales={<InitialesAtelier />} taille="md" />
               </Link>
             </div>
           </div>
