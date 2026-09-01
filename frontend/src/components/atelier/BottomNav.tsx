@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { entreesBasses } from '@/components/atelier/nav-items';
+import { useT } from '@/contexts/LangueContext';
 import { cn } from '@/lib/utils';
 
 /**
@@ -14,10 +15,11 @@ import { cn } from '@/lib/utils';
  */
 export default function BottomNav() {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <nav
-      aria-label="Navigation principale"
+      aria-label={t('Navigation principale')}
       data-chrome="app"
       className="border-border bg-surface sticky bottom-0 z-10 border-t lg:hidden"
     >
@@ -31,9 +33,14 @@ export default function BottomNav() {
 
           if (!disponible) {
             return (
-              <span key={id} className={classes} title={`${label} — écran à venir`} aria-disabled>
+              <span
+                key={id}
+                className={classes}
+                title={t('{ecran} — écran à venir', { ecran: t(label) })}
+                aria-disabled
+              >
                 <Icone size={20} aria-hidden />
-                <span className="text-[10px] font-medium">{labelCourt}</span>
+                <span className="text-[10px] font-medium">{t(labelCourt)}</span>
               </span>
             );
           }
@@ -46,7 +53,7 @@ export default function BottomNav() {
               className={classes}
             >
               <Icone size={20} aria-hidden />
-              <span className="text-[10px] font-medium">{labelCourt}</span>
+              <span className="text-[10px] font-medium">{t(labelCourt)}</span>
             </Link>
           );
         })}

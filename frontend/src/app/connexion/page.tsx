@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { api, ApiError, storeCsrfToken } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLangue } from '@/contexts/LangueContext';
 
 /** Messages métier — l'API renvoie des codes stables, pas du texte à afficher. */
 const MESSAGES: Record<string, string> = {
@@ -43,6 +44,7 @@ function messageDe(err: unknown, defaut = 'Impossible de joindre le serveur.'): 
 export default function ConnexionPage() {
   const router = useRouter();
   const { refresh } = useAuth();
+  const { t } = useLangue();
 
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
@@ -142,36 +144,36 @@ export default function ConnexionPage() {
   const bandeauErreur = erreur && (
     <p role="alert" className="text-danger flex items-start gap-2 text-sm">
       <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-      {erreur}
+      {t(erreur)}
     </p>
   );
 
   if (etape === 'code') {
     return (
       <AuthCard
-        titre="Confirmer la connexion"
-        sousTitre={`Un code à 8 caractères vient d’être envoyé à ${email}.`}
+        titre={t('Confirmer la connexion')}
+        sousTitre={t('Un code à 8 caractères vient d’être envoyé à {email}.', { email })}
         pied={
           <button
             type="button"
             onClick={revenir}
             className="text-primary inline-flex items-center gap-1.5 font-medium"
           >
-            <ArrowLeft size={13} aria-hidden />
-            Changer d’adresse
+            <ArrowLeft size={13} data-miroir aria-hidden />
+            {t('Changer d’adresse')}
           </button>
         }
       >
         <form onSubmit={soumettreCode} className="flex flex-col gap-4">
           <Field
-            label="Code reçu par e-mail"
+            label={t('Code reçu par e-mail')}
             required
             autoFocus
             autoComplete="one-time-code"
             inputMode="text"
             maxLength={8}
             placeholder="A1B2C3D4"
-            aide="Il expire au bout de quelques minutes."
+            aide={t('Il expire au bout de quelques minutes.')}
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             className="text-center font-mono tracking-[0.3em] uppercase"
@@ -180,7 +182,7 @@ export default function ConnexionPage() {
           {renvoye && !erreur && (
             <p className="text-success flex items-start gap-2 text-sm">
               <MailCheck size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-              Nouveau code envoyé. Le précédent ne fonctionne plus.
+              {t('Nouveau code envoyé. Le précédent ne fonctionne plus.')}
             </p>
           )}
 
@@ -192,7 +194,7 @@ export default function ConnexionPage() {
             pleineLargeur
             disabled={envoi || code.trim().length !== 8}
           >
-            {envoi ? 'Vérification…' : 'Confirmer'}
+            {t(envoi ? 'Vérification…' : 'Confirmer')}
           </Button>
 
           <button
@@ -201,7 +203,7 @@ export default function ConnexionPage() {
             disabled={envoi}
             className="text-muted-foreground hover:text-primary text-xs disabled:opacity-50"
           >
-            Je n’ai rien reçu — renvoyer un code
+            {t('Je n’ai rien reçu — renvoyer un code')}
           </button>
         </form>
       </AuthCard>
@@ -210,20 +212,20 @@ export default function ConnexionPage() {
 
   return (
     <AuthCard
-      titre="Connexion"
-      sousTitre="Accédez à vos commandes, votre planning et vos clients."
+      titre={t('Connexion')}
+      sousTitre={t('Accédez à vos commandes, votre planning et vos clients.')}
       pied={
         <>
-          Pas encore de compte ?{' '}
+          {t('Pas encore de compte ?')}{' '}
           <Link href="/inscription" className="text-primary font-medium">
-            Créer un atelier
+            {t('Créer un atelier')}
           </Link>
         </>
       }
     >
       <form onSubmit={soumettreIdentifiants} className="flex flex-col gap-4">
         <Field
-          label="Adresse e-mail"
+          label={t('Adresse e-mail')}
           type="email"
           required
           autoComplete="email"
@@ -234,7 +236,7 @@ export default function ConnexionPage() {
 
         <div className="flex flex-col gap-1.5">
           <Field
-            label="Mot de passe"
+            label={t('Mot de passe')}
             type="password"
             required
             autoComplete="current-password"
@@ -246,14 +248,14 @@ export default function ConnexionPage() {
             href="/mot-de-passe-oublie"
             className="text-muted-foreground hover:text-primary self-end text-xs"
           >
-            Mot de passe oublié ?
+            {t('Mot de passe oublié ?')}
           </Link>
         </div>
 
         {bandeauErreur}
 
         <Button type="submit" taille="lg" pleineLargeur disabled={envoi}>
-          {envoi ? 'Connexion…' : 'Se connecter'}
+          {t(envoi ? 'Connexion…' : 'Se connecter')}
         </Button>
       </form>
 

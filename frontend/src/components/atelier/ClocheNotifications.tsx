@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import { avecReessai401 } from '@/lib/api-repli';
+import { useLangue } from '@/contexts/LangueContext';
 
 /**
  * Cloche de notifications avec son compteur réel.
@@ -19,6 +20,7 @@ import { avecReessai401 } from '@/lib/api-repli';
  * pastille n'a besoin que d'un nombre.
  */
 export default function ClocheNotifications() {
+  const { t, tp } = useLangue();
   const [nonLues, setNonLues] = useState(0);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export default function ClocheNotifications() {
   }, []);
 
   return (
-    <Link href="/notifications" className="relative" title="Notifications">
+    <Link href="/notifications" className="relative" title={t('Notifications')}>
       <span className="bg-background/10 text-background flex h-9 w-9 items-center justify-center rounded-full">
         <Bell size={18} aria-hidden />
       </span>
@@ -50,8 +52,8 @@ export default function ClocheNotifications() {
       )}
       <span className="sr-only">
         {nonLues === 0
-          ? 'Aucune notification non lue'
-          : `${nonLues} notification${nonLues > 1 ? 's' : ''} non lue${nonLues > 1 ? 's' : ''}`}
+          ? t('Aucune notification non lue')
+          : tp('{n} notification non lue', '{n} notifications non lues', nonLues)}
       </span>
     </Link>
   );

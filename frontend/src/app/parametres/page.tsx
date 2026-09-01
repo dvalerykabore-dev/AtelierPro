@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import AppShell from '@/components/atelier/AppShell';
 import Parametres from '@/components/atelier/Parametres';
-import { atelier } from '@/lib/mock/atelier';
+import { NomAtelier } from '@/components/atelier/IdentiteAtelier';
 
 export const metadata: Metadata = {
   title: 'Paramètres — AtelierPro',
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
  */
 export default function ParametresPage() {
   return (
-    <AppShell titre="Paramètres" sousTitre={atelier.nom}>
+    <AppShell titre="Paramètres" sousTitre={<NomAtelier />}>
       <Parametres />
     </AppShell>
   );

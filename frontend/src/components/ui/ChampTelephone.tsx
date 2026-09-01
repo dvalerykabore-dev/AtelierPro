@@ -8,6 +8,7 @@ import {
   resynchroniser,
   taper as transitionFrappe,
 } from '@/lib/champ-telephone-etat';
+import { useT } from '@/contexts/LangueContext';
 import { cn } from '@/lib/utils';
 
 export interface ChampTelephoneProps {
@@ -57,6 +58,7 @@ export default function ChampTelephone({
   autoFocus,
   className,
 }: ChampTelephoneProps) {
+  const t = useT();
   const id = useId();
   const idAide = `${id}-aide`;
 
@@ -101,7 +103,7 @@ export default function ChampTelephone({
           ligne doit rester lisible sans lui.
         */}
         <select
-          aria-label="Indicatif du pays"
+          aria-label={t('Indicatif du pays')}
           value={etat.codePays}
           onChange={(e) => appliquer(transitionPays(e.target.value, etat))}
           className="text-foreground border-border w-[6.5rem] flex-shrink-0 border-r bg-transparent py-2.5 pr-1 pl-3 text-sm focus:outline-none"
@@ -139,7 +141,10 @@ export default function ChampTelephone({
           <>
             {pays && <span className="text-foreground font-medium">{pays.nom}</span>}
             {pays && ' — '}
-            {aide ?? (pays ? `exemple : ${pays.exemple}` : 'Choisissez un pays.')}
+            {aide ??
+              (pays
+                ? t('exemple : {exemple}', { exemple: pays.exemple })
+                : t('Choisissez un pays.'))}
           </>
         )}
       </p>

@@ -4,11 +4,13 @@ import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import AuthCard from '@/components/auth/AuthCard';
+import { useLangue } from '@/contexts/LangueContext';
 import Button from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { api, ApiError } from '@/lib/api';
 
 export default function MotDePasseOubliePage() {
+  const { t } = useLangue();
   const [email, setEmail] = useState('');
   const [envoye, setEnvoye] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -37,13 +39,13 @@ export default function MotDePasseOubliePage() {
 
   return (
     <AuthCard
-      titre="Mot de passe oublié"
-      sousTitre="Nous vous envoyons un code pour en choisir un nouveau."
+      titre={t('Mot de passe oublié')}
+      sousTitre={t('Nous vous envoyons un code pour en choisir un nouveau.')}
       pied={
         <>
-          Vous vous en souvenez ?{' '}
+          {t('Vous vous en souvenez ?')}{' '}
           <Link href="/connexion" className="text-primary font-medium">
-            Se connecter
+            {t('Se connecter')}
           </Link>
         </>
       }
@@ -52,19 +54,23 @@ export default function MotDePasseOubliePage() {
         <div className="flex flex-col gap-4">
           <p className="text-success flex items-start gap-2 text-sm">
             <CheckCircle2 size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-            Si un compte existe pour <span className="text-foreground font-medium">{email}</span>,
-            un code de réinitialisation vient d’être envoyé.
+            {t(
+              'Si un compte existe pour {email}, un code de réinitialisation vient d’être envoyé.',
+              {
+                email,
+              },
+            )}
           </p>
           <Link href={`/reinitialiser?email=${encodeURIComponent(email)}`}>
             <Button taille="lg" pleineLargeur>
-              J’ai reçu mon code
+              {t('J’ai reçu mon code')}
             </Button>
           </Link>
         </div>
       ) : (
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
           <Field
-            label="Adresse e-mail"
+            label={t('Adresse e-mail')}
             type="email"
             required
             autoComplete="email"
@@ -76,12 +82,12 @@ export default function MotDePasseOubliePage() {
           {erreur && (
             <p role="alert" className="text-danger flex items-start gap-2 text-sm">
               <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-              {erreur}
+              {t(erreur)}
             </p>
           )}
 
           <Button type="submit" taille="lg" pleineLargeur disabled={envoi}>
-            {envoi ? 'Envoi…' : 'Envoyer le code'}
+            {t(envoi ? 'Envoi…' : 'Envoyer le code')}
           </Button>
         </form>
       )}

@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { TriangleAlert } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/contexts/LangueContext';
 
 /**
  * Mode démonstration : laisse consulter l'atelier sans compte.
@@ -27,11 +28,12 @@ const MODE_DEMO =
   process.env.NEXT_PUBLIC_ATELIER_DEMO === '1' && process.env.NODE_ENV !== 'production';
 
 function BandeauDemo() {
+  const t = useT();
   return (
     <div className="bg-warning text-primary-foreground flex items-center justify-center gap-2 px-4 py-1.5 text-center text-xs font-medium">
       <TriangleAlert size={13} aria-hidden />
-      Mode démonstration — pages accessibles sans connexion. Retirez
-      <code className="font-mono">NEXT_PUBLIC_ATELIER_DEMO</code> avant toute mise en ligne.
+      {t('Mode démonstration — pages accessibles sans connexion. Retirez')}
+      <code className="font-mono">NEXT_PUBLIC_ATELIER_DEMO</code> {t('avant toute mise en ligne.')}
     </div>
   );
 }
@@ -52,6 +54,7 @@ function BandeauDemo() {
 export default function AuthGuard({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const t = useT();
 
   // La redirection est écrite ici plutôt que déléguée au hook `useUser` : celui-ci
   // redirige inconditionnellement, donc il s'exécutait AUSSI en mode démonstration
@@ -74,7 +77,7 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
   if (loading) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center">
-        <span className="text-muted-foreground text-sm">Chargement de l’atelier…</span>
+        <span className="text-muted-foreground text-sm">{t('Chargement de l’atelier…')}</span>
       </div>
     );
   }

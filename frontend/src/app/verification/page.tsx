@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { api, ApiError, storeCsrfToken } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLangue } from '@/contexts/LangueContext';
 
 const MESSAGES: Record<string, string> = {
   INVALID_CODE: 'Code invalide ou expiré. Vérifiez les 8 caractères saisis.',
@@ -21,6 +22,7 @@ function FormulaireVerification() {
   const params = useSearchParams();
   const { refresh } = useAuth();
 
+  const { t } = useLangue();
   const [email, setEmail] = useState(params.get('email') ?? '');
   const [code, setCode] = useState('');
   const [erreur, setErreur] = useState<string | null>(null);
@@ -71,20 +73,20 @@ function FormulaireVerification() {
 
   return (
     <AuthCard
-      titre="Vérifiez votre e-mail"
-      sousTitre="Saisissez le code à 8 caractères que nous venons de vous envoyer."
+      titre={t('Vérifiez votre e-mail')}
+      sousTitre={t('Saisissez le code à 8 caractères que nous venons de vous envoyer.')}
       pied={
         <>
-          Mauvaise adresse ?{' '}
+          {t('Mauvaise adresse ?')}{' '}
           <Link href="/inscription" className="text-primary font-medium">
-            Recommencer l’inscription
+            {t('Recommencer l’inscription')}
           </Link>
         </>
       }
     >
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Field
-          label="Adresse e-mail"
+          label={t('Adresse e-mail')}
           type="email"
           required
           autoComplete="email"
@@ -92,7 +94,7 @@ function FormulaireVerification() {
           onChange={(e) => setEmail(e.target.value)}
         />
         <Field
-          label="Code de vérification"
+          label={t('Code de vérification')}
           required
           inputMode="text"
           autoComplete="one-time-code"
@@ -106,22 +108,22 @@ function FormulaireVerification() {
         {erreur && (
           <p role="alert" className="text-danger flex items-start gap-2 text-sm">
             <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-            {erreur}
+            {t(erreur)}
           </p>
         )}
         {renvoye && !erreur && (
           <p role="status" className="text-success flex items-start gap-2 text-sm">
             <CheckCircle2 size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-            Si un compte existe pour cette adresse, un nouveau code vient d’être envoyé.
+            {t('Si un compte existe pour cette adresse, un nouveau code vient d’être envoyé.')}
           </p>
         )}
 
         <Button type="submit" taille="lg" pleineLargeur disabled={envoi}>
-          {envoi ? 'Vérification…' : 'Vérifier mon compte'}
+          {t(envoi ? 'Vérification…' : 'Vérifier mon compte')}
         </Button>
 
         <Button type="button" variante="fantome" taille="sm" onClick={renvoyer} disabled={!email}>
-          Renvoyer le code
+          {t('Renvoyer le code')}
         </Button>
       </form>
     </AuthCard>

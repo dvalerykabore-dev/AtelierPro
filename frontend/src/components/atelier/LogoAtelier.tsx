@@ -4,6 +4,7 @@ import { useRef, useState, type ChangeEvent } from 'react';
 import { ImagePlus, Loader2, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/contexts/LangueContext';
 import { initialesAtelierDe, nomAtelierDe } from '@/lib/atelier-identite';
 import { envoyerFichier } from '@/lib/envoi-fichier';
 import { messageErreur } from '@/lib/message-erreur';
@@ -28,6 +29,7 @@ const MIMES_ACCEPTES = 'image/jpeg,image/png,image/webp,image/heic,image/heif';
  */
 export default function LogoAtelier() {
   const { user, refresh } = useAuth();
+  const t = useT();
   const champ = useRef<HTMLInputElement>(null);
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -50,12 +52,12 @@ export default function LogoAtelier() {
     try {
       const resultat = await envoyerFichier(fichier);
       if (!resultat.ok) {
-        setErreur(messageEnvoi(resultat.statut, fichier.name));
+        setErreur(messageEnvoi(t, resultat.statut, fichier.name));
         return;
       }
       await poser(resultat.url);
     } catch (err) {
-      setErreur(messageErreur(err, 'Le logo n’a pas pu être envoyé.'));
+      setErreur(messageErreur(err, t('Le logo n’a pas pu être envoyé.')));
     } finally {
       setEnvoi(false);
       // Vider le champ permet de renvoyer le même fichier après un échec :
@@ -70,7 +72,7 @@ export default function LogoAtelier() {
     try {
       await poser('');
     } catch (err) {
-      setErreur(messageErreur(err, 'Le logo n’a pas pu être retiré.'));
+      setErreur(messageErreur(err, t('Le logo n’a pas pu être retiré.')));
     } finally {
       setEnvoi(false);
     }
@@ -82,7 +84,11 @@ export default function LogoAtelier() {
         {logo ? (
           // `<img>` et non `next/image` : les URL du stockage ne sont pas
           // déclarées dans `next.config`, et l'optimiseur les refuserait.
-          <img src={logo} alt={`Logo de ${nom}`} className="h-full w-full object-cover" />
+          <img
+            src={logo}
+            alt={t('Logo de {atelier}', { atelier: nom })}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <span className="bg-primary flex h-8 w-8 items-center justify-center rounded-md">
             <span className="text-primary-foreground font-headings text-lg font-bold">
@@ -114,7 +120,7 @@ export default function LogoAtelier() {
           className="text-primary hover:text-primary/80 flex cursor-pointer items-center gap-1 text-xs font-medium"
         >
           <ImagePlus size={11} aria-hidden />
-          {logo ? 'Changer' : 'Ajouter'}
+          {t(logo ? 'Changer' : 'Ajouter')}
         </label>
 
         {logo && (
@@ -125,7 +131,7 @@ export default function LogoAtelier() {
             className="text-muted-foreground hover:text-danger flex items-center gap-1 text-xs disabled:opacity-50"
           >
             <Trash2 size={11} aria-hidden />
-            Retirer
+            {t('Retirer')}
           </button>
         )}
       </div>
@@ -146,11 +152,18 @@ export default function LogoAtelier() {
  * une autre, prévenir l'hébergeur. Un « échec de l'envoi » unique laisserait
  * l'atelier réessayer le même fichier trop lourd indéfiniment.
  */
-function messageEnvoi(statut: number, nomFichier: string): string {
+function messageEnvoi(
+  t: (cle: string, params?: Record<string, string | number>) => string,
+  statut: number,
+  nomFichier: string,
+): string {
   if (statut === 401 || statut === 403)
-    return 'Session expirée — reconnectez-vous pour enregistrer le logo.';
-  if (statut === 413) return `« ${nomFichier} » est trop lourd — réduisez l’image et réessayez.`;
-  if (statut === 415) return 'Format refusé — choisissez une image JPEG, PNG ou WebP.';
-  if (statut === 503) return 'Le stockage d’images n’est pas configuré sur ce serveur.';
-  return 'L’envoi a échoué — le logo n’a pas été enregistré.';
+    return t('Session expirée — reconnectez-vous pour enregistrer le logo.');
+  if (statut === 413)
+    return t('« {fichier} » est trop lourd — réduisez l’image et réessayez.', {
+      fichier: nomFichier,
+    });
+  if (statut === 415) return t('Format refusé — choisissez une image JPEG, PNG ou WebP.');
+  if (statut === 503) return t('Le stockage d’images n’est pas configuré sur ce serveur.');
+  return t('L’envoi a échoué — le logo n’a pas été enregistré.');
 }

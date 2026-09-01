@@ -140,6 +140,40 @@ body {
   color: var(--color-foreground);
 }
 
+/*
+ * Arabe : police et sens de lecture.
+ *
+ * Space Grotesk ne dessine aucun caractère arabe. Sans cette règle, le
+ * navigateur se rabat sur la première police système capable de les rendre —
+ * souvent une police à empattements sans rapport avec le reste de l'écran, et
+ * dont la hauteur d'x casse tous les alignements. Noto Sans Arabic est
+ * chargée par `layout.tsx` et sert ici de première famille, Space Grotesk
+ * restant derrière pour les chiffres et les mots latins (« F CFA », les
+ * références de commande), qui cohabitent partout dans cette interface.
+ *
+ * `dir` est posé sur <html> par lib/langue.ts avant le premier pixel ; le
+ * reste de la mise en page suit par propriétés logiques (ms-/me-/ps-/pe-,
+ * start/end), que Tailwind v4 traduit selon `dir`.
+ */
+[lang='ar'] {
+  --font-body:
+    var(--font-noto-arabe), var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-headings:
+    var(--font-noto-arabe), var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+ * Les icônes directionnelles se retournent avec la page ; les autres non.
+ *
+ * Une flèche « retour » doit pointer vers la droite en arabe, sinon elle
+ * désigne l'avant. Une icône de ciseaux ou d'horloge, elle, deviendrait
+ * simplement fausse en miroir — d'où l'attribut explicite plutôt qu'une règle
+ * qui retournerait tous les `svg`.
+ */
+[dir='rtl'] [data-miroir] {
+  transform: scaleX(-1);
+}
+
 /* Anneau de focus visible au clavier uniquement, dans l'or du thème. */
 :focus-visible {
   outline: 2px solid var(--color-primary);

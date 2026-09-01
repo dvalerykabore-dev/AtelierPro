@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useT } from '@/contexts/LangueContext';
 import { cn } from '@/lib/utils';
 
 /**
@@ -11,8 +12,9 @@ import { cn } from '@/lib/utils';
  */
 export default function BasculeTheme({ className }: { className?: string }) {
   const { theme, basculer } = useTheme();
+  const t = useT();
   const versClair = theme === 'dark';
-  const libelle = versClair ? 'Activer le thème clair' : 'Activer le thème sombre';
+  const libelle = t(versClair ? 'Activer le thème clair' : 'Activer le thème sombre');
 
   return (
     <button

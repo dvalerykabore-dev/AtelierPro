@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Bouton « Continuer avec Google », partagé par la connexion et l'inscription.
  *
@@ -12,6 +14,8 @@
  * demanderait à l'utilisateur de savoir quelque chose que le serveur sait
  * déjà.
  */
+import { useT } from '@/contexts/LangueContext';
+
 export interface BoutonGoogleProps {
   /**
    * Chemin de retour après authentification. Le serveur le revalide comme
@@ -26,6 +30,7 @@ export default function BoutonGoogle({
   next = '/dashboard',
   avecSeparateur = true,
 }: BoutonGoogleProps) {
+  const t = useT();
   const lien = `/api/auth/oauth/google/start?next=${encodeURIComponent(next)}`;
 
   return (
@@ -33,7 +38,7 @@ export default function BoutonGoogle({
       {avecSeparateur && (
         <div className="text-muted-foreground my-5 flex items-center gap-3 text-xs tracking-widest uppercase">
           <span className="bg-border h-px flex-1" />
-          ou
+          {t('ou')}
           <span className="bg-border h-px flex-1" />
         </div>
       )}
@@ -60,7 +65,7 @@ export default function BoutonGoogle({
             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
           />
         </svg>
-        Continuer avec Google
+        {t('Continuer avec Google')}
       </a>
     </>
   );

@@ -10,9 +10,11 @@ import Modal from '@/components/ui/Modal';
 import { Field } from '@/components/ui/Field';
 import ChampTelephone from '@/components/ui/ChampTelephone';
 import { formaterAffichage, validerInternational } from '@/lib/indicatifs';
+import ChoixLangue from '@/components/atelier/ChoixLangue';
 import { PastilleAtelier } from '@/components/atelier/IdentiteAtelier';
 import LogoAtelier from '@/components/atelier/LogoAtelier';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLangue } from '@/contexts/LangueContext';
 import { api } from '@/lib/api';
 import { NOM_ATELIER_DEFAUT } from '@/lib/atelier-identite';
 import { CRENEAUX, formaterHeure, validerHoraires } from '@/lib/horaires';
@@ -49,6 +51,7 @@ function ChampEnregistrable({
   messageEchec: string;
   onEnregistrer: (valeur: string) => Promise<void>;
 }) {
+  const { t } = useLangue();
   const [saisie, setSaisie] = useState(valeur);
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -68,7 +71,7 @@ function ChampEnregistrable({
       await onEnregistrer(saisie.trim());
       setEnregistre(true);
     } catch (err) {
-      setErreur(messageErreur(err, messageEchec));
+      setErreur(messageErreur(err, t(messageEchec)));
     } finally {
       setEnvoi(false);
     }
@@ -89,7 +92,7 @@ function ChampEnregistrable({
           className="bg-input border-border text-foreground min-w-0 flex-1 rounded-md border px-3 py-2.5 text-sm"
         />
         <Button type="button" onClick={() => void soumettre()} disabled={!modifie || envoi}>
-          {envoi ? 'Enregistrement…' : 'Enregistrer'}
+          {t(envoi ? 'Enregistrement…' : 'Enregistrer')}
         </Button>
       </div>
       {aide && !erreur && <p className="text-muted-foreground mt-1 text-xs">{aide}</p>}
@@ -99,7 +102,7 @@ function ChampEnregistrable({
         </p>
       )}
       {enregistre && !modifie && !erreur && (
-        <p className="text-success mt-1 text-xs">Enregistré.</p>
+        <p className="text-success mt-1 text-xs">{t('Enregistré.')}</p>
       )}
     </div>
   );
@@ -126,6 +129,7 @@ function HorairesEnregistrables({
   fermeture: string;
   onEnregistrer: (ouverture: string, fermeture: string) => Promise<void>;
 }) {
+  const { t } = useLangue();
   const [debut, setDebut] = useState(ouverture);
   const [fin, setFin] = useState(fermeture);
   const [envoi, setEnvoi] = useState(false);
@@ -148,7 +152,7 @@ function HorairesEnregistrables({
       await onEnregistrer(debut, fin);
       setEnregistre(true);
     } catch (err) {
-      setErreur(messageErreur(err, 'Les horaires n’ont pas pu être enregistrés.'));
+      setErreur(messageErreur(err, t('Les horaires n’ont pas pu être enregistrés.')));
     } finally {
       setEnvoi(false);
     }
@@ -159,11 +163,11 @@ function HorairesEnregistrables({
 
   return (
     <div>
-      <span className="text-muted-foreground mb-1 block text-xs">Horaires</span>
+      <span className="text-muted-foreground mb-1 block text-xs">{t('Horaires')}</span>
       <div className="flex flex-wrap items-center gap-2">
         <select
           value={debut}
-          aria-label="Heure d’ouverture"
+          aria-label={t('Heure d’ouverture')}
           onChange={(e) => {
             setDebut(e.target.value);
             setEnregistre(false);
@@ -178,11 +182,11 @@ function HorairesEnregistrables({
           ))}
         </select>
 
-        <span className="text-muted-foreground text-sm">à</span>
+        <span className="text-muted-foreground text-sm">{t('à')}</span>
 
         <select
           value={fin}
-          aria-label="Heure de fermeture"
+          aria-label={t('Heure de fermeture')}
           onChange={(e) => {
             setFin(e.target.value);
             setEnregistre(false);
@@ -203,13 +207,13 @@ function HorairesEnregistrables({
           onClick={() => void soumettre()}
           disabled={!modifie || envoi || probleme !== null}
         >
-          {envoi ? 'Enregistrement…' : 'Enregistrer'}
+          {t(envoi ? 'Enregistrement…' : 'Enregistrer')}
         </Button>
       </div>
 
       {probleme && (
         <p role="alert" className="text-danger mt-1 text-xs">
-          {probleme}
+          {t(probleme)}
         </p>
       )}
       {erreur && !probleme && (
@@ -218,7 +222,7 @@ function HorairesEnregistrables({
         </p>
       )}
       {enregistre && !modifie && !erreur && !probleme && (
-        <p className="text-success mt-1 text-xs">Enregistré.</p>
+        <p className="text-success mt-1 text-xs">{t('Enregistré.')}</p>
       )}
     </div>
   );
@@ -244,6 +248,7 @@ function TelephoneEnregistrable({
   aide?: string;
   onEnregistrer: (valeur: string) => Promise<void>;
 }) {
+  const { t } = useLangue();
   const [saisie, setSaisie] = useState(valeur);
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -264,7 +269,7 @@ function TelephoneEnregistrable({
       await onEnregistrer(saisie);
       setEnregistre(true);
     } catch (err) {
-      setErreur(messageErreur(err, 'Le numéro n’a pas pu être enregistré.'));
+      setErreur(messageErreur(err, t('Le numéro n’a pas pu être enregistré.')));
     } finally {
       setEnvoi(false);
     }
@@ -288,7 +293,7 @@ function TelephoneEnregistrable({
           onClick={() => void soumettre()}
           disabled={!modifie || envoi || invalide}
         >
-          {envoi ? 'Enregistrement…' : 'Enregistrer'}
+          {t(envoi ? 'Enregistrement…' : 'Enregistrer')}
         </Button>
         {erreur && (
           <span role="alert" className="text-danger text-xs">
@@ -296,7 +301,7 @@ function TelephoneEnregistrable({
           </span>
         )}
         {enregistre && !modifie && !erreur && (
-          <span className="text-success text-xs">Enregistré.</span>
+          <span className="text-success text-xs">{t('Enregistré.')}</span>
         )}
       </div>
     </div>
@@ -353,6 +358,7 @@ function Interrupteur({
 export default function Parametres() {
   const router = useRouter();
   const { user, logout, loggingOut, refresh } = useAuth();
+  const { t, tp } = useLangue();
 
   /**
    * Enregistre le nom de l'atelier, puis relit la session.
@@ -511,6 +517,8 @@ export default function Parametres() {
     if (message) setEchecTarif(message);
   }
 
+  const actifs = equipe.filter((m) => m.actif).length;
+
   async function seDeconnecter() {
     setDeconnexionOuverte(false);
     await logout();
@@ -534,7 +542,7 @@ export default function Parametres() {
                 : 'text-muted-foreground hover:text-foreground border-transparent',
             )}
           >
-            {o}
+            {t(o)}
           </button>
         ))}
       </div>
@@ -544,7 +552,7 @@ export default function Parametres() {
         {onglet === 'Atelier' && (
           <section className="bg-surface border-border rounded-lg border p-5">
             <h2 className="font-headings text-foreground mb-4 text-sm font-bold">
-              Informations de l’atelier
+              {t('Informations de l’atelier')}
             </h2>
 
             <div className="mb-4 flex flex-col gap-5 sm:flex-row">
@@ -552,20 +560,20 @@ export default function Parametres() {
 
               <div className="flex flex-1 flex-col gap-3">
                 <ChampEnregistrable
-                  label="Nom de l’atelier"
+                  label={t('Nom de l’atelier')}
                   valeur={user?.workshopName ?? ''}
-                  placeholder={NOM_ATELIER_DEFAUT}
+                  placeholder={t(NOM_ATELIER_DEFAUT)}
                   messageEchec="Le nom n’a pas pu être enregistré."
                   onEnregistrer={enregistrerNom}
                 />
                 <TelephoneEnregistrable
-                  label="Téléphone de l’atelier"
+                  label={t('Téléphone de l’atelier')}
                   valeur={user?.phone ?? ''}
-                  aide="Le numéro sur lequel on joint l’atelier."
+                  aide={t('Le numéro sur lequel on joint l’atelier.')}
                   onEnregistrer={enregistrerTelephone}
                 />
                 <ChampEnregistrable
-                  label="Ville"
+                  label={t('Ville')}
                   valeur={user?.workshopCity ?? ''}
                   placeholder="Ouagadougou"
                   messageEchec="La ville n’a pas pu être enregistrée."
@@ -576,7 +584,7 @@ export default function Parametres() {
 
             <div className="grid gap-4 sm:grid-cols-3">
               <ChampEnregistrable
-                label="Adresse"
+                label={t('Adresse')}
                 valeur={user?.workshopAddress ?? ''}
                 placeholder="Secteur 15, rue 15.42"
                 messageEchec="L’adresse n’a pas pu être enregistrée."
@@ -595,12 +603,12 @@ export default function Parametres() {
                 chiffres seraient inchangés, leur sens faux.
               */}
               <div>
-                <span className="text-muted-foreground mb-1 block text-xs">Devise</span>
+                <span className="text-muted-foreground mb-1 block text-xs">{t('Devise')}</span>
                 <div className="bg-input border-border rounded-md border px-3 py-2.5">
-                  <span className="text-foreground text-sm">F CFA</span>
+                  <span className="text-foreground text-sm">{t('F CFA')}</span>
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">
-                  Tous les montants enregistrés sont en francs CFA.
+                  {t('Tous les montants enregistrés sont en francs CFA.')}
                 </p>
               </div>
             </div>
@@ -612,10 +620,13 @@ export default function Parametres() {
           <section className="bg-surface border-border overflow-hidden rounded-lg border">
             <div className="border-border flex items-center justify-between gap-3 border-b px-5 py-3">
               <h2 className="font-headings text-foreground text-sm font-bold">
-                Équipe ({equipe.filter((m) => m.actif).length} actif
-                {equipe.filter((m) => m.actif).length > 1 ? 's' : ''} sur {equipe.length})
+                {t('Équipe')} (
+                {tp('{n} actif sur {total}', '{n} actifs sur {total}', actifs, {
+                  total: equipe.length,
+                })}
+                )
                 {sourceEquipe === 'demonstration' && (
-                  <span className="text-warning ml-1.5 font-normal">· exemples</span>
+                  <span className="text-warning ms-1.5 font-normal">{t('· exemples')}</span>
                 )}
               </h2>
               <button
@@ -624,7 +635,7 @@ export default function Parametres() {
                 className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium"
               >
                 <UserPlus size={12} aria-hidden />
-                Ajouter
+                {t('Ajouter')}
               </button>
             </div>
 
@@ -635,15 +646,18 @@ export default function Parametres() {
             )}
 
             {chargementEquipe && equipe.length === 0 && (
-              <p className="text-muted-foreground px-5 py-4 text-xs">Chargement de l’équipe…</p>
+              <p className="text-muted-foreground px-5 py-4 text-xs">
+                {t('Chargement de l’équipe…')}
+              </p>
             )}
 
             {/* Un atelier qui vient d'ouvrir n'a personne : c'est ici qu'il
                 compose son équipe, et le planning en dépend entièrement. */}
             {!chargementEquipe && equipe.length === 0 && (
               <p className="text-muted-foreground px-5 py-4 text-xs">
-                Aucun artisan. Ajoutez-en un pour pouvoir assigner des commandes et remplir le
-                planning.
+                {t(
+                  'Aucun artisan. Ajoutez-en un pour pouvoir assigner des commandes et remplir le planning.',
+                )}
               </p>
             )}
 
@@ -654,7 +668,7 @@ export default function Parametres() {
                   <div className="min-w-0 flex-1">
                     <div className="text-foreground truncate text-sm font-medium">{m.nom}</div>
                     <div className="text-muted-foreground text-xs">
-                      {m.role} · {m.capacite} h / jour
+                      {t(m.role)} · {t('{n} h / jour', { n: m.capacite })}
                       {m.telephone ? ` · ${formaterAffichage(m.telephone)}` : ''}
                     </div>
                   </div>
@@ -664,12 +678,12 @@ export default function Parametres() {
                       m.actif ? 'text-success' : 'text-muted-foreground',
                     )}
                   >
-                    {m.actif ? 'Actif' : 'Inactif'}
+                    {t(m.actif ? 'Actif' : 'Inactif')}
                   </span>
                   <Interrupteur
                     actif={m.actif}
                     onChange={() => basculerMembre(m.id)}
-                    label={`Activer ${m.nom}`}
+                    label={t('Activer {nom}', { nom: m.nom })}
                   />
                 </li>
               ))}
@@ -681,31 +695,36 @@ export default function Parametres() {
         {onglet === 'Tarification' && (
           <section className="bg-surface border-border overflow-hidden rounded-lg border">
             <div className="border-border flex items-center justify-between gap-3 border-b px-5 py-3">
-              <h2 className="font-headings text-foreground text-sm font-bold">Grille tarifaire</h2>
+              <h2 className="font-headings text-foreground text-sm font-bold">
+                {t('Grille tarifaire')}
+              </h2>
               <button
                 type="button"
                 onClick={() => ouvrirTarif()}
                 className="text-primary border-primary hover:bg-primary/10 flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors"
               >
                 <Plus size={11} aria-hidden />
-                Ajouter un tarif
+                {t('Ajouter un tarif')}
               </button>
             </div>
 
             {chargementTarifs && (
-              <p className="text-muted-foreground px-5 py-6 text-sm">Chargement de la grille…</p>
+              <p className="text-muted-foreground px-5 py-6 text-sm">
+                {t('Chargement de la grille…')}
+              </p>
             )}
 
             {!chargementTarifs && sourceTarifs === 'demonstration' && (
               <p className="text-muted-foreground border-border border-b px-5 py-3 text-xs">
-                Grille d’exemple — connectez-vous pour composer la vôtre.
+                {t('Grille d’exemple — connectez-vous pour composer la vôtre.')}
               </p>
             )}
 
             {!chargementTarifs && sourceTarifs === 'serveur' && tarifs.length === 0 && (
               <p className="text-muted-foreground px-5 py-6 text-sm">
-                Aucun tarif enregistré. Ajoutez vos prix de façon : ils seront proposés à chaque
-                nouvelle commande.
+                {t(
+                  'Aucun tarif enregistré. Ajoutez vos prix de façon : ils seront proposés à chaque nouvelle commande.',
+                )}
               </p>
             )}
 
@@ -716,30 +735,41 @@ export default function Parametres() {
             )}
 
             <ul>
-              {tarifs.map((t) => (
-                <li key={t.id} className="border-border flex items-center gap-3 border-b px-5 py-3">
+              {tarifs.map((tarif) => (
+                <li
+                  key={tarif.id}
+                  className="border-border flex items-center gap-3 border-b px-5 py-3"
+                >
                   <div className="min-w-0 flex-1">
-                    <div className="text-foreground truncate text-sm font-medium">{t.tenue}</div>
-                    <div className="text-muted-foreground text-xs">Prix de {t.unite}</div>
+                    <div className="text-foreground truncate text-sm font-medium">
+                      {tarif.tenue}
+                    </div>
+                    <div className="text-muted-foreground text-xs">
+                      {t('Prix de {unite}', { unite: t(tarif.unite) })}
+                    </div>
                   </div>
                   <span className="text-foreground text-sm font-medium">
-                    {formatPrice(t.prix, 'F')}
+                    {formatPrice(tarif.prix, 'F')}
                   </span>
                   <button
                     type="button"
-                    onClick={() => ouvrirTarif(t)}
+                    onClick={() => ouvrirTarif(tarif)}
                     className="text-muted-foreground hover:text-foreground"
                   >
                     <Pencil size={13} aria-hidden />
-                    <span className="sr-only">Modifier le tarif {t.tenue}</span>
+                    <span className="sr-only">
+                      {t('Modifier le tarif {tenue}', { tenue: tarif.tenue })}
+                    </span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => void supprimerTarif(t)}
+                    onClick={() => void supprimerTarif(tarif)}
                     className="text-muted-foreground hover:text-danger"
                   >
                     <Trash2 size={13} aria-hidden />
-                    <span className="sr-only">Supprimer le tarif {t.tenue}</span>
+                    <span className="sr-only">
+                      {t('Supprimer le tarif {tenue}', { tenue: tarif.tenue })}
+                    </span>
                   </button>
                 </li>
               ))}
@@ -760,20 +790,22 @@ export default function Parametres() {
           <section className="bg-surface border-border overflow-hidden rounded-lg border">
             <div className="border-border border-b px-5 py-3">
               <h2 className="font-headings text-foreground text-sm font-bold">
-                Rappels automatiques
+                {t('Rappels automatiques')}
               </h2>
               <p className="text-muted-foreground mt-1 text-xs">
-                Relevés chaque matin et déposés dans vos notifications.
+                {t('Relevés chaque matin et déposés dans vos notifications.')}
               </p>
             </div>
 
             {chargementAlertes && (
-              <p className="text-muted-foreground px-5 py-6 text-sm">Chargement des réglages…</p>
+              <p className="text-muted-foreground px-5 py-6 text-sm">
+                {t('Chargement des réglages…')}
+              </p>
             )}
 
             {!chargementAlertes && !sessionAlertes && (
               <p className="text-muted-foreground px-5 py-6 text-sm">
-                Connectez-vous pour régler vos rappels.
+                {t('Connectez-vous pour régler vos rappels.')}
               </p>
             )}
 
@@ -791,13 +823,13 @@ export default function Parametres() {
                     className="border-border flex items-center gap-4 border-b px-5 py-3.5"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="text-foreground text-sm font-medium">{a.label}</div>
-                      <div className="text-muted-foreground text-xs">{a.description}</div>
+                      <div className="text-foreground text-sm font-medium">{t(a.label)}</div>
+                      <div className="text-muted-foreground text-xs">{t(a.description)}</div>
                     </div>
                     <Interrupteur
                       actif={alerteActive(a.type)}
                       onChange={() => void basculerRappel(a.type)}
-                      label={a.label}
+                      label={t(a.label)}
                     />
                   </li>
                 ))}
@@ -809,7 +841,9 @@ export default function Parametres() {
         {/* ---------- Compte ---------- */}
         {onglet === 'Compte' && (
           <section className="bg-surface border-border rounded-lg border p-5">
-            <h2 className="font-headings text-foreground mb-4 text-sm font-bold">Votre compte</h2>
+            <h2 className="font-headings text-foreground mb-4 text-sm font-bold">
+              {t('Votre compte')}
+            </h2>
 
             {/*
               Le nom, l’adresse et le numéro étaient écrits en dur — « Moussa
@@ -821,18 +855,20 @@ export default function Parametres() {
               <PastilleAtelier taille="lg" className="h-12 w-12 text-base" accentue />
               <div className="min-w-0">
                 <div className="text-foreground truncate text-sm font-medium">
-                  {user?.workshopName?.trim() || NOM_ATELIER_DEFAUT}
+                  {user?.workshopName?.trim() || t(NOM_ATELIER_DEFAUT)}
                 </div>
-                <div className="text-muted-foreground text-xs">Propriétaire de l’atelier</div>
+                <div className="text-muted-foreground text-xs">
+                  {t('Propriétaire de l’atelier')}
+                </div>
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Champ label="Adresse e-mail" valeur={user?.email ?? '—'} />
+              <Champ label={t('Adresse e-mail')} valeur={user?.email ?? '—'} />
               <TelephoneEnregistrable
-                label="Téléphone"
+                label={t('Téléphone')}
                 valeur={user?.phone ?? ''}
-                aide="Le même que celui de l’onglet Atelier."
+                aide={t('Le même que celui de l’onglet Atelier.')}
                 onEnregistrer={enregistrerTelephone}
               />
             </div>
@@ -844,11 +880,11 @@ export default function Parametres() {
               sans code ARIA à maintenir.
             */}
             <div className="border-border mt-5 border-t pt-5">
-              <h3 className="font-headings text-foreground text-sm font-bold">Apparence</h3>
+              <h3 className="font-headings text-foreground text-sm font-bold">{t('Apparence')}</h3>
               <p className="text-muted-foreground mt-1 mb-3 text-xs">
-                Mémorisé sur cet appareil, pas sur votre compte.
+                {t('Mémorisé sur cet appareil, pas sur votre compte.')}
               </p>
-              <div role="radiogroup" aria-label="Thème de l’interface" className="flex gap-2">
+              <div role="radiogroup" aria-label={t('Thème de l’interface')} className="flex gap-2">
                 {THEMES.map((valeur) => {
                   const actif = theme === valeur;
                   const Icone = valeur === 'dark' ? Moon : Sun;
@@ -872,12 +908,14 @@ export default function Parametres() {
                         className="sr-only"
                       />
                       <Icone size={14} aria-hidden />
-                      {valeur === 'dark' ? 'Sombre' : 'Clair'}
+                      {t(valeur === 'dark' ? 'Sombre' : 'Clair')}
                     </label>
                   );
                 })}
               </div>
             </div>
+
+            <ChoixLangue />
 
             <div className="border-border mt-5 flex flex-wrap gap-2 border-t pt-5">
               {/*
@@ -891,14 +929,14 @@ export default function Parametres() {
                 href="/settings"
                 className="border-border text-foreground hover:bg-muted rounded-md border px-3 py-2 text-sm transition-colors"
               >
-                Changer le mot de passe
+                {t('Changer le mot de passe')}
               </Link>
               <Button
                 variante="danger"
                 onClick={() => setDeconnexionOuverte(true)}
                 disabled={loggingOut}
               >
-                {loggingOut ? 'Déconnexion…' : 'Se déconnecter'}
+                {t(loggingOut ? 'Déconnexion…' : 'Se déconnecter')}
               </Button>
             </div>
           </section>
@@ -914,22 +952,25 @@ export default function Parametres() {
       <Modal
         ouvert={deconnexionOuverte}
         onFermer={() => setDeconnexionOuverte(false)}
-        titre="Se déconnecter ?"
-        description="Pour revenir, il faudra retaper votre mot de passe puis saisir un code envoyé à votre adresse e-mail."
+        titre={t('Se déconnecter ?')}
+        description={t(
+          'Pour revenir, il faudra retaper votre mot de passe puis saisir un code envoyé à votre adresse e-mail.',
+        )}
         pied={
           <>
             <Button variante="fantome" onClick={() => setDeconnexionOuverte(false)}>
-              Rester connecté
+              {t('Rester connecté')}
             </Button>
             <Button variante="danger" onClick={() => void seDeconnecter()} disabled={loggingOut}>
-              {loggingOut ? 'Déconnexion…' : 'Se déconnecter'}
+              {t(loggingOut ? 'Déconnexion…' : 'Se déconnecter')}
             </Button>
           </>
         }
       >
         <p className="text-muted-foreground text-sm">
-          Les commandes, la caisse et les mesures restent enregistrées — c’est l’accès depuis cet
-          appareil qui se ferme.
+          {t(
+            'Les commandes, la caisse et les mesures restent enregistrées — c’est l’accès depuis cet appareil qui se ferme.',
+          )}
         </p>
       </Modal>
 
@@ -937,15 +978,15 @@ export default function Parametres() {
       <Modal
         ouvert={tarifOuvert}
         onFermer={() => setTarifOuvert(false)}
-        titre={tarifEdite ? 'Modifier le tarif' : 'Nouveau tarif'}
-        description="Prix de façon appliqué par défaut à ce type de tenue."
+        titre={t(tarifEdite ? 'Modifier le tarif' : 'Nouveau tarif')}
+        description={t('Prix de façon appliqué par défaut à ce type de tenue.')}
         pied={
           <>
             <Button variante="fantome" onClick={() => setTarifOuvert(false)}>
-              Annuler
+              {t('Annuler')}
             </Button>
             <Button type="submit" form="formulaire-tarif">
-              {tarifEdite ? 'Enregistrer' : 'Ajouter'}
+              {t(tarifEdite ? 'Enregistrer' : 'Ajouter')}
             </Button>
           </>
         }
@@ -956,7 +997,7 @@ export default function Parametres() {
           className="flex flex-col gap-4"
         >
           <Field
-            label="Type de tenue"
+            label={t('Type de tenue')}
             required
             autoFocus
             placeholder="Boubou bazin brodé"
@@ -964,13 +1005,13 @@ export default function Parametres() {
             onChange={(e) => setNomTenue(e.target.value)}
           />
           <Field
-            label="Prix de façon"
+            label={t('Prix de façon')}
             type="number"
             required
             min={0}
             step={500}
             placeholder="25000"
-            aide="En francs CFA, sans décimales."
+            aide={t('En francs CFA, sans décimales.')}
             value={prix}
             onChange={(e) => setPrix(e.target.value)}
           />
@@ -986,26 +1027,28 @@ export default function Parametres() {
       <Modal
         ouvert={artisanOuvert}
         onFermer={() => setArtisanOuvert(false)}
-        titre="Ajouter un artisan"
-        description="Les initiales sont déduites du nom ; elles identifient l’artisan sur les commandes et le planning."
+        titre={t('Ajouter un artisan')}
+        description={t(
+          'Les initiales sont déduites du nom ; elles identifient l’artisan sur les commandes et le planning.',
+        )}
         pied={
           <>
             <Button variante="fantome" onClick={() => setArtisanOuvert(false)}>
-              Annuler
+              {t('Annuler')}
             </Button>
             <Button
               type="submit"
               form="formulaire-artisan"
               disabled={!nomArtisan.trim() || envoiArtisan}
             >
-              {envoiArtisan ? 'Ajout…' : 'Ajouter à l’équipe'}
+              {t(envoiArtisan ? 'Ajout…' : 'Ajouter à l’équipe')}
             </Button>
           </>
         }
       >
         <form id="formulaire-artisan" onSubmit={soumettreArtisan} className="flex flex-col gap-4">
           <Field
-            label="Nom complet"
+            label={t('Nom complet')}
             required
             autoFocus
             placeholder="Moussa Koné"
@@ -1013,28 +1056,30 @@ export default function Parametres() {
             onChange={(e) => setNomArtisan(e.target.value)}
           />
           <Field
-            label="Rôle"
+            label={t('Rôle')}
             required
             placeholder="Tailleur senior"
             value={roleArtisan}
             onChange={(e) => setRoleArtisan(e.target.value)}
           />
           <Field
-            label="Capacité quotidienne (heures)"
+            label={t('Capacité quotidienne (heures)')}
             type="number"
             required
             min={1}
             max={16}
-            aide="Un apprenti ne tient pas les 8 h d’un tailleur senior — le planning s’appuie sur ce chiffre."
+            aide={t(
+              'Un apprenti ne tient pas les 8 h d’un tailleur senior — le planning s’appuie sur ce chiffre.',
+            )}
             value={capaciteArtisan}
             onChange={(e) => setCapaciteArtisan(e.target.value)}
           />
 
           <ChampTelephone
-            label="Téléphone (facultatif)"
+            label={t('Téléphone (facultatif)')}
             valeur={telArtisan}
             onChange={setTelArtisan}
-            aide="Pour joindre l’artisan quand une tenue est promise pour le lendemain."
+            aide={t('Pour joindre l’artisan quand une tenue est promise pour le lendemain.')}
           />
 
           {echecEquipe && (

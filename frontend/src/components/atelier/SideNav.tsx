@@ -6,6 +6,7 @@ import { Settings } from 'lucide-react';
 import { BoutonAtelierPro } from '@/components/marque/LogoAtelierPro';
 import { PastilleAtelier } from '@/components/atelier/IdentiteAtelier';
 import { entreesLaterales } from '@/components/atelier/nav-items';
+import { useT } from '@/contexts/LangueContext';
 import { cn } from '@/lib/utils';
 
 /**
@@ -19,10 +20,11 @@ import { cn } from '@/lib/utils';
  */
 export default function SideNav() {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <nav
-      aria-label="Navigation principale"
+      aria-label={t('Navigation principale')}
       data-chrome="app"
       className="bg-surface border-border hidden min-h-full w-16 flex-col border-r lg:flex"
     >
@@ -44,7 +46,12 @@ export default function SideNav() {
 
           if (!disponible) {
             return (
-              <span key={id} className={classes} title={`${label} — écran à venir`} aria-disabled>
+              <span
+                key={id}
+                className={classes}
+                title={t('{ecran} — écran à venir', { ecran: t(label) })}
+                aria-disabled
+              >
                 <Icone size={18} aria-hidden />
               </span>
             );
@@ -54,8 +61,8 @@ export default function SideNav() {
             <Link
               key={id}
               href={href}
-              title={label}
-              aria-label={label}
+              title={t(label)}
+              aria-label={t(label)}
               aria-current={actif ? 'page' : undefined}
               className={classes}
             >
@@ -69,8 +76,8 @@ export default function SideNav() {
       <div className="border-border flex flex-col items-center gap-3 border-t py-4">
         <Link
           href="/parametres"
-          title="Paramètres"
-          aria-label="Paramètres"
+          title={t('Paramètres')}
+          aria-label={t('Paramètres')}
           aria-current={pathname === '/parametres' ? 'page' : undefined}
           className={cn(
             'flex h-10 w-10 items-center justify-center rounded-md transition-colors',

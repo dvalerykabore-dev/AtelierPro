@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
 import AuthCard from '@/components/auth/AuthCard';
+import { useLangue } from '@/contexts/LangueContext';
 import Button from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { api, ApiError } from '@/lib/api';
@@ -21,6 +22,7 @@ function FormulaireReinitialisation() {
   const router = useRouter();
   const params = useSearchParams();
 
+  const { t } = useLangue();
   const [email, setEmail] = useState(params.get('email') ?? '');
   const [code, setCode] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
@@ -52,20 +54,20 @@ function FormulaireReinitialisation() {
 
   return (
     <AuthCard
-      titre="Nouveau mot de passe"
-      sousTitre="Saisissez le code reçu par e-mail et choisissez votre nouveau mot de passe."
+      titre={t('Nouveau mot de passe')}
+      sousTitre={t('Saisissez le code reçu par e-mail et choisissez votre nouveau mot de passe.')}
       pied={
         <>
-          Code perdu ?{' '}
+          {t('Code perdu ?')}{' '}
           <Link href="/mot-de-passe-oublie" className="text-primary font-medium">
-            En demander un autre
+            {t('En demander un autre')}
           </Link>
         </>
       }
     >
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Field
-          label="Adresse e-mail"
+          label={t('Adresse e-mail')}
           type="email"
           required
           autoComplete="email"
@@ -73,7 +75,7 @@ function FormulaireReinitialisation() {
           onChange={(e) => setEmail(e.target.value)}
         />
         <Field
-          label="Code reçu"
+          label={t('Code reçu')}
           required
           maxLength={8}
           autoComplete="one-time-code"
@@ -83,13 +85,13 @@ function FormulaireReinitialisation() {
           onChange={(e) => setCode(e.target.value)}
         />
         <Field
-          label="Nouveau mot de passe"
+          label={t('Nouveau mot de passe')}
           type="password"
           required
           minLength={10}
           autoComplete="new-password"
           placeholder="••••••••••"
-          aide="10 caractères minimum."
+          aide={t('10 caractères minimum.')}
           value={motDePasse}
           onChange={(e) => setMotDePasse(e.target.value)}
         />
@@ -97,12 +99,12 @@ function FormulaireReinitialisation() {
         {erreur && (
           <p role="alert" className="text-danger flex items-start gap-2 text-sm">
             <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-            {erreur}
+            {t(erreur)}
           </p>
         )}
 
         <Button type="submit" taille="lg" pleineLargeur disabled={envoi}>
-          {envoi ? 'Enregistrement…' : 'Changer mon mot de passe'}
+          {t(envoi ? 'Enregistrement…' : 'Changer mon mot de passe')}
         </Button>
       </form>
     </AuthCard>
