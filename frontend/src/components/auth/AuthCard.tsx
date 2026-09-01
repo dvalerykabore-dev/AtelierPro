@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { NOM_PRODUIT } from '@/lib/atelier-identite';
+import { BoutonAtelierPro, NomAtelierPro } from '@/components/marque/LogoAtelierPro';
 
 export interface AuthCardProps {
   titre: string;
@@ -14,21 +14,20 @@ export interface AuthCardProps {
  * Coquille commune aux écrans d'authentification.
  *
  * Banani ne fournit aucun écran de connexion : cette mise en page est déduite du
- * reste du système de design — fond `background`, carte `surface` bordée, logo
- * or repris du rail latéral, filet doré emprunté à la colonne capacité du
- * tableau de bord, titres en Space Grotesk.
+ * reste du système de design — fond `background`, carte `surface` bordée, verrou
+ * de marque en tête, filet doré emprunté à la colonne capacité du tableau de
+ * bord, titres en Space Grotesk.
+ *
+ * La marque y est empilée plutôt qu'en ligne : c'est le seul écran où elle est
+ * le sujet et non un repère de navigation, personne n'étant encore connecté.
  */
 export default function AuthCard({ titre, sousTitre, children, pied }: AuthCardProps) {
   return (
     <main className="bg-background font-body flex min-h-screen flex-col items-center justify-center px-4 py-10">
       {/* Marque */}
-      <div className="mb-6 flex flex-col items-center gap-2">
-        <span className="bg-primary flex h-12 w-12 items-center justify-center rounded-lg">
-          <span className="text-primary-foreground font-headings text-2xl font-bold">A</span>
-        </span>
-        <span className="text-muted-foreground text-xs tracking-widest uppercase">
-          {NOM_PRODUIT}
-        </span>
+      <div className="mb-7 flex flex-col items-center gap-3">
+        <BoutonAtelierPro taille={48} className="text-primary" />
+        <NomAtelierPro className="text-xl" />
       </div>
 
       <section className="bg-surface border-border w-full max-w-md rounded-xl border p-6 sm:p-8">

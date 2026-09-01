@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LogoAtelierPro } from '@/components/marque/LogoAtelierPro';
 import { ANCRES } from '@/lib/landing-contenu';
 
 const LIENS = [
@@ -17,14 +18,21 @@ const LIENS = [
  * page d'un produit payant est le premier signe qu'un visiteur méfiant va
  * chercher. Ces pages disent en toutes lettres que le document n'est pas
  * encore rédigé plutôt que d'afficher un texte juridique inventé.
+ *
+ * Le verrou de marque ferme la page. La ligne de copyright ne répète donc plus
+ * « AtelierPro » : le logo le dit deux centimètres au-dessus, et un nom écrit
+ * deux fois dans le même bloc se lit comme une coquille.
  */
 export default function PiedDePage() {
   const annee = new Date().getFullYear();
 
   return (
     <footer className="border-border bg-surface border-t px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col items-center gap-3 text-xs sm:flex-row sm:justify-between sm:gap-4 sm:text-sm">
-        <p>© {annee} AtelierPro — fait pour l’Afrique de l’Ouest.</p>
+      <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col items-center gap-4 text-xs sm:flex-row sm:items-end sm:justify-between sm:gap-6 sm:text-sm">
+        <div className="flex flex-col items-center gap-2 sm:items-start">
+          <LogoAtelierPro taille={26} />
+          <p>Fait pour l’Afrique de l’Ouest. © {annee}</p>
+        </div>
         <nav aria-label="Liens de bas de page">
           <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 sm:gap-x-6">
             {LIENS.map((l, i) => (

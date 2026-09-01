@@ -15,6 +15,9 @@ import { cn } from '@/lib/utils';
 /** En dessous de ce diamètre, la rainure se referme sur le contour. */
 const SEUIL_COMPACT = 40;
 
+/** Au-dessus, le bouton est une enseigne : le contour peut redevenir un filet. */
+const SEUIL_MONUMENTAL = 96;
+
 export interface BoutonAtelierProProps {
   /** Diamètre en pixels. Le tracé est vectoriel, tout suit. */
   taille?: number;
@@ -33,15 +36,21 @@ export interface BoutonAtelierProProps {
  * anneau épais — c'est l'arbitrage qu'un graveur fait entre un poinçon et une
  * enseigne.
  *
+ * Le contour suit le même raisonnement en sens inverse. Une épaisseur unique
+ * ne peut pas convenir aux deux bouts de l'échelle : le filet qui donne sa
+ * finesse au bouton de 152 px tombe sous le pixel à 28 px et disparaît. Trois
+ * paliers, donc, comme une fonte a ses tailles optiques.
+ *
  * `taille` ne fixe que les attributs `width`/`height`. Une classe de taille
- * passée par `className` (`h-20 w-20 sm:h-28 sm:w-28`) les emporte, ce qui
- * permet un signe responsive sans que le seuil de compacité ne dépende du
- * point de rupture.
+ * passée par `className` (`h-28 w-28 sm:h-38 sm:w-38`) les emporte, ce qui
+ * permet un signe responsive sans que les paliers ne dépendent du point de
+ * rupture.
  */
 export function BoutonAtelierPro({ taille = 32, className }: BoutonAtelierProProps) {
   const compact = taille < SEUIL_COMPACT;
-  const ecart = compact ? 5.2 : 4.7;
-  const trou = compact ? 3.1 : 2.6;
+  const ecart = compact ? 5 : 4.1;
+  const trou = compact ? 3.8 : 3.15;
+  const contour = compact ? 1.8 : taille >= SEUIL_MONUMENTAL ? 0.7 : 1.2;
 
   return (
     <svg
@@ -53,9 +62,16 @@ export function BoutonAtelierPro({ taille = 32, className }: BoutonAtelierProPro
       focusable="false"
       className={cn('shrink-0', className)}
     >
-      <circle cx="24" cy="24" r="22.4" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="24" cy="24" r="22.4" stroke="currentColor" strokeWidth={contour} />
       {!compact && (
-        <circle cx="24" cy="24" r="18.8" stroke="currentColor" strokeWidth="1" opacity="0.35" />
+        <circle
+          cx="24"
+          cy="24"
+          r="19.1"
+          stroke="currentColor"
+          strokeWidth={contour * 0.7}
+          opacity="0.35"
+        />
       )}
       {[-1, 1].map((y) =>
         [-1, 1].map((x) => (

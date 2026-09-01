@@ -35,6 +35,26 @@
    */
   --color-overlay: rgb(0 0 0 / 0.6);
 
+  /*
+   * Couleurs de marque — VOLONTAIREMENT insensibles au thème.
+   *
+   * Le bloc `[data-theme='light']` plus bas redéfinit toute la palette. Ces
+   * sept valeurs-là n'y figurent pas, et c'est le but : le verrou de marque
+   * (carte de couverture, favicon, pied de page) doit sortir en bleu nuit et
+   * or partout, comme un logo imprimé. Une marque qui change de couleur avec
+   * le réglage d'affichage n'est plus une marque.
+   *
+   * Corollaire : le texte posé dessus se fige aussi. Contrastes mesurés sur
+   * marque-nuit — crème 15,8:1 · or 6,1:1 · brume 5,2:1 (WCAG AA partout).
+   */
+  --color-marque-nuit: #0b1628;
+  --color-marque-carte: #0f1f3a;
+  --color-marque-filet: #1e3255;
+  --color-marque-or: #c9993a;
+  --color-marque-creme: #f0e8d5;
+  --color-marque-brume: #7a8faa;
+  --color-marque-succes: #3aaf7a;
+
   /* Rayons */
   --radius-sm: 4px;
   --radius-md: 6px;

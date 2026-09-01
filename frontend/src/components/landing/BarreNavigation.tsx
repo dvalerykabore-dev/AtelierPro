@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import BasculeTheme from '@/components/ui/BasculeTheme';
-import { Menu, Shirt, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import { BoutonAtelierPro, NomAtelierPro } from '@/components/marque/LogoAtelierPro';
 import { useAuth } from '@/contexts/AuthContext';
 import { ANCRES, TEMOIGNAGES } from '@/lib/landing-contenu';
 
@@ -75,13 +76,11 @@ export default function BarreNavigation() {
             offrir la même surface que les autres. */}
         <Link
           href="/"
-          className="flex min-h-11 items-center gap-1.5 lg:gap-2"
+          className="flex min-h-11 items-center gap-2 lg:gap-2.5"
           aria-label="AtelierPro, accueil"
         >
-          <span className="bg-primary flex h-7 w-7 items-center justify-center rounded-md lg:h-8 lg:w-8">
-            <Shirt className="text-primary-foreground h-3.5 w-3.5 lg:h-4.5 lg:w-4.5" aria-hidden />
-          </span>
-          <span className="font-headings text-base font-bold lg:text-lg">AtelierPro</span>
+          <BoutonAtelierPro taille={28} className="text-primary h-7 w-7 lg:h-8 lg:w-8" />
+          <NomAtelierPro className="text-base lg:text-lg" />
         </Link>
 
         <div className="flex items-center gap-2 md:gap-6">
