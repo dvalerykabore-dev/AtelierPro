@@ -409,7 +409,7 @@ export default function PriseDeMesures() {
               {t('Conservé à l’écran seulement — connectez-vous pour enregistrer.')}
             </span>
           )}
-          {erreur && <span className="text-danger text-xs font-medium">{erreur}</span>}
+          {erreur && <span className="text-danger text-xs font-medium">{t(erreur)}</span>}
 
           <Link href="/commandes/nouvelle">
             <Button variante="contour" taille="md">

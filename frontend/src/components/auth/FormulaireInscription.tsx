@@ -102,12 +102,12 @@ export default function FormulaireInscription() {
         {erreur && (
           <p role="alert" className="text-danger flex items-start gap-2 text-sm">
             <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-            {erreur}
+            {t(erreur)}
           </p>
         )}
 
         <Button type="submit" taille="lg" pleineLargeur disabled={envoi}>
-          {envoi ? 'Création…' : 'Créer mon compte'}
+          {envoi ? t('Création…') : t('Créer mon compte')}
         </Button>
 
         <p className="text-muted-foreground text-center text-xs">

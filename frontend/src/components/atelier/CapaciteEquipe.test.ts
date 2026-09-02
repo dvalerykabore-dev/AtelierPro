@@ -4,6 +4,7 @@
 // délai à un client au comptoir : chacun de ces mots doit être vrai.
 import { describe, it, expect } from 'vitest';
 import { libelleBadge } from './CapaciteEquipe';
+import { traduirePluriel } from '@/lib/i18n/traduire';
 
 const BASE = { chargement: false, effectif: 3, disponibles: 2, chargeGlobale: 60 };
 
@@ -11,11 +12,23 @@ describe('libelleBadge', () => {
   it('annonce le nombre de places, pas seulement leur existence', () => {
     // « Places disponibles » ne disait pas s'il en restait une ou quatre —
     // c'est pourtant ce qui décide du délai qu'on accepte de promettre.
-    expect(libelleBadge(BASE).texte).toBe('2 places disponibles');
+    const libre = libelleBadge(BASE);
+    expect(libre.n).toBe(2);
+    expect(libre.cle).toBe('{n} place disponible');
+    expect(libre.clePluriel).toBe('{n} places disponibles');
+    expect(libre.alerte).toBe(false);
   });
 
-  it('accorde le singulier', () => {
-    expect(libelleBadge({ ...BASE, disponibles: 1 }).texte).toBe('1 place disponible');
+  it('rend la phrase déclinée, singulier compris', () => {
+    // L'accord ne se fait plus à la main ici : la fonction rend la paire, le
+    // moteur choisit la forme. On vérifie le résultat de bout en bout, parce
+    // que c'est lui qui se lit au comptoir.
+    const decline = (disponibles: number) => {
+      const l = libelleBadge({ ...BASE, disponibles });
+      return traduirePluriel(null, 'fr', l.cle, l.clePluriel ?? l.cle, l.n ?? 0);
+    };
+    expect(decline(1)).toBe('1 place disponible');
+    expect(decline(2)).toBe('2 places disponibles');
   });
 
   it('ne dit JAMAIS qu’il reste de la place quand l’atelier n’a aucun artisan', () => {
@@ -24,14 +37,14 @@ describe('libelleBadge', () => {
     // place ». Personne pour coudre, et la barre haute annonçait des
     // disponibilités.
     const vide = libelleBadge({ chargement: false, effectif: 0, disponibles: 0, chargeGlobale: 0 });
-    expect(vide.texte).toBe('Aucun artisan');
-    expect(vide.texte).not.toMatch(/disponible/i);
+    expect(vide.cle).toBe('Aucun artisan');
+    expect(vide.cle).not.toMatch(/disponible/i);
     expect(vide.alerte).toBe(true);
   });
 
   it('passe en alerte dès 100 % de charge', () => {
     const plein = libelleBadge({ ...BASE, chargeGlobale: 100, disponibles: 0 });
-    expect(plein.texte).toBe('Journée saturée');
+    expect(plein.cle).toBe('Journée saturée');
     expect(plein.alerte).toBe(true);
   });
 
@@ -40,7 +53,7 @@ describe('libelleBadge', () => {
     // aucun ne peut prendre une tenue d'une journée. La moyenne masque le fait
     // qu'il ne reste que des miettes chez chacun.
     const miettes = libelleBadge({ ...BASE, disponibles: 0, chargeGlobale: 87 });
-    expect(miettes.texte).toBe('Journée saturée');
+    expect(miettes.cle).toBe('Journée saturée');
     expect(miettes.alerte).toBe(true);
   });
 
@@ -48,7 +61,7 @@ describe('libelleBadge', () => {
     // Afficher une disponibilité par défaut pendant le chargement ferait
     // annoncer un délai sur un chiffre pas encore lu.
     const attente = libelleBadge({ ...BASE, chargement: true });
-    expect(attente.texte).toBe('Calcul…');
+    expect(attente.cle).toBe('Calcul…');
     expect(attente.alerte).toBe(false);
   });
 
@@ -57,7 +70,7 @@ describe('libelleBadge', () => {
     // parce qu'il n'y a personne : « Aucun artisan » clignoterait à chaque
     // ouverture du tableau de bord.
     expect(
-      libelleBadge({ chargement: true, effectif: 0, disponibles: 0, chargeGlobale: 0 }).texte,
+      libelleBadge({ chargement: true, effectif: 0, disponibles: 0, chargeGlobale: 0 }).cle,
     ).toBe('Calcul…');
   });
 });

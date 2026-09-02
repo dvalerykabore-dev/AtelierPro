@@ -19,7 +19,7 @@ import { Field, SelectField } from '@/components/ui/Field';
 import { POSTES, libelleMois, libelleMoisCourt, libellePoste } from '@/lib/tresorerie';
 import { useCharges, useTresorerie } from '@/lib/useTresorerie';
 import { cn, formatPrice } from '@/lib/utils';
-import { useT } from '@/contexts/LangueContext';
+import { useLangue } from '@/contexts/LangueContext';
 
 /** Montant signé, coloré selon son sens. */
 function Signe({ valeur, gras = false }: { valeur: number; gras?: boolean }) {
@@ -50,7 +50,7 @@ function Signe({ valeur, gras = false }: { valeur: number; gras?: boolean }) {
  *   projection est une projection, et son bloc le dit.
  */
 export default function Tresorerie() {
-  const t = useT();
+  const { t, langue } = useLangue();
   const { donnees, chargement, revalidation, erreur, session, recharger } = useTresorerie();
   const { charges, ajouter: ajouterCharge, basculer, supprimer: supprimerCharge } = useCharges();
 
@@ -147,7 +147,7 @@ export default function Tresorerie() {
             {t('Annuler')}
           </Button>
           <Button type="submit" disabled={envoi}>
-            {envoi ? 'Enregistrement…' : 'Déclarer'}
+            {envoi ? 'Enregistrement…' : t('Déclarer')}
           </Button>
         </div>
       </form>
@@ -175,7 +175,7 @@ export default function Tresorerie() {
     return (
       <p role="alert" className="text-danger flex items-start gap-2 px-4 py-8 text-sm lg:px-6">
         <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-        {erreur}
+        {t(erreur)}
       </p>
     );
   }
@@ -209,7 +209,9 @@ export default function Tresorerie() {
         </div>
         <p className="text-muted-foreground mt-2 text-xs">
           {t(
-            'Argent réellement encaissé, moins les dépenses décaissées, depuis l’ouverture du journal.',
+            t(
+              'Argent réellement encaissé, moins les dépenses décaissées, depuis l’ouverture du journal.',
+            ),
           )}
         </p>
         {/*
@@ -250,7 +252,7 @@ export default function Tresorerie() {
           </div>
           <div className="text-muted-foreground text-xs">{t('Résultat')}</div>
           <div className="text-muted-foreground mt-0.5 text-[10px]">
-            {libelleMois(moisCourant.cle)}
+            {libelleMois(moisCourant.cle, langue)}
           </div>
         </div>
       </section>
@@ -295,7 +297,7 @@ export default function Tresorerie() {
                     m.courant ? 'text-primary font-bold' : 'text-muted-foreground',
                   )}
                 >
-                  {libelleMoisCourt(m.cle)}
+                  {libelleMoisCourt(m.cle, langue)}
                 </span>
                 <span className="text-muted-foreground text-xs whitespace-nowrap">
                   solde {formatPrice(m.soldeFin, 'F')}
@@ -330,7 +332,7 @@ export default function Tresorerie() {
       <section className="border-border bg-surface rounded-xl border p-4 lg:p-5">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="font-headings text-foreground text-sm font-bold">
-            Dépenses de {libelleMois(moisCourant.cle)}
+            Dépenses de {libelleMois(moisCourant.cle, langue)}
           </h2>
           <Link href="/depenses" className="text-primary text-xs font-medium">
             {t('Saisir')}
@@ -383,7 +385,7 @@ export default function Tresorerie() {
             >
               <div className="min-w-0">
                 <div className="text-foreground text-xs font-medium">
-                  {libelleMois(m.cle)}
+                  {libelleMois(m.cle, langue)}
                   {m.partiel && (
                     <span className="text-muted-foreground font-normal">
                       {' '}
@@ -485,7 +487,7 @@ export default function Tresorerie() {
                   onClick={() => void basculer(c.id, !c.active).then(recharger)}
                   className="text-muted-foreground hover:text-foreground flex h-8 items-center rounded-md px-2 text-[10px] transition-colors"
                 >
-                  {c.active ? 'Suspendre' : 'Réactiver'}
+                  {t(c.active ? 'Suspendre' : 'Réactiver')}
                 </button>
                 <button
                   type="button"

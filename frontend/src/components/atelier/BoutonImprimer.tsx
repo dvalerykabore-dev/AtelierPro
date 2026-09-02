@@ -1,9 +1,10 @@
 'use client';
 
 import { Download } from 'lucide-react';
+import { useT } from '@/contexts/LangueContext';
 
 export interface BoutonImprimerProps {
-  /** Ce que le bouton annonce. « Exporter PDF » sur les rapports. */
+  /** Ce que le bouton annonce, en français — traduit ici. « Exporter PDF » sur les rapports. */
   libelle?: string;
 }
 
@@ -21,6 +22,7 @@ export interface BoutonImprimerProps {
  * coquilles de page qui portent ce bouton sont des composants serveur.
  */
 export default function BoutonImprimer({ libelle = 'Exporter PDF' }: BoutonImprimerProps) {
+  const t = useT();
   return (
     <button
       type="button"
@@ -28,7 +30,7 @@ export default function BoutonImprimer({ libelle = 'Exporter PDF' }: BoutonImpri
       className="border-border text-foreground hover:bg-muted flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors"
     >
       <Download size={14} aria-hidden />
-      {libelle}
+      {t(libelle)}
     </button>
   );
 }

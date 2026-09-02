@@ -16,9 +16,18 @@
  * le champ, pas de gabarit imposé.
  */
 
+import { ETIQUETTE_INTL, LANGUE_DEFAUT, type Langue } from '@/lib/langue';
+
 export interface Pays {
   /** ISO 3166-1 alpha-2 — clé stable, et non l'indicatif : +1 en couvre deux. */
   code: string;
+  /**
+   * Nom français du pays.
+   *
+   * Sert de repli : à l'affichage on préfère `nomPays(code, langue)`, qui
+   * demande le nom localisé au navigateur plutôt que de faire traduire deux
+   * cents lignes à la main — et de les maintenir.
+   */
   nom: string;
   /** Sans le « + ». */
   indicatif: string;
@@ -306,6 +315,23 @@ const PAR_CODE = new Map(PAYS.map((p) => [p.code, p]));
 
 export function paysDe(code: string): Pays | undefined {
   return PAR_CODE.get(code);
+}
+
+/**
+ * Nom d'un pays dans la langue de l'écran.
+ *
+ * `Intl.DisplayNames` connaît les deux cents noms, dans les trois langues, et
+ * les tient à jour — les recopier au dictionnaire aurait été deux cents lignes
+ * à écrire puis à maintenir, pour un résultat moins bon. Le nom français porté
+ * par `PAYS` reste le repli si l'environnement ne fournit pas la table.
+ */
+export function nomPays(code: string, langue: Langue = LANGUE_DEFAUT): string {
+  const repli = PAR_CODE.get(code)?.nom ?? code;
+  try {
+    return new Intl.DisplayNames([ETIQUETTE_INTL[langue]], { type: 'region' }).of(code) ?? repli;
+  } catch {
+    return repli;
+  }
 }
 
 /** Première lettre des indicateurs régionaux Unicode : 🇦 vaut U+1F1E6. */

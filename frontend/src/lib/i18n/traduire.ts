@@ -55,6 +55,15 @@ function interpoler(modele: string, params: Parametres | undefined): string {
  * qu'un écran n'a pas été repris. On rend alors la clé, qui EST la phrase
  * française.
  */
+
+/**
+ * Signature de la fonction de traduction liée à une langue.
+ *
+ * Sert à passer `t` à une fonction pure — un libellé qui se compose hors d'un
+ * composant reste testable sans monter React, tout en se traduisant.
+ */
+export type Traduire = (cle: string, params?: Parametres) => string;
+
 export function traduire(
   dictionnaire: Dictionnaire | null | undefined,
   cle: string,

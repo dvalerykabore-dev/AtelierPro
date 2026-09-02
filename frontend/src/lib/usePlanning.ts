@@ -5,6 +5,8 @@ import { useEtatMemorise } from '@/lib/etat-memorise';
 import { api, ApiError } from '@/lib/api';
 import { avecReessai401 } from '@/lib/api-repli';
 import { messageErreur } from '@/lib/message-erreur';
+import { ETIQUETTE_INTL, type Langue } from '@/lib/langue';
+import { useLangue } from '@/contexts/LangueContext';
 import {
   STATUTS_TACHE,
   artisans,
@@ -35,7 +37,7 @@ export interface JourSemaine {
   iso: string;
   /** Quantième affiché en gros dans l'entête (« 21 »). */
   date: string;
-  /** Abréviation française (« Lun »). */
+  /** Abréviation du jour dans la langue de l’écran (« Lun », « Mon », « الاثنين »). */
   jour: string;
   aujourdhui: boolean;
 }
@@ -64,17 +66,26 @@ interface ReponsePlanning {
 
 export type SourcePlanning = 'serveur' | 'demonstration';
 
-const ABREVIATIONS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-
-/** Étiquettes d'affichage d'un jour ISO, sans dépendre de la locale du poste. */
-function decore(iso: string, aujourdhui: boolean): JourSemaine {
+/**
+ * Étiquettes d'affichage d'un jour ISO.
+ *
+ * L'abréviation vient d'`Intl` et non plus d'un tableau `['Dim', 'Lun', …]` :
+ * celui-ci ne connaissait que le français, et la grille du planning gardait ses
+ * colonnes « Lun Mar Mer » au milieu d'un écran arabe. La locale du poste n'est
+ * toujours pas consultée — c'est la langue choisie dans l'application qui
+ * décide, pour que deux personnes devant le même écran voient la même chose.
+ */
+function decore(iso: string, aujourdhui: boolean, langue: Langue): JourSemaine {
   const [, , j] = iso.split('-');
-  const indexJour = new Date(`${iso}T00:00:00Z`).getUTCDay();
+  const d = new Date(`${iso}T00:00:00Z`);
   return {
     iso,
     // Sans zéro initial : la maquette affiche « 3 », pas « 03 ».
     date: String(Number(j ?? '1')),
-    jour: ABREVIATIONS[indexJour] ?? '?',
+    jour: new Intl.DateTimeFormat(ETIQUETTE_INTL[langue], {
+      weekday: 'short',
+      timeZone: 'UTC',
+    }).format(d),
     aujourdhui,
   };
 }
@@ -135,6 +146,8 @@ const PLANNING_VIDE: EtatPlanning = {
 };
 
 export function usePlanning() {
+  // Les noms de jours suivent la langue de l’écran, pas celle du poste.
+  const { langue } = useLangue();
   const [memorise, poserEtat, dejaCharge] = useEtatMemorise<EtatPlanning>(
     '/api/planning',
     PLANNING_VIDE,
@@ -161,7 +174,7 @@ export function usePlanning() {
         );
         if (annule) return;
         poserEtat({
-          semaine: res.semaine.map((j) => decore(j.iso, j.aujourdhui)),
+          semaine: res.semaine.map((j) => decore(j.iso, j.aujourdhui, langue)),
           taches: res.taches.map((t) => ({
             id: t.id,
             assignee: t.assignee,
@@ -194,7 +207,7 @@ export function usePlanning() {
     return () => {
       annule = true;
     };
-  }, [debut, poserEtat]);
+  }, [debut, poserEtat, langue]);
 
   /**
    * Décale la fenêtre de `semaines` (négatif = passé). Le calcul part du lundi

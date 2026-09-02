@@ -55,7 +55,7 @@ export default function Rapports() {
     return (
       <p className="text-danger flex items-center justify-center gap-2 p-12 text-center text-sm">
         <TriangleAlert size={15} aria-hidden />
-        {erreur ?? 'Indicateurs indisponibles.'}
+        {erreur ?? t('Indicateurs indisponibles.')}
       </p>
     );
   }
@@ -87,7 +87,7 @@ export default function Rapports() {
           label={t('Livraison à temps')}
           valeur={ouTiret(indicateurs.tauxPonctualite, ' %')}
           icone={Clock}
-          tendance={indicateurs.tauxPonctualite === null ? 'non mesurable' : 'des livraisons'}
+          tendance={indicateurs.tauxPonctualite === null ? t('non mesurable') : t('des livraisons')}
           enHausse={indicateurs.tauxPonctualite === null ? null : indicateurs.tauxPonctualite >= 80}
         />
         <StatTile
@@ -95,7 +95,9 @@ export default function Rapports() {
           valeur={ouTiret(indicateurs.delaiMoyenJours, ' j')}
           icone={Calendar}
           tendance={
-            indicateurs.delaiMoyenJours === null ? 'non mesurable' : 'de la commande à la livraison'
+            indicateurs.delaiMoyenJours === null
+              ? t('non mesurable')
+              : t('de la commande à la livraison')
           }
         />
       </div>

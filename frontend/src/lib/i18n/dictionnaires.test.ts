@@ -166,6 +166,14 @@ describe('couverture des dictionnaires', () => {
     // directement, et leurs clés comptent tout autant.
     for (const m of s.matchAll(/\btraduire\([^,]+,\s*'((?:[^'\\]|\\.)*)'/g))
       utilisees.add(m[1] as string);
+    // `t(condition ? 'A' : 'B')` — deux clés dans un seul appel. Sans ce cas,
+    // la moitié des libellés d'état passaient au travers.
+    for (const m of s.matchAll(
+      /\bt\(\s*[^)'"]*\?\s*'((?:[^'\\]|\\.)*)'\s*:\s*'((?:[^'\\]|\\.)*)'/g,
+    )) {
+      utilisees.add(m[1] as string);
+      utilisees.add(m[2] as string);
+    }
   }
 
   it('trouve bien les appels à traduire', () => {

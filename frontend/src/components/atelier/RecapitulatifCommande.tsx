@@ -56,7 +56,7 @@ export default function RecapitulatifCommande({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Ligne label={t('Type de tenue')}>{commande.tenue}</Ligne>
-            <Ligne label={t('Tissu')}>{commande.tissu ?? 'Non renseigné'}</Ligne>
+            <Ligne label={t('Tissu')}>{commande.tissu ?? t('Non renseigné')}</Ligne>
             <Ligne label={t('Assigné à')}>
               {commande.assignee === '—' ? (
                 <span className="text-muted-foreground">{t('Non assigné')}</span>
@@ -79,7 +79,7 @@ export default function RecapitulatifCommande({
           <div className="mt-4">
             <span className="text-muted-foreground mb-1 block text-xs">{t('Instructions')}</span>
             <p className="bg-muted text-foreground rounded-md px-3 py-2.5 text-sm">
-              {commande.notes ?? 'Aucune consigne particulière n’a été saisie.'}
+              {commande.notes ?? t('Aucune consigne particulière n’a été saisie.')}
             </p>
           </div>
         </section>

@@ -26,9 +26,9 @@ export default function CommandesDuJour() {
       <section className="lg:hidden" aria-label={t('Commandes du jour')}>
         <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2">
           <h2 className="font-headings text-foreground text-sm font-bold">
-            Commandes du jour
+            {t('Commandes du jour')}
             {source === 'demonstration' && (
-              <span className="text-warning ml-1.5 font-normal">· exemples</span>
+              <span className="text-warning ml-1.5 font-normal">{t('· exemples')}</span>
             )}
           </h2>
           <Link
@@ -42,7 +42,7 @@ export default function CommandesDuJour() {
 
         {enCours.length === 0 ? (
           <p className="text-muted-foreground px-4 py-8 text-center text-xs">
-            {chargement ? 'Chargement…' : 'Aucune commande en cours.'}
+            {chargement ? t('Chargement…') : t('Aucune commande en cours.')}
           </p>
         ) : (
           <ul className="grid gap-2 px-4 pb-4 sm:grid-cols-2">
@@ -62,15 +62,15 @@ export default function CommandesDuJour() {
       >
         <div className="border-border flex items-center justify-between border-b px-4 py-3">
           <h2 className="font-headings text-foreground text-sm font-bold">
-            Commandes en cours
+            {t('Commandes en cours')}
             {source === 'demonstration' && (
-              <span className="text-warning ml-1.5 font-normal">· exemples</span>
+              <span className="text-warning ml-1.5 font-normal">{t('· exemples')}</span>
             )}
           </h2>
           <div className="flex items-center gap-2">
             <span className="bg-muted flex items-center gap-1 rounded-md px-3 py-1.5">
               <Search size={13} className="text-muted-foreground" aria-hidden />
-              <span className="text-muted-foreground text-xs">Rechercher…</span>
+              <span className="text-muted-foreground text-xs">{t('Rechercher…')}</span>
             </span>
             <Link href="/commandes" className="text-primary text-xs font-medium">
               {t('Voir tout')}
@@ -95,7 +95,7 @@ export default function CommandesDuJour() {
 
         {enCours.length === 0 ? (
           <p className="text-muted-foreground px-4 py-10 text-center text-sm">
-            {chargement ? 'Chargement des commandes…' : 'Aucune commande en cours.'}
+            {chargement ? t('Chargement des commandes…') : t('Aucune commande en cours.')}
           </p>
         ) : (
           enCours.map((c) => (

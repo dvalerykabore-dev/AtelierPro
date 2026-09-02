@@ -135,7 +135,7 @@ export default function BarreNavigation() {
             className="text-foreground -mr-2 flex h-11 w-11 items-center justify-center md:hidden"
             aria-expanded={ouvert}
             aria-controls="menu-mobile"
-            aria-label={t(ouvert ? 'Fermer le menu' : 'Ouvrir le menu')}
+            aria-label={t(ouvert ? t('Fermer le menu') : t('Ouvrir le menu'))}
           >
             {ouvert ? <X size={22} aria-hidden /> : <Menu size={22} aria-hidden />}
           </button>

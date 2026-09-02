@@ -6,6 +6,8 @@
  * et un poste accepté par l'API mais absent du formulaire est invisible.
  */
 
+import { ETIQUETTE_INTL, LANGUE_DEFAUT, type Langue } from '@/lib/langue';
+
 /** Sens d'un mouvement de caisse. */
 export const SENS = ['IN', 'OUT'] as const;
 export type Sens = (typeof SENS)[number];
@@ -73,30 +75,34 @@ export function moisIso(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-const MOIS_LONGS = [
-  'janvier',
-  'février',
-  'mars',
-  'avril',
-  'mai',
-  'juin',
-  'juillet',
-  'août',
-  'septembre',
-  'octobre',
-  'novembre',
-  'décembre',
-];
-
-/** « 2026-08 » → « août 2026 ». */
-export function libelleMois(cle: string): string {
+/**
+ * « 2026-08 » → « août 2026 », dans la langue demandée.
+ *
+ * Le nom du mois venait d'un tableau français figé : le graphique de trésorerie
+ * gardait ses « août » et « septembre » sous un écran en arabe.
+ */
+export function libelleMois(cle: string, langue: Langue = LANGUE_DEFAUT): string {
   const [annee, mois] = cle.split('-');
-  const index = Number(mois) - 1;
-  return `${MOIS_LONGS[index] ?? '?'} ${annee}`;
+  const a = Number(annee);
+  const m = Number(mois);
+  if (!a || !m) return '?';
+  const nom = new Intl.DateTimeFormat(ETIQUETTE_INTL[langue], {
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(a, m - 1, 1)));
+  return `${nom} ${annee}`;
 }
 
 /** « 2026-08 » → « Août », pour les axes de graphique. */
-export function libelleMoisCourt(cle: string): string {
-  const mois = MOIS_LONGS[Number(cle.split('-')[1]) - 1];
-  return mois ? mois.charAt(0).toUpperCase() + mois.slice(1, 4) : '?';
+export function libelleMoisCourt(cle: string, langue: Langue = LANGUE_DEFAUT): string {
+  const [annee, mois] = cle.split('-');
+  const a = Number(annee);
+  const m = Number(mois);
+  if (!a || !m) return '?';
+  const nom = new Intl.DateTimeFormat(ETIQUETTE_INTL[langue], {
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(a, m - 1, 1)));
+  // Majuscule initiale sur un axe de graphique ; sans effet en arabe.
+  return nom.charAt(0).toLocaleUpperCase() + nom.slice(1);
 }

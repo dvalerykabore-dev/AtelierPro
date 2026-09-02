@@ -88,24 +88,34 @@ export default function PhotoUpload({
           };
         } else if (resultat.statut === 401 || resultat.statut === 403) {
           setAvertissement(
-            'Photo affichée localement seulement — connectez-vous pour l’enregistrer durablement.',
+            t(
+              'Photo affichée localement seulement — connectez-vous pour l’enregistrer durablement.',
+            ),
           );
         } else if (resultat.statut === 503) {
-          setAvertissement('Le stockage d’images n’est pas configuré sur ce serveur.');
+          setAvertissement(t('Le stockage d’images n’est pas configuré sur ce serveur.'));
         } else if (resultat.statut === 413) {
-          setAvertissement(`« ${fichier.name} » dépasse la taille maximale autorisée.`);
+          setAvertissement(
+            t('« {fichier} » dépasse la taille maximale autorisée.', { fichier: fichier.name }),
+          );
           URL.revokeObjectURL(apercuLocal);
           continue;
         } else if (resultat.statut === 415) {
-          setAvertissement(`« ${fichier.name} » n’est pas une image acceptée (JPEG, PNG, WebP).`);
+          setAvertissement(
+            t('« {fichier} » n’est pas une image acceptée (JPEG, PNG, WebP).', {
+              fichier: fichier.name,
+            }),
+          );
           URL.revokeObjectURL(apercuLocal);
           continue;
         } else {
-          setAvertissement('L’envoi a échoué — la photo reste visible mais n’est pas enregistrée.');
+          setAvertissement(
+            t('L’envoi a échoué — la photo reste visible mais n’est pas enregistrée.'),
+          );
         }
       } catch {
         setAvertissement(
-          'Serveur injoignable — la photo reste visible mais n’est pas enregistrée.',
+          t('Serveur injoignable — la photo reste visible mais n’est pas enregistrée.'),
         );
       }
 
@@ -154,14 +164,16 @@ export default function PhotoUpload({
             <figcaption className="bg-background/80 absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-2 py-1.5">
               <span className="text-foreground truncate text-[10px]">{p.nomFichier}</span>
               {p.locale && (
-                <span className="text-warning flex-shrink-0 text-[10px] font-medium">local</span>
+                <span className="text-warning flex-shrink-0 text-[10px] font-medium">
+                  {t('local')}
+                </span>
               )}
             </figcaption>
 
             <button
               type="button"
               onClick={() => retirer(p.id)}
-              aria-label={`Retirer ${p.nomFichier}`}
+              aria-label={t('Retirer {fichier}', { fichier: p.nomFichier })}
               className="bg-background/80 text-muted-foreground hover:text-danger absolute top-1.5 right-1.5 rounded-md p-1.5"
             >
               <Trash2 size={13} aria-hidden />
@@ -213,7 +225,7 @@ export default function PhotoUpload({
       {avertissement && (
         <p className="text-warning flex items-start gap-2 text-xs">
           <TriangleAlert size={13} className="mt-0.5 flex-shrink-0" aria-hidden />
-          {avertissement}
+          {t(avertissement)}
         </p>
       )}
     </div>

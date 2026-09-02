@@ -12,7 +12,9 @@ import { HEURES_PAR_JOUR, STATUTS_TACHE, styleTache, type StatutTache } from '@/
 import { useArtisans } from '@/lib/useArtisans';
 import { usePlanning, type JourSemaine, type TachePlanifiee } from '@/lib/usePlanning';
 import { cn } from '@/lib/utils';
-import { useT } from '@/contexts/LangueContext';
+import { useLangue } from '@/contexts/LangueContext';
+import { ETIQUETTE_INTL, type Langue } from '@/lib/langue';
+import type { Traduire } from '@/lib/i18n/traduire';
 
 /** Largeur d'une colonne-jour dans la grille desktop (px, comme la maquette). */
 const LARGEUR_COLONNE = 160;
@@ -36,48 +38,58 @@ function charge(heures: number, capacite: number) {
   };
 }
 
-const MOIS = [
-  'janvier',
-  'février',
-  'mars',
-  'avril',
-  'mai',
-  'juin',
-  'juillet',
-  'août',
-  'septembre',
-  'octobre',
-  'novembre',
-  'décembre',
-];
+/**
+ * Nom du mois d'un jour ISO, dans la langue de l'écran.
+ *
+ * Remplace un tableau `['janvier', 'février', …]` qui ne connaissait que le
+ * français : l'en-tête du planning annonçait « Semaine du 17 au 22 août » au
+ * milieu d'une grille arabe.
+ */
+function nomMois(iso: string, langue: Langue): string {
+  const [a, m] = iso.split('-').map(Number);
+  if (!a || !m) return '';
+  return new Intl.DateTimeFormat(ETIQUETTE_INTL[langue], {
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(a, m - 1, 1)));
+}
 
 /**
  * « Semaine du 17 au 22 août 2026 » — et « du 30 juin au 5 juillet 2026 »
  * quand la semaine enjambe deux mois, cas que la maquette n'envisageait pas.
  */
-function libelleSemaine(jours: JourSemaine[]): string {
+export function libelleSemaine(jours: JourSemaine[], t: Traduire, langue: Langue): string {
   const premier = jours[0];
   const dernier = jours[jours.length - 1];
   if (!premier || !dernier) return '';
   // La semaine d'exemple n'a pas de vraies dates : on garde le libellé Banani.
-  if (premier.iso.startsWith('exemple-')) return `Semaine du ${premier.date} au ${dernier.date}`;
+  if (premier.iso.startsWith('exemple-')) {
+    return t('Semaine du {debut} au {fin}', { debut: premier.date, fin: dernier.date });
+  }
 
   const [aD, mD] = premier.iso.split('-').map(Number);
   const [aF, mF] = dernier.iso.split('-').map(Number);
-  const moisDebut = MOIS[(mD ?? 1) - 1] ?? '';
-  const moisFin = MOIS[(mF ?? 1) - 1] ?? '';
 
-  const debut = mD === mF && aD === aF ? premier.date : `${premier.date} ${moisDebut}`;
-  return `Semaine du ${debut} au ${dernier.date} ${moisFin} ${aF}`;
+  // Le mois n'est répété au début que si la semaine enjambe deux mois.
+  const debut =
+    mD === mF && aD === aF ? premier.date : `${premier.date} ${nomMois(premier.iso, langue)}`;
+  return t('Semaine du {debut} au {fin} {mois} {annee}', {
+    debut,
+    fin: dernier.date,
+    mois: nomMois(dernier.iso, langue),
+    annee: aF ?? '',
+  });
 }
 
 /** « Août 2026 » pour la pastille de navigation entre semaines. */
-function libelleMois(jours: JourSemaine[]): string {
+export function libelleMois(jours: JourSemaine[], langue: Langue): string {
   const dernier = jours[jours.length - 1];
   if (!dernier || dernier.iso.startsWith('exemple-')) return '';
-  const [annee, mois] = dernier.iso.split('-').map(Number);
-  const nom = MOIS[(mois ?? 1) - 1] ?? '';
-  return `${nom.charAt(0).toUpperCase()}${nom.slice(1)} ${annee}`;
+  const [annee] = dernier.iso.split('-').map(Number);
+  const nom = nomMois(dernier.iso, langue);
+  // Majuscule initiale : c'est une pastille, pas un mot dans une phrase. Sans
+  // effet sur l'arabe, qui n'a pas de casse.
+  return `${nom.charAt(0).toLocaleUpperCase()}${nom.slice(1)} ${annee}`;
 }
 
 /**
@@ -93,7 +105,7 @@ function libelleMois(jours: JourSemaine[]): string {
  * dès la semaine suivante.
  */
 export default function PlanningEquipe() {
-  const t = useT();
+  const { t, langue } = useLangue();
   const {
     semaine,
     taches,
@@ -178,7 +190,8 @@ export default function PlanningEquipe() {
   const navigationDesactivee = source === 'demonstration';
   const entete = {
     titre: 'Planning équipe',
-    sousTitre: chargement && semaine.length === 0 ? 'Chargement…' : libelleSemaine(semaine),
+    sousTitre:
+      chargement && semaine.length === 0 ? t('Chargement…') : libelleSemaine(semaine, t, langue),
     actions: (
       <>
         <button
@@ -199,9 +212,9 @@ export default function PlanningEquipe() {
           onClick={revenirAujourdhui}
           // Revenir à la semaine en cours n'a de sens que si l'on s'en est éloigné.
           disabled={!decale}
-          title={decale ? 'Revenir à la semaine en cours' : undefined}
+          title={decale ? t('Revenir à la semaine en cours') : undefined}
         >
-          {libelleMois(semaine)}
+          {libelleMois(semaine, langue)}
         </button>
         <button
           type="button"
@@ -251,7 +264,7 @@ export default function PlanningEquipe() {
       <AppShell {...entete}>
         <p className="text-danger flex items-center justify-center gap-2 p-12 text-center text-sm">
           <TriangleAlert size={15} aria-hidden />
-          {erreur}
+          {t(erreur)}
         </p>
       </AppShell>
     );
@@ -498,8 +511,8 @@ export default function PlanningEquipe() {
           titre={t('Affecter une tâche')}
           description={
             source === 'demonstration'
-              ? 'Mode démonstration — la tâche restera à l’écran seulement.'
-              : 'La charge de l’artisan se met à jour immédiatement.'
+              ? t('Mode démonstration — la tâche restera à l’écran seulement.')
+              : t('La charge de l’artisan se met à jour immédiatement.')
           }
           pied={
             <>
@@ -511,7 +524,7 @@ export default function PlanningEquipe() {
                 form="formulaire-affectation"
                 disabled={!libelle.trim() || envoi}
               >
-                {envoi ? 'Affectation…' : 'Affecter'}
+                {envoi ? t('Affectation…') : t('Affecter')}
               </Button>
             </>
           }
@@ -586,7 +599,7 @@ export default function PlanningEquipe() {
               </p>
             )}
 
-            {echec && <p className="text-danger text-xs">{echec}</p>}
+            {echec && <p className="text-danger text-xs">{t(echec)}</p>}
           </form>
         </Modal>
       </div>

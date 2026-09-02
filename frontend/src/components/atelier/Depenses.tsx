@@ -9,7 +9,8 @@ import { Field, SelectField, TextareaField } from '@/components/ui/Field';
 import { MODES, POSTES, libelleMode, libelleMois, libellePoste, moisIso } from '@/lib/tresorerie';
 import { aujourdhuiIso, useMouvements } from '@/lib/useTresorerie';
 import { cn, formatPrice } from '@/lib/utils';
-import { useT } from '@/contexts/LangueContext';
+import { useLangue } from '@/contexts/LangueContext';
+import { ETIQUETTE_INTL, type Langue } from '@/lib/langue';
 
 /** Décale une clé « AAAA-MM » de `n` mois. */
 function decaler(cle: string, n: number): string {
@@ -17,24 +18,20 @@ function decaler(cle: string, n: number): string {
   return moisIso(new Date(a ?? 1970, (m ?? 1) - 1 + n, 1));
 }
 
-/** « 2026-08-23 » → « 23 août ». */
-const MOIS_COURTS = [
-  'janv.',
-  'févr.',
-  'mars',
-  'avr.',
-  'mai',
-  'juin',
-  'juil.',
-  'août',
-  'sept.',
-  'oct.',
-  'nov.',
-  'déc.',
-];
-function jourLisible(iso: string): string {
-  const [, m, j] = iso.split('-');
-  return `${Number(j)} ${MOIS_COURTS[Number(m) - 1] ?? ''}`;
+/**
+ * « 2026-08-23 » → « 23 août », dans la langue de l’écran.
+ *
+ * Remplace un tableau `['janv.', 'févr.', …]` : le journal des dépenses
+ * gardait ses mois français au milieu d’un écran arabe.
+ */
+function jourLisible(iso: string, langue: Langue): string {
+  const [a, m, j] = iso.split('-').map(Number);
+  if (!a || !m || !j) return iso;
+  return new Intl.DateTimeFormat(ETIQUETTE_INTL[langue], {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(a, m - 1, j)));
 }
 
 /**
@@ -48,7 +45,7 @@ function jourLisible(iso: string): string {
  * trésorerie : un chiffre d'argent est exact ou absent.
  */
 export default function Depenses() {
-  const t = useT();
+  const { t, langue } = useLangue();
   const [mois, setMois] = useState(() => moisIso(new Date()));
   const [poste, setPoste] = useState('');
 
@@ -225,7 +222,7 @@ export default function Depenses() {
             <ChevronLeft size={16} aria-hidden />
           </button>
           <span className="font-headings text-foreground text-sm font-bold">
-            {libelleMois(mois)}
+            {libelleMois(mois, langue)}
           </span>
           <button
             type="button"
@@ -302,7 +299,7 @@ export default function Depenses() {
       {erreur && (
         <p role="alert" className="text-danger flex items-start gap-2 text-sm">
           <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-          {erreur}
+          {t(erreur)}
         </p>
       )}
 
@@ -315,7 +312,7 @@ export default function Depenses() {
         <div className="border-border flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-12 text-center">
           <Wallet size={24} className="text-muted-foreground mb-3" aria-hidden />
           <p className="text-foreground mb-1 text-sm font-bold">
-            Aucune dépense en {libelleMois(mois)}
+            Aucune dépense en {libelleMois(mois, langue)}
           </p>
           <p className="text-muted-foreground mb-4 max-w-sm text-xs">
             {t(
@@ -337,7 +334,7 @@ export default function Depenses() {
               <div className="min-w-0 flex-1">
                 <div className="text-foreground truncate text-sm font-medium">{m.label}</div>
                 <div className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-2 text-xs">
-                  <span>{jourLisible(m.occurredAt)}</span>
+                  <span>{jourLisible(m.occurredAt, langue)}</span>
                   <span aria-hidden>·</span>
                   <span>{libellePoste(m.category)}</span>
                   <span aria-hidden>·</span>

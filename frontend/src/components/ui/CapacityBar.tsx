@@ -1,5 +1,8 @@
+'use client';
+
 import Avatar from '@/components/ui/Avatar';
 import { cn } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 export interface CapacityBarProps {
   nom: string;
@@ -30,11 +33,12 @@ export default function CapacityBar({
   heuresUtilisees,
   heuresTotal,
 }: CapacityBarProps) {
+  const t = useT();
   const { pourcentage, sature, alerte } = chargeArtisan(heuresUtilisees, heuresTotal);
 
   const couleurBarre = sature ? 'bg-danger' : alerte ? 'bg-warning' : 'bg-success';
   const couleurTexte = sature ? 'text-danger' : alerte ? 'text-warning' : 'text-success';
-  const libelle = sature ? 'Saturé' : alerte ? 'Quasi-plein' : 'Disponible';
+  const libelle = sature ? t('Saturé') : alerte ? t('Quasi-plein') : t('Disponible');
 
   return (
     <div className="border-border flex items-center gap-4 border-b py-3">

@@ -52,11 +52,11 @@ export default function SettingsPage() {
     setError(null);
 
     if (newPassword.length === 0) {
-      setError('Saisis un nouveau mot de passe.');
+      setError(t('Saisis un nouveau mot de passe.'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('La confirmation ne correspond pas au nouveau mot de passe.');
+      setError(t('La confirmation ne correspond pas au nouveau mot de passe.'));
       return;
     }
 
@@ -67,13 +67,13 @@ export default function SettingsPage() {
           method: 'PUT',
           body: { currentPassword, newPassword },
         });
-        toast('Mot de passe mis à jour.', 'success');
+        toast(t('Mot de passe mis à jour.'), 'success');
       } else {
         await api('/api/auth/set-password', {
           method: 'POST',
           body: { newPassword },
         });
-        toast('Mot de passe défini. Tu peux maintenant te connecter par email.', 'success');
+        toast(t('Mot de passe défini. Tu peux maintenant te connecter par email.'), 'success');
       }
       setCurrentPassword('');
       setNewPassword('');
@@ -82,17 +82,18 @@ export default function SettingsPage() {
     } catch (err) {
       if (err instanceof ApiError) {
         const map: Record<string, string> = {
-          INVALID_CREDENTIALS: 'Mot de passe actuel incorrect.',
-          PASSWORD_BANNED: 'Ce mot de passe est trop courant.',
-          PASSWORD_TOO_SHORT: err.message || 'Mot de passe trop court.',
-          PASSWORD_PWNED: 'Ce mot de passe a fuité — choisis-en un autre.',
-          PASSWORD_ALREADY_SET:
+          INVALID_CREDENTIALS: t('Mot de passe actuel incorrect.'),
+          PASSWORD_BANNED: t('Ce mot de passe est trop courant.'),
+          PASSWORD_TOO_SHORT: err.message || t('Mot de passe trop court.'),
+          PASSWORD_PWNED: t('Ce mot de passe a fuité — choisis-en un autre.'),
+          PASSWORD_ALREADY_SET: t(
             'Un mot de passe est déjà défini. Utilise « changer le mot de passe ».',
-          VALIDATION_FAILED: 'Champs invalides.',
+          ),
+          VALIDATION_FAILED: t('Champs invalides.'),
         };
         setError(map[err.code] ?? err.message);
       } else {
-        setError('Erreur réseau. Réessaie.');
+        setError(t('Erreur réseau. Réessaie.'));
       }
     } finally {
       setSubmitting(false);
@@ -103,18 +104,22 @@ export default function SettingsPage() {
     <main className="mx-auto flex min-h-screen max-w-md flex-col gap-8 px-4 py-12">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">{t('Paramètres')}</h1>
-        <p className="text-sm text-muted-foreground">Connecté en tant que {user.email}</p>
+        <p className="text-sm text-muted-foreground">
+          {t('Connecté en tant que {email}', { email: user.email })}
+        </p>
       </header>
 
       {/* ── Password section ─────────────────────────────────────────── */}
       <section className="flex flex-col gap-3 rounded-lg border border-border p-5">
         <h2 className="text-lg font-semibold">
-          {hasPassword ? 'Changer le mot de passe' : 'Définir un mot de passe'}
+          {t(hasPassword ? 'Changer le mot de passe' : 'Définir un mot de passe')}
         </h2>
         <p className="text-sm text-muted-foreground">
           {hasPassword
-            ? 'Tu peux modifier ton mot de passe ici. Les autres sessions seront déconnectées.'
-            : 'Tu t’es connecté via Google. Définis un mot de passe pour pouvoir aussi te connecter par email.'}
+            ? t('Tu peux modifier ton mot de passe ici. Les autres sessions seront déconnectées.')
+            : t(
+                'Tu t’es connecté via Google. Définis un mot de passe pour pouvoir aussi te connecter par email.',
+              )}
         </p>
         <form onSubmit={onSubmitPassword} className="mt-2 flex flex-col gap-4">
           {hasPassword && (
@@ -163,10 +168,8 @@ export default function SettingsPage() {
             className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-accent disabled:opacity-50"
           >
             {submitting
-              ? 'Enregistrement…'
-              : hasPassword
-                ? 'Changer le mot de passe'
-                : 'Définir le mot de passe'}
+              ? t('Enregistrement…')
+              : t(hasPassword ? 'Changer le mot de passe' : 'Définir le mot de passe')}
           </button>
         </form>
       </section>
@@ -178,9 +181,11 @@ export default function SettingsPage() {
           <div className="flex flex-col">
             <span className="text-sm font-medium">{t('Google')}</span>
             <span className="text-xs text-muted-foreground">
-              {googleLinked
-                ? 'Tu peux te connecter via Google.'
-                : 'Lie ton compte Google pour te connecter en un clic.'}
+              {t(
+                googleLinked
+                  ? 'Tu peux te connecter via Google.'
+                  : 'Lie ton compte Google pour te connecter en un clic.',
+              )}
             </span>
           </div>
           {googleLinked ? (

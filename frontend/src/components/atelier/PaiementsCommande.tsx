@@ -8,7 +8,8 @@ import { Field, SelectField } from '@/components/ui/Field';
 import { MODES, libelleMode } from '@/lib/tresorerie';
 import { aujourdhuiIso, useMouvements } from '@/lib/useTresorerie';
 import { cn, formatPrice } from '@/lib/utils';
-import { useT } from '@/contexts/LangueContext';
+import { useLangue } from '@/contexts/LangueContext';
+import { ETIQUETTE_INTL, type Langue } from '@/lib/langue';
 
 export interface PaiementsCommandeProps {
   /** Identifiant de la commande — clé du journal des encaissements. */
@@ -19,24 +20,20 @@ export interface PaiementsCommandeProps {
   encaisse: number;
 }
 
-const MOIS_COURTS = [
-  'janv.',
-  'févr.',
-  'mars',
-  'avr.',
-  'mai',
-  'juin',
-  'juil.',
-  'août',
-  'sept.',
-  'oct.',
-  'nov.',
-  'déc.',
-];
-
-function jourLisible(iso: string): string {
-  const [, m, j] = iso.split('-');
-  return `${Number(j)} ${MOIS_COURTS[Number(m) - 1] ?? ''}`;
+/**
+ * « 2026-08-23 » → « 23 août », dans la langue de l’écran.
+ *
+ * Remplace un tableau de mois français : le journal des versements gardait ses
+ * « août » et « déc. » au milieu d’un écran arabe.
+ */
+function jourLisible(iso: string, langue: Langue): string {
+  const [a, m, j] = iso.split('-').map(Number);
+  if (!a || !m || !j) return iso;
+  return new Intl.DateTimeFormat(ETIQUETTE_INTL[langue], {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(a, m - 1, j)));
 }
 
 /**
@@ -57,7 +54,7 @@ export default function PaiementsCommande({
   montant,
   encaisse,
 }: PaiementsCommandeProps) {
-  const t = useT();
+  const { t, langue } = useLangue();
   const filtres = useMemo(() => ({ commande: commandeId }), [commandeId]);
   const { mouvements, chargement, erreur, ajouter, supprimer } = useMouvements(filtres);
 
@@ -135,7 +132,7 @@ export default function PaiementsCommande({
       {erreur && (
         <p role="alert" className="text-danger mb-3 flex items-start gap-2 text-xs">
           <AlertCircle size={13} className="mt-0.5 flex-shrink-0" aria-hidden />
-          {erreur}
+          {t(erreur)}
         </p>
       )}
 
@@ -155,7 +152,7 @@ export default function PaiementsCommande({
               <div className="min-w-0 flex-1">
                 <div className="text-foreground text-xs font-medium">{p.label}</div>
                 <div className="text-muted-foreground text-xs">
-                  {jourLisible(p.occurredAt)} · {libelleMode(p.method)}
+                  {jourLisible(p.occurredAt, langue)} · {libelleMode(p.method)}
                   {p.backfilled && (
                     <span className="text-warning"> {t('· date reconstituée')}</span>
                   )}
@@ -198,7 +195,7 @@ export default function PaiementsCommande({
         }}
       >
         <Plus size={12} aria-hidden />
-        {restant === 0 ? 'Commande soldée' : 'Enregistrer un versement'}
+        {restant === 0 ? t('Commande soldée') : 'Enregistrer un versement'}
       </Button>
 
       <Modal

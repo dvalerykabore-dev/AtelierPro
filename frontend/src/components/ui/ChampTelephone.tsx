@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
-import { PAYS, drapeau, paysDe, valider } from '@/lib/indicatifs';
+import { PAYS, drapeau, nomPays, paysDe, valider } from '@/lib/indicatifs';
 import {
   choisirPays as transitionPays,
   etatInitial,
   resynchroniser,
   taper as transitionFrappe,
 } from '@/lib/champ-telephone-etat';
-import { useT } from '@/contexts/LangueContext';
+import { useLangue } from '@/contexts/LangueContext';
 import { cn } from '@/lib/utils';
 
 export interface ChampTelephoneProps {
@@ -58,7 +58,7 @@ export default function ChampTelephone({
   autoFocus,
   className,
 }: ChampTelephoneProps) {
-  const t = useT();
+  const { t, langue } = useLangue();
   const id = useId();
   const idAide = `${id}-aide`;
 
@@ -139,7 +139,9 @@ export default function ChampTelephone({
       <p id={idAide} className={cn('text-xs', aAfficher ? 'text-danger' : 'text-muted-foreground')}>
         {aAfficher ?? (
           <>
-            {pays && <span className="text-foreground font-medium">{pays.nom}</span>}
+            {pays && (
+              <span className="text-foreground font-medium">{nomPays(pays.code, langue)}</span>
+            )}
             {pays && ' — '}
             {aide ??
               (pays

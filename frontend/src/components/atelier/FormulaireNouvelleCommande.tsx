@@ -292,7 +292,7 @@ export default function FormulaireNouvelleCommande() {
                 value={tissu}
                 onChange={(e) => modifier(setTissu)(e.target.value)}
                 placeholder={t('Wax hollandais — 6 yards')}
-                erreur={!tissu.trim() ? 'Champ requis' : undefined}
+                erreur={!tissu.trim() ? t('Champ requis') : undefined}
               />
 
               <div className="flex flex-col gap-1.5">
@@ -324,7 +324,7 @@ export default function FormulaireNouvelleCommande() {
                 aide={
                   artisan
                     ? `${artisan.heuresAujourdhui}/${artisan.capacite} h engagées aujourd’hui`
-                    : 'Aucun artisan actif — composez l’équipe dans les paramètres'
+                    : t('Aucun artisan actif — composez l’équipe dans les paramètres')
                 }
               >
                 {equipe.length === 0 && <option value="">{t('Aucun artisan actif')}</option>}
@@ -484,7 +484,7 @@ export default function FormulaireNouvelleCommande() {
               aide={
                 artisan
                   ? `${artisan.nom} — ${artisan.heuresAujourdhui}/${artisan.capacite} h engagées aujourd’hui`
-                  : 'Aucun artisan assigné.'
+                  : t('Aucun artisan assigné.')
               }
             />
 
@@ -595,7 +595,7 @@ export default function FormulaireNouvelleCommande() {
                   className="font-bold"
                 >
                   <Check size={15} aria-hidden />
-                  {envoi ? 'Enregistrement…' : 'Confirmer la commande'}
+                  {envoi ? 'Enregistrement…' : t('Confirmer la commande')}
                 </Button>
                 <p className="text-muted-foreground mt-2 text-center text-xs">
                   Un SMS sera envoyé à {client.nom.split(' ')[0]}.

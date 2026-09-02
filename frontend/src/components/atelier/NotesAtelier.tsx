@@ -82,7 +82,7 @@ export default function NotesAtelier({ commandeId }: NotesAtelierProps) {
         {erreur && (
           <p role="alert" className="text-danger flex items-start gap-2 text-sm">
             <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-            {erreur}
+            {t(erreur)}
           </p>
         )}
 
@@ -138,7 +138,7 @@ export default function NotesAtelier({ commandeId }: NotesAtelierProps) {
             {echec && (
               <p role="alert" className="text-danger flex items-start gap-2 pl-11 text-sm">
                 <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-                {echec}
+                {t(echec)}
               </p>
             )}
           </form>

@@ -53,7 +53,7 @@ export default function FicheCommande({ id }: { id: string }) {
   // s'afficherait le temps du chargement, à tort.
   if (!commande) {
     return (
-      <AppShell titre={chargement ? 'Chargement…' : 'Commande introuvable'}>
+      <AppShell titre={chargement ? 'Chargement…' : t('Commande introuvable')}>
         <div className="flex flex-col items-center gap-3 p-12 text-center">
           {chargement ? (
             <p className="text-muted-foreground text-sm">{t('Chargement de la commande…')}</p>
@@ -89,7 +89,7 @@ export default function FicheCommande({ id }: { id: string }) {
     try {
       await changerStatut(id, statut);
     } catch (err) {
-      setErreurStatut(messageErreur(err, 'Le statut n’a pas pu être enregistré.'));
+      setErreurStatut(messageErreur(err, t('Le statut n’a pas pu être enregistré.')));
     } finally {
       setEnvoiStatut(false);
     }
@@ -202,7 +202,7 @@ export default function FicheCommande({ id }: { id: string }) {
                       <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
                         <span className="flex items-center gap-1">
                           <Phone size={12} aria-hidden />
-                          {client?.telephone || 'Téléphone non renseigné'}
+                          {client?.telephone || t('Téléphone non renseigné')}
                         </span>
                         <span aria-hidden>·</span>
                         <span className="flex items-center gap-1">
@@ -248,7 +248,7 @@ export default function FicheCommande({ id }: { id: string }) {
                   <div className="min-w-0 flex-1">
                     <div className="text-foreground text-sm font-bold">{commande.tenue}</div>
                     <div className="text-muted-foreground text-xs">
-                      {commande.tissu ?? 'Tissu non renseigné'}
+                      {commande.tissu ?? t('Tissu non renseigné')}
                     </div>
                   </div>
                   <div className="flex flex-col sm:items-end">
@@ -403,7 +403,7 @@ export default function FicheCommande({ id }: { id: string }) {
                     <p className="text-muted-foreground text-xs">
                       {source === 'serveur'
                         ? `Aucune mesure relevée pour ${commande.client}. Prenez le relevé avant de tailler.`
-                        : 'Les mesures ne sont pas consultables en mode démonstration.'}
+                        : t('Les mesures ne sont pas consultables en mode démonstration.')}
                     </p>
                   </div>
                 )}

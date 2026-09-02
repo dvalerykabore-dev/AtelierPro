@@ -864,4 +864,174 @@ export const en: Dictionnaire = {
   ' dans le filtre « {nom} »': ' in the “{nom}” filter',
   'Aucune commande avec le statut « {statut} ».': 'No order with status “{statut}”.',
   '{n} commande': { one: '{n} order', other: '{n} orders' },
+
+  // ----------------------------- tableau de bord · indicateurs et capacité
+  'Commandes actives': 'Active orders',
+  'À livrer': 'To deliver',
+  'Clients ce mois': 'Clients this month',
+  'chargement…': 'loading…',
+  exemples: 'samples',
+  'à traiter': 'to handle',
+  'Calcul…': 'Computing…',
+  'Calcul de la charge du jour…': 'Computing today’s load…',
+  'Journée saturée': 'Day is full',
+  '{n} place disponible': { one: '{n} slot free', other: '{n} slots free' },
+  '{utilisees} h engagées sur {total} h — voir le planning':
+    '{utilisees} h committed of {total} h — see the schedule',
+  'Équipe de {n} — d’après les tâches du jour': 'Team of {n} — from today’s tasks',
+  'Aucun artisan — composez votre équipe.': 'No tailor — build your team.',
+  'Aucun artisan actif.': 'No active tailor.',
+  'Aucun artisan.': 'No tailor.',
+  'Toute l’équipe est saturée aujourd’hui.': 'The whole team is full today.',
+  '{n} h encore libres aujourd’hui': '{n} h still free today',
+  'Aucune commande en cours.': 'No order in progress.',
+
+  // -------------------------------------------------------------- planning
+  'Planning équipe': 'Team schedule',
+  'Semaine du {debut} au {fin}': 'Week of {debut} to {fin}',
+  'Semaine du {debut} au {fin} {mois} {annee}': 'Week of {debut} to {fin} {mois} {annee}',
+  'Revenir à la semaine en cours': 'Back to the current week',
+  Affecter: 'Assign',
+  'Affectation…': 'Assigning…',
+  'Mode démonstration — la tâche restera à l’écran seulement.':
+    'Demo mode — the task will stay on screen only.',
+  'La charge de l’artisan se met à jour immédiatement.': 'The tailor’s load updates immediately.',
+  Saturé: 'Full',
+  'Quasi-plein': 'Nearly full',
+  Disponible: 'Available',
+
+  // -------------------- fiche commande et carnet · onglets et champs vides
+  Infos: 'Info',
+  Tissus: 'Fabrics',
+  Récapitulatif: 'Summary',
+  Suivi: 'Tracking',
+  'Commande introuvable': 'Order not found',
+  'Commande soldée': 'Order settled',
+  'Confirmer la commande': 'Confirm the order',
+  'Champ requis': 'Required field',
+  'Non renseigné': 'Not provided',
+  'Téléphone non renseigné': 'No phone number',
+  'Tissu non renseigné': 'No fabric recorded',
+  'Tissu apporté par le client': 'Fabric brought by the client',
+  'Aucun relevé': 'No measurements',
+  Relever: 'Take measurements',
+  'Aucune commande': 'No order',
+  'Créer le client': 'Create the client',
+  'Aucune consigne particulière n’a été saisie.': 'No particular instruction was entered.',
+  'Le statut n’a pas pu être enregistré.': 'The status could not be saved.',
+  'Les mesures ne sont pas consultables en mode démonstration.':
+    'Measurements cannot be viewed in demo mode.',
+  'Marquer livrée': 'Mark delivered',
+  'Passer à l’essayage': 'Move to fitting',
+  'Valider l’essayage': 'Approve the fitting',
+  'Aucun artisan actif — composez l’équipe dans les paramètres':
+    'No active tailor — build the team in settings',
+  'Aucun artisan assigné.': 'No tailor assigned.',
+
+  // ------------------------------------------- notifications et navigation
+  'Aucune notification': 'No notification',
+  'Aucune notification dans cette catégorie': 'No notification in this category',
+  'Ouvrir le menu': 'Open the menu',
+  'Fermer le menu': 'Close the menu',
+  'Exporter PDF': 'Export PDF',
+  'Genre du client': 'Client gender',
+
+  // ---------------------------------- trésorerie et dépenses · compléments
+  Déclarer: 'Declare',
+  Suspendre: 'Suspend',
+  Réactiver: 'Reactivate',
+  'Sans poste': 'No category',
+
+  // ------------------------------------------------ rapports · compléments
+  'non mesurable': 'not measurable',
+  'des livraisons': 'of deliveries',
+  'de la commande à la livraison': 'from order to delivery',
+  'Indicateurs indisponibles.': 'Figures unavailable.',
+
+  // ------------------------------------------------------- envoi de photos
+  local: 'local',
+  'Retirer {fichier}': 'Remove {fichier}',
+  'Photo affichée localement seulement — connectez-vous pour l’enregistrer durablement.':
+    'Photo shown locally only — sign in to store it for good.',
+  'L’envoi a échoué — la photo reste visible mais n’est pas enregistrée.':
+    'Upload failed — the photo stays visible but is not saved.',
+  'Serveur injoignable — la photo reste visible mais n’est pas enregistrée.':
+    'Server unreachable — the photo stays visible but is not saved.',
+  '« {fichier} » dépasse la taille maximale autorisée.':
+    '“{fichier}” exceeds the maximum allowed size.',
+  '« {fichier} » n’est pas une image acceptée (JPEG, PNG, WebP).':
+    '“{fichier}” is not an accepted image (JPEG, PNG, WebP).',
+
+  // ----------------------------------------------------------- inscription
+  'Créer mon compte': 'Create my account',
+  'Création…': 'Creating…',
+
+  // ------------------------------------------ messages d’erreur des écrans
+  'Planning indisponible.': 'Schedule unavailable.',
+  'Trésorerie indisponible.': 'Treasury unavailable.',
+  'Journal indisponible.': 'Ledger unavailable.',
+  'Charges indisponibles.': 'Charges unavailable.',
+  'Notes indisponibles.': 'Notes unavailable.',
+  'Réglages indisponibles.': 'Settings unavailable.',
+  'Grille tarifaire indisponible.': 'Price list unavailable.',
+  'Note non enregistrée.': 'Note not saved.',
+  'Réglage non enregistré.': 'Setting not saved.',
+  'Modification non enregistrée.': 'Change not saved.',
+  'Modification impossible.': 'Change not possible.',
+  'Suppression impossible.': 'Deletion not possible.',
+  'Commande inconnue.': 'Unknown order.',
+  'Aucune mesure renseignée.': 'No measurement entered.',
+  'Impossible de charger l’équipe.': 'Could not load the team.',
+  'Impossible d’ajouter cet artisan.': 'Could not add this tailor.',
+  'Impossible d’enregistrer ce tarif.': 'Could not save this price.',
+  'Impossible d’enregistrer l’écriture.': 'Could not save the entry.',
+  'Impossible d’enregistrer la charge.': 'Could not save the charge.',
+  'Impossible d’enregistrer la tâche.': 'Could not save the task.',
+  'Impossible de calculer les indicateurs.': 'Could not compute the figures.',
+  'Un artisan porte déjà ce nom.': 'A tailor already has that name.',
+  'Un client porte déjà ce nom.': 'A client already has that name.',
+  'Cette tenue figure déjà dans la grille.': 'This garment is already in the price list.',
+  'Connectez-vous pour composer votre équipe.': 'Sign in to build your team.',
+  'Connectez-vous pour composer votre grille.': 'Sign in to build your price list.',
+  'Connectez-vous pour régler vos alertes.': 'Sign in to set up your alerts.',
+  'Session expirée — reconnectez-vous.': 'Session expired — sign in again.',
+  'Session expirée — reconnectez-vous pour écrire une note.':
+    'Session expired — sign in again to write a note.',
+  'Cette date est déjà passée — la commande naîtrait en retard.':
+    'This date has already passed — the order would start late.',
+  'L’acompte dépasse le montant de la commande.': 'The deposit exceeds the order amount.',
+  'Le tissu n’est pas renseigné.': 'The fabric is not recorded.',
+  'Aucun tarif dans votre grille — ajoutez-en un dans Paramètres › Tarification.':
+    'No price in your list — add one in Settings › Pricing.',
+  'Le montant doit être un nombre supérieur à zéro.':
+    'The amount must be a number greater than zero.',
+  'Trop de commandes créées en même temps. Réessayez.':
+    'Too many orders created at once. Try again.',
+
+  // --------------------------------- compte · mot de passe et comptes liés
+  'Connecté en tant que {email}': 'Signed in as {email}',
+  'Définir un mot de passe': 'Set a password',
+  'Définir le mot de passe': 'Set the password',
+  'Tu peux modifier ton mot de passe ici. Les autres sessions seront déconnectées.':
+    'You can change your password here. Other sessions will be signed out.',
+  'Tu t’es connecté via Google. Définis un mot de passe pour pouvoir aussi te connecter par email.':
+    'You signed in with Google. Set a password so you can also sign in by email.',
+  'Tu peux te connecter via Google.': 'You can sign in with Google.',
+  'Lie ton compte Google pour te connecter en un clic.':
+    'Link your Google account to sign in with one click.',
+  'Saisis un nouveau mot de passe.': 'Enter a new password.',
+  'La confirmation ne correspond pas au nouveau mot de passe.':
+    'The confirmation does not match the new password.',
+  'Mot de passe mis à jour.': 'Password updated.',
+  'Mot de passe défini. Tu peux maintenant te connecter par email.':
+    'Password set. You can now sign in by email.',
+  'Mot de passe actuel incorrect.': 'Current password is incorrect.',
+  'Ce mot de passe est trop courant.': 'This password is too common.',
+  'Mot de passe trop court.': 'Password too short.',
+  'Ce mot de passe a fuité — choisis-en un autre.':
+    'This password has leaked — choose another one.',
+  'Un mot de passe est déjà défini. Utilise « changer le mot de passe ».':
+    'A password is already set. Use “change the password”.',
+  'Champs invalides.': 'Invalid fields.',
+  'Erreur réseau. Réessaie.': 'Network error. Try again.',
 };

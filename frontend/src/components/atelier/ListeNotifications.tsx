@@ -138,8 +138,8 @@ export default function ListeNotifications() {
         <div className="px-4 py-10 text-center lg:px-8">
           <p className="text-foreground text-sm font-medium">
             {notifications.length === 0
-              ? 'Aucune notification'
-              : 'Aucune notification dans cette catégorie'}
+              ? t('Aucune notification')
+              : t('Aucune notification dans cette catégorie')}
           </p>
           {notifications.length === 0 && (
             /* Dire pourquoi c'est vide : sans cette phrase, un écran nu passe

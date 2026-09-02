@@ -98,7 +98,7 @@ function ChampEnregistrable({
       {aide && !erreur && <p className="text-muted-foreground mt-1 text-xs">{aide}</p>}
       {erreur && (
         <p role="alert" className="text-danger mt-1 text-xs">
-          {erreur}
+          {t(erreur)}
         </p>
       )}
       {enregistre && !modifie && !erreur && (
@@ -218,7 +218,7 @@ function HorairesEnregistrables({
       )}
       {erreur && !probleme && (
         <p role="alert" className="text-danger mt-1 text-xs">
-          {erreur}
+          {t(erreur)}
         </p>
       )}
       {enregistre && !modifie && !erreur && !probleme && (
@@ -297,7 +297,7 @@ function TelephoneEnregistrable({
         </Button>
         {erreur && (
           <span role="alert" className="text-danger text-xs">
-            {erreur}
+            {t(erreur)}
           </span>
         )}
         {enregistre && !modifie && !erreur && (

@@ -149,12 +149,12 @@ export default function StatistiquesAtelier({ variante }: StatistiquesAtelierPro
             // une hausse ou une baisse. Seul le retard mérite du rouge.
             tendance={
               chargement
-                ? 'chargement…'
+                ? t('chargement…')
                 : surExemples
-                  ? 'exemples'
+                  ? t('exemples')
                   : alerte
-                    ? 'à traiter'
-                    : 'aujourd’hui'
+                    ? t('à traiter')
+                    : t('aujourd’hui')
             }
             enHausse={alerte ? false : null}
           />

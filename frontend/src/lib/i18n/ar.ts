@@ -896,4 +896,178 @@ export const ar: Dictionnaire = {
     many: '{n} طلبًا',
     other: '{n} طلب',
   },
+
+  // ----------------------------- tableau de bord · indicateurs et capacité
+  'Commandes actives': 'الطلبات النشطة',
+  'À livrer': 'للتسليم',
+  'Clients ce mois': 'عملاء هذا الشهر',
+  'chargement…': 'جارٍ التحميل…',
+  exemples: 'أمثلة',
+  'à traiter': 'بانتظار المعالجة',
+  'Calcul…': 'جارٍ الحساب…',
+  'Calcul de la charge du jour…': 'جارٍ حساب حِمل اليوم…',
+  'Journée saturée': 'اليوم مكتمل',
+  '{n} place disponible': {
+    zero: 'لا أماكن متاحة',
+    one: 'مكان واحد متاح',
+    two: 'مكانان متاحان',
+    few: '{n} أماكن متاحة',
+    many: '{n} مكانًا متاحًا',
+    other: '{n} مكان متاح',
+  },
+  '{utilisees} h engagées sur {total} h — voir le planning':
+    '{utilisees} س مشغولة من {total} س — عرض الجدول',
+  'Équipe de {n} — d’après les tâches du jour': 'فريق من {n} — حسب مهام اليوم',
+  'Aucun artisan — composez votre équipe.': 'لا خياط — كوّن فريقك.',
+  'Aucun artisan actif.': 'لا يوجد خياط نشط.',
+  'Aucun artisan.': 'لا يوجد خياط.',
+  'Toute l’équipe est saturée aujourd’hui.': 'الفريق بأكمله مشغول اليوم.',
+  '{n} h encore libres aujourd’hui': '{n} س ما زالت متاحة اليوم',
+  'Aucune commande en cours.': 'لا طلبات جارية.',
+
+  // -------------------------------------------------------------- planning
+  'Planning équipe': 'جدول الفريق',
+  'Semaine du {debut} au {fin}': 'أسبوع من {debut} إلى {fin}',
+  'Semaine du {debut} au {fin} {mois} {annee}': 'أسبوع من {debut} إلى {fin} {mois} {annee}',
+  'Revenir à la semaine en cours': 'العودة إلى الأسبوع الحالي',
+  Affecter: 'إسناد',
+  'Affectation…': 'جارٍ الإسناد…',
+  'Mode démonstration — la tâche restera à l’écran seulement.':
+    'وضع العرض — ستبقى المهمة على الشاشة فقط.',
+  'La charge de l’artisan se met à jour immédiatement.': 'يُحدَّث حِمل الخياط فورًا.',
+  Saturé: 'مكتمل',
+  'Quasi-plein': 'شبه مكتمل',
+  Disponible: 'متاح',
+
+  // -------------------- fiche commande et carnet · onglets et champs vides
+  Infos: 'معلومات',
+  Tissus: 'الأقمشة',
+  Récapitulatif: 'الملخّص',
+  Suivi: 'المتابعة',
+  'Commande introuvable': 'الطلب غير موجود',
+  'Commande soldée': 'الطلب مسدَّد',
+  'Confirmer la commande': 'تأكيد الطلب',
+  'Champ requis': 'حقل مطلوب',
+  'Non renseigné': 'غير محدَّد',
+  'Téléphone non renseigné': 'الهاتف غير محدَّد',
+  'Tissu non renseigné': 'القماش غير محدَّد',
+  'Tissu apporté par le client': 'قماش أحضره العميل',
+  'Aucun relevé': 'لا مقاسات',
+  Relever: 'أخذ المقاسات',
+  'Aucune commande': 'لا طلبات',
+  'Créer le client': 'إنشاء العميل',
+  'Aucune consigne particulière n’a été saisie.': 'لم تُدخَل أي تعليمات خاصة.',
+  'Le statut n’a pas pu être enregistré.': 'تعذّر حفظ الحالة.',
+  'Les mesures ne sont pas consultables en mode démonstration.':
+    'لا يمكن الاطّلاع على المقاسات في وضع العرض.',
+  'Marquer livrée': 'وضع علامة مُسلَّم',
+  'Passer à l’essayage': 'الانتقال إلى البروفة',
+  'Valider l’essayage': 'اعتماد البروفة',
+  'Aucun artisan actif — composez l’équipe dans les paramètres':
+    'لا خياط نشط — كوّن الفريق في الإعدادات',
+  'Aucun artisan assigné.': 'لا خياط مُسنَد.',
+
+  // ------------------------------------------- notifications et navigation
+  'Aucune notification': 'لا إشعارات',
+  'Aucune notification dans cette catégorie': 'لا إشعارات في هذه الفئة',
+  'Ouvrir le menu': 'فتح القائمة',
+  'Fermer le menu': 'إغلاق القائمة',
+  'Exporter PDF': 'تصدير PDF',
+  'Genre du client': 'نوع العميل',
+
+  // ---------------------------------- trésorerie et dépenses · compléments
+  Déclarer: 'تسجيل',
+  Suspendre: 'تعليق',
+  Réactiver: 'إعادة التفعيل',
+  'Sans poste': 'بدون بند',
+
+  // ------------------------------------------------ rapports · compléments
+  'non mesurable': 'غير قابل للقياس',
+  'des livraisons': 'من التسليمات',
+  'de la commande à la livraison': 'من الطلب إلى التسليم',
+  'Indicateurs indisponibles.': 'المؤشرات غير متاحة.',
+
+  // ------------------------------------------------------- envoi de photos
+  local: 'محلي',
+  'Retirer {fichier}': 'إزالة {fichier}',
+  'Photo affichée localement seulement — connectez-vous pour l’enregistrer durablement.':
+    'الصورة معروضة محليًا فقط — سجّل الدخول لحفظها نهائيًا.',
+  'L’envoi a échoué — la photo reste visible mais n’est pas enregistrée.':
+    'فشل الرفع — تبقى الصورة ظاهرة لكنها غير محفوظة.',
+  'Serveur injoignable — la photo reste visible mais n’est pas enregistrée.':
+    'تعذّر الوصول إلى الخادم — تبقى الصورة ظاهرة لكنها غير محفوظة.',
+  '« {fichier} » dépasse la taille maximale autorisée.': '«{fichier}» يتجاوز الحجم الأقصى المسموح.',
+  '« {fichier} » n’est pas une image acceptée (JPEG, PNG, WebP).':
+    '«{fichier}» ليس صورة مقبولة (JPEG أو PNG أو WebP).',
+
+  // ----------------------------------------------------------- inscription
+  'Créer mon compte': 'إنشاء حسابي',
+  'Création…': 'جارٍ الإنشاء…',
+
+  // ------------------------------------------ messages d’erreur des écrans
+  'Planning indisponible.': 'الجدول غير متاح.',
+  'Trésorerie indisponible.': 'الخزينة غير متاحة.',
+  'Journal indisponible.': 'السجل غير متاح.',
+  'Charges indisponibles.': 'الأعباء غير متاحة.',
+  'Notes indisponibles.': 'الملاحظات غير متاحة.',
+  'Réglages indisponibles.': 'الإعدادات غير متاحة.',
+  'Grille tarifaire indisponible.': 'قائمة الأسعار غير متاحة.',
+  'Note non enregistrée.': 'لم تُحفظ الملاحظة.',
+  'Réglage non enregistré.': 'لم يُحفظ الإعداد.',
+  'Modification non enregistrée.': 'لم يُحفظ التعديل.',
+  'Modification impossible.': 'التعديل غير ممكن.',
+  'Suppression impossible.': 'الحذف غير ممكن.',
+  'Commande inconnue.': 'طلب غير معروف.',
+  'Aucune mesure renseignée.': 'لم تُدخَل أي مقاسات.',
+  'Impossible de charger l’équipe.': 'تعذّر تحميل الفريق.',
+  'Impossible d’ajouter cet artisan.': 'تعذّرت إضافة هذا الخياط.',
+  'Impossible d’enregistrer ce tarif.': 'تعذّر حفظ هذا السعر.',
+  'Impossible d’enregistrer l’écriture.': 'تعذّر حفظ القيد.',
+  'Impossible d’enregistrer la charge.': 'تعذّر حفظ العبء.',
+  'Impossible d’enregistrer la tâche.': 'تعذّر حفظ المهمة.',
+  'Impossible de calculer les indicateurs.': 'تعذّر حساب المؤشرات.',
+  'Un artisan porte déjà ce nom.': 'يوجد خياط بهذا الاسم.',
+  'Un client porte déjà ce nom.': 'يوجد عميل بهذا الاسم.',
+  'Cette tenue figure déjà dans la grille.': 'هذا الثوب موجود في قائمة الأسعار.',
+  'Connectez-vous pour composer votre équipe.': 'سجّل الدخول لتكوين فريقك.',
+  'Connectez-vous pour composer votre grille.': 'سجّل الدخول لتكوين قائمة أسعارك.',
+  'Connectez-vous pour régler vos alertes.': 'سجّل الدخول لضبط تنبيهاتك.',
+  'Session expirée — reconnectez-vous.': 'انتهت الجلسة — سجّل الدخول من جديد.',
+  'Session expirée — reconnectez-vous pour écrire une note.':
+    'انتهت الجلسة — سجّل الدخول من جديد لكتابة ملاحظة.',
+  'Cette date est déjà passée — la commande naîtrait en retard.':
+    'هذا التاريخ قد مضى — سيبدأ الطلب متأخرًا.',
+  'L’acompte dépasse le montant de la commande.': 'العربون يتجاوز مبلغ الطلب.',
+  'Le tissu n’est pas renseigné.': 'القماش غير محدَّد.',
+  'Aucun tarif dans votre grille — ajoutez-en un dans Paramètres › Tarification.':
+    'لا سعر في قائمتك — أضف واحدًا في الإعدادات › التسعير.',
+  'Le montant doit être un nombre supérieur à zéro.': 'يجب أن يكون المبلغ رقمًا أكبر من الصفر.',
+  'Trop de commandes créées en même temps. Réessayez.':
+    'طلبات كثيرة أُنشئت دفعة واحدة. أعد المحاولة.',
+
+  // --------------------------------- compte · mot de passe et comptes liés
+  'Connecté en tant que {email}': 'مسجَّل الدخول باسم {email}',
+  'Définir un mot de passe': 'تعيين كلمة مرور',
+  'Définir le mot de passe': 'تعيين كلمة المرور',
+  'Tu peux modifier ton mot de passe ici. Les autres sessions seront déconnectées.':
+    'يمكنك تغيير كلمة مرورك هنا. ستُنهى الجلسات الأخرى.',
+  'Tu t’es connecté via Google. Définis un mot de passe pour pouvoir aussi te connecter par email.':
+    'سجّلت الدخول عبر جوجل. عيّن كلمة مرور لتتمكّن من الدخول بالبريد أيضًا.',
+  'Tu peux te connecter via Google.': 'يمكنك تسجيل الدخول عبر جوجل.',
+  'Lie ton compte Google pour te connecter en un clic.':
+    'اربط حساب جوجل لتسجّل الدخول بنقرة واحدة.',
+  'Saisis un nouveau mot de passe.': 'أدخل كلمة مرور جديدة.',
+  'La confirmation ne correspond pas au nouveau mot de passe.':
+    'التأكيد لا يطابق كلمة المرور الجديدة.',
+  'Mot de passe mis à jour.': 'تم تحديث كلمة المرور.',
+  'Mot de passe défini. Tu peux maintenant te connecter par email.':
+    'تم تعيين كلمة المرور. يمكنك الآن الدخول بالبريد.',
+  'Mot de passe actuel incorrect.': 'كلمة المرور الحالية غير صحيحة.',
+  'Ce mot de passe est trop courant.': 'كلمة المرور هذه شائعة جدًا.',
+  'Mot de passe trop court.': 'كلمة المرور قصيرة جدًا.',
+  'Ce mot de passe a fuité — choisis-en un autre.': 'تسرّبت كلمة المرور هذه — اختر غيرها.',
+  'Un mot de passe est déjà défini. Utilise « changer le mot de passe ».':
+    'توجد كلمة مرور بالفعل. استخدم «تغيير كلمة المرور».',
+  'Champs invalides.': 'حقول غير صالحة.',
+  'Erreur réseau. Réessaie.': 'خطأ في الشبكة. أعد المحاولة.',
 };

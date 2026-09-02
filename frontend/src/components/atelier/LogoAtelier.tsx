@@ -138,7 +138,7 @@ export default function LogoAtelier() {
 
       {erreur && (
         <p role="alert" className="text-danger max-w-[10rem] text-center text-xs">
-          {erreur}
+          {t(erreur)}
         </p>
       )}
     </div>

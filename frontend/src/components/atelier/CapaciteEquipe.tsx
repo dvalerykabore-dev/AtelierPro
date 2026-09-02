@@ -5,7 +5,7 @@ import { Clock } from 'lucide-react';
 import CapacityBar, { chargeArtisan } from '@/components/ui/CapacityBar';
 import { useArtisans } from '@/lib/useArtisans';
 import { cn } from '@/lib/utils';
-import { useT } from '@/contexts/LangueContext';
+import { useLangue } from '@/contexts/LangueContext';
 
 export interface EtatBadge {
   chargement: boolean;
@@ -17,7 +17,19 @@ export interface EtatBadge {
 }
 
 export interface LibelleBadge {
-  texte: string;
+  /**
+   * Phrase française — c'est la clé du dictionnaire, pas le texte affiché.
+   *
+   * La fonction rendait la phrase toute faite, y compris son pluriel accordé à
+   * la main (« 2 places disponibles »). Cette phrase-là ne pouvait pas se
+   * traduire : elle arrivait à l'écran déjà écrite. On rend maintenant de quoi
+   * la composer, et le composant la traduit.
+   */
+  cle: string;
+  /** Forme plurielle, quand le libellé se décline. */
+  clePluriel?: string;
+  /** Nombre à injecter, quand il y en a un. */
+  n?: number;
   /** Rouge : plus rien à donner aujourd'hui. */
   alerte: boolean;
 }
@@ -32,15 +44,19 @@ export interface LibelleBadge {
  * avait personne pour coudre — le pire des deux sens possibles.
  */
 export function libelleBadge(etat: EtatBadge): LibelleBadge {
-  if (etat.chargement) return { texte: 'Calcul…', alerte: false };
-  if (etat.effectif === 0) return { texte: 'Aucun artisan', alerte: true };
+  if (etat.chargement) return { cle: 'Calcul…', alerte: false };
+  if (etat.effectif === 0) return { cle: 'Aucun artisan', alerte: true };
   if (etat.chargeGlobale >= 100 || etat.disponibles === 0) {
-    return { texte: 'Journée saturée', alerte: true };
+    return { cle: 'Journée saturée', alerte: true };
   }
   // Le compte plutôt que « Places disponibles » : savoir s'il en reste une ou
   // quatre change ce qu'on accepte de promettre à un client au comptoir.
-  const s = etat.disponibles > 1 ? 's' : '';
-  return { texte: `${etat.disponibles} place${s} disponible${s}`, alerte: false };
+  return {
+    cle: '{n} place disponible',
+    clePluriel: '{n} places disponibles',
+    n: etat.disponibles,
+    alerte: false,
+  };
 }
 
 export interface CapaciteEquipeProps {
@@ -68,7 +84,7 @@ export interface CapaciteEquipeProps {
  * 6 h n'est pas saturé au même seuil qu'un tailleur senior.
  */
 export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
-  const t = useT();
+  const { t, tp } = useLangue();
   const { artisans, chargement } = useArtisans();
   const equipe = artisans.filter((a) => a.actif);
 
@@ -89,12 +105,16 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
     // Le seuil se lit sur la charge globale, pas sur un décompte fixe de trois
     // artisans saturés : un atelier de deux personnes n'atteindrait jamais ce
     // chiffre et se croirait disponible en permanence.
-    const { texte, alerte } = libelleBadge({
+    const badge = libelleBadge({
       chargement,
       effectif: equipe.length,
       disponibles,
       chargeGlobale,
     });
+    const texte =
+      badge.clePluriel !== undefined && badge.n !== undefined
+        ? tp(badge.cle, badge.clePluriel, badge.n)
+        : t(badge.cle);
 
     // Un lien, plus un `<span>`.
     //
@@ -108,12 +128,15 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
         href="/planning"
         title={
           chargement
-            ? 'Calcul de la charge du jour…'
-            : `${heuresUtilisees} h engagées sur ${heuresTotal} h — voir le planning`
+            ? t('Calcul de la charge du jour…')
+            : t('{utilisees} h engagées sur {total} h — voir le planning', {
+                utilisees: heuresUtilisees,
+                total: heuresTotal,
+              })
         }
         className={cn(
           'flex items-center gap-2 rounded-md border px-3 py-1.5 transition-opacity hover:opacity-85',
-          alerte ? 'border-danger bg-danger' : 'border-success bg-success',
+          badge.alerte ? 'border-danger bg-danger' : 'border-success bg-success',
         )}
       >
         <span className="bg-background h-2 w-2 rounded-full" aria-hidden />
@@ -153,7 +176,7 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
 
         {equipe.length === 0 ? (
           <p className="text-background/70 text-xs">
-            {chargement ? 'Chargement…' : 'Aucun artisan — composez votre équipe.'}
+            {chargement ? t('Chargement…') : t('Aucun artisan — composez votre équipe.')}
           </p>
         ) : (
           <ul className="flex gap-1.5">
@@ -190,7 +213,9 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
           {t('Capacité du jour')}
         </h2>
         <p className="text-muted-foreground mb-4 text-xs">
-          {chargement ? 'Chargement…' : `Équipe de ${equipe.length} — d’après les tâches du jour`}
+          {chargement
+            ? t('Chargement…')
+            : t('Équipe de {n} — d’après les tâches du jour', { n: equipe.length })}
         </p>
 
         <div className="mb-5 flex gap-3">
@@ -210,7 +235,7 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
       <div className="flex-1 px-5">
         {equipe.length === 0 ? (
           <p className="text-muted-foreground text-xs">
-            {chargement ? 'Chargement de l’équipe…' : 'Aucun artisan actif.'}
+            {chargement ? t('Chargement de l’équipe…') : t('Aucun artisan actif.')}
           </p>
         ) : (
           equipe.map((a) => (
@@ -236,13 +261,16 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
             <>
               <div className="text-primary text-sm font-bold">{prochainDispo.nom}</div>
               <div className="text-muted-foreground text-xs">
-                {prochainDispo.capacite - prochainDispo.heuresAujourdhui} h encore libres
-                aujourd’hui
+                {t('{n} h encore libres aujourd’hui', {
+                  n: prochainDispo.capacite - prochainDispo.heuresAujourdhui,
+                })}
               </div>
             </>
           ) : (
             <div className="text-muted-foreground text-xs">
-              {equipe.length === 0 ? 'Aucun artisan.' : 'Toute l’équipe est saturée aujourd’hui.'}
+              {equipe.length === 0
+                ? t('Aucun artisan.')
+                : t('Toute l’équipe est saturée aujourd’hui.')}
             </div>
           )}
         </div>

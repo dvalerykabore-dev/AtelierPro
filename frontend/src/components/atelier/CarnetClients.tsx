@@ -176,7 +176,7 @@ export default function CarnetClients() {
             form="formulaire-nouveau-client"
             disabled={!nouveauNom.trim() || envoi}
           >
-            {envoi ? 'Enregistrement…' : 'Créer le client'}
+            {envoi ? t('Enregistrement…') : t('Créer le client')}
           </Button>
         </>
       }
@@ -325,7 +325,7 @@ export default function CarnetClients() {
                     <span className="text-muted-foreground text-xs">
                       {(() => {
                         const siennes = parClient.get(c.nom) ?? [];
-                        if (siennes.length === 0) return 'Aucune commande';
+                        if (siennes.length === 0) return t('Aucune commande');
                         const derniere = siennes[0];
                         return `${siennes.length} commande${siennes.length > 1 ? 's' : ''} · ${derniere?.livraison ?? '—'}`;
                       })()}
@@ -463,10 +463,10 @@ export default function CarnetClients() {
                 </h3>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground text-xs">
-                    {releve ? `Relevé du ${releve.dateReleve}` : 'Aucun relevé'}
+                    {releve ? `Relevé du ${releve.dateReleve}` : t('Aucun relevé')}
                   </span>
                   <Link href="/mesures" className="text-primary text-xs font-medium">
-                    {releve ? 'Modifier' : 'Relever'}
+                    {releve ? 'Modifier' : t('Relever')}
                   </Link>
                 </div>
               </div>
@@ -544,29 +544,31 @@ export default function CarnetClients() {
               {tissusDuClient.length === 0 ? (
                 <p className="text-muted-foreground px-5 py-4 text-xs">
                   {t(
-                    'Aucun tissu photographié. Les tissus se prennent en photo pendant le relevé de mesures.',
+                    t(
+                      'Aucun tissu photographié. Les tissus se prennent en photo pendant le relevé de mesures.',
+                    ),
                   )}
                 </p>
               ) : (
                 <div className="grid grid-cols-3 gap-3 p-4 sm:grid-cols-4">
-                  {tissusDuClient.map((t) => (
-                    <figure key={t.id} className="flex flex-col gap-1.5">
+                  {tissusDuClient.map((tissu) => (
+                    <figure key={tissu.id} className="flex flex-col gap-1.5">
                       {/* `unoptimized` comme dans `PhotoUpload` : l'optimiseur
                           exigerait de déclarer le domaine Cloudinary dans
                           next.config, alors que les URL sont déjà servies par
                           leur propre CDN. */}
                       <div className="border-border relative aspect-square w-full overflow-hidden rounded-md border">
                         <Image
-                          src={t.url}
-                          alt={t.nomFichier ?? 'Tissu apporté par le client'}
+                          src={tissu.url}
+                          alt={tissu.nomFichier ?? t('Tissu apporté par le client')}
                           fill
                           unoptimized
                           className="object-cover"
                         />
                       </div>
-                      {t.nomFichier && (
+                      {tissu.nomFichier && (
                         <figcaption className="text-muted-foreground truncate text-xs">
-                          {t.nomFichier}
+                          {tissu.nomFichier}
                         </figcaption>
                       )}
                     </figure>
