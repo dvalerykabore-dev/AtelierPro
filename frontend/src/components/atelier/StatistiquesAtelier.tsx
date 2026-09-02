@@ -5,6 +5,7 @@ import StatTile from '@/components/ui/StatTile';
 import { useClients } from '@/lib/useClients';
 import { useCommandes } from '@/lib/useCommandes';
 import { cn } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 export interface StatistiquesAtelierProps {
   /**
@@ -43,6 +44,7 @@ function debutDeJournee(): Date {
  * de les calculer, et un écart inventé serait pire qu'une absence.
  */
 export default function StatistiquesAtelier({ variante }: StatistiquesAtelierProps) {
+  const t = useT();
   const { commandes, source: sourceCommandes, chargement: chargementCommandes } = useCommandes();
   const { clients, source: sourceClients, chargement: chargementClients } = useClients();
 
@@ -123,7 +125,7 @@ export default function StatistiquesAtelier({ variante }: StatistiquesAtelierPro
                 {chargement ? '—' : s.valeur}
               </span>
               <span className="text-muted-foreground text-[10px]">
-                {s.labelCourt}
+                {t(s.labelCourt)}
                 {surExemples && !chargement && <span className="text-warning"> · ex.</span>}
               </span>
             </div>
@@ -140,7 +142,7 @@ export default function StatistiquesAtelier({ variante }: StatistiquesAtelierPro
         return (
           <StatTile
             key={s.id}
-            label={s.label}
+            label={t(s.label)}
             valeur={chargement ? '—' : s.valeur}
             icone={s.icone}
             // Une tendance neutre : aucun historique en base ne permet d'affirmer

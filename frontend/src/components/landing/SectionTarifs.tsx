@@ -1,7 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { ANCRES, PLANS_TARIFAIRES } from '@/lib/landing-contenu';
 import { cn } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 /**
  * Grille tarifaire.
@@ -18,6 +21,7 @@ import { cn } from '@/lib/utils';
  * téléphone dans la majorité des cas. La liste est donc complète partout.
  */
 export default function SectionTarifs() {
+  const t = useT();
   return (
     <section
       id={ANCRES.tarifs}
@@ -26,10 +30,10 @@ export default function SectionTarifs() {
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-6 max-w-2xl text-center lg:mb-12">
           <h2 className="font-headings mb-2 text-2xl font-bold sm:text-3xl lg:mb-3 lg:text-4xl">
-            Des tarifs lisibles
+            {t('Des tarifs lisibles')}
           </h2>
           <p className="text-muted-foreground text-xs sm:text-base lg:text-lg">
-            Trente jours d’essai sur tous les plans. Sans engagement.
+            {t('Trente jours d’essai sur tous les plans. Sans engagement.')}
           </p>
         </div>
 
@@ -44,18 +48,18 @@ export default function SectionTarifs() {
             >
               {p.populaire && (
                 <span className="bg-primary text-primary-foreground mb-2 inline-block self-start rounded-full px-2 py-0.5 text-xs font-bold sm:mb-4 sm:px-3 sm:py-1">
-                  Le plus choisi
+                  {t('Le plus choisi')}
                 </span>
               )}
-              <h3 className="text-foreground text-base font-bold sm:mb-1 sm:text-xl">{p.nom}</h3>
+              <h3 className="text-foreground text-base font-bold sm:mb-1 sm:text-xl">{t(p.nom)}</h3>
               <p className="text-muted-foreground mb-2 text-xs sm:mb-4 sm:text-sm">
-                {p.description}
+                {t(p.description)}
               </p>
               <p className="mb-3 sm:mb-6">
                 <span className="font-headings text-foreground text-2xl font-bold sm:text-3xl">
-                  {p.prix}
+                  {t(p.prix)}
                 </span>
-                <span className="text-muted-foreground text-xs sm:text-sm">{p.periode}</span>
+                <span className="text-muted-foreground text-xs sm:text-sm">{t(p.periode)}</span>
               </p>
 
               <Link
@@ -67,7 +71,7 @@ export default function SectionTarifs() {
                     : 'border-border text-foreground hover:bg-muted border',
                 )}
               >
-                {p.surDevis ? 'Nous écrire' : 'Commencer l’essai'}
+                {p.surDevis ? t('Nous écrire') : t('Commencer l’essai')}
               </Link>
 
               <ul className="flex flex-col gap-1 sm:gap-2">
@@ -77,7 +81,7 @@ export default function SectionTarifs() {
                       className="text-primary mt-0.5 h-3 w-3 flex-shrink-0 sm:mt-1 sm:h-3.5 sm:w-3.5"
                       aria-hidden
                     />
-                    <span>{i}</span>
+                    <span>{t(i)}</span>
                   </li>
                 ))}
               </ul>
@@ -86,8 +90,9 @@ export default function SectionTarifs() {
         </div>
 
         <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-center text-xs sm:mt-8">
-          Le paiement en ligne n’est pas encore ouvert : l’essai démarre sans moyen de paiement, et
-          nous vous contactons avant tout prélèvement.
+          {t(
+            'Le paiement en ligne n’est pas encore ouvert : l’essai démarre sans moyen de paiement, et nous vous contactons avant tout prélèvement.',
+          )}
         </p>
       </div>
     </section>

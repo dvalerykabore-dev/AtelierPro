@@ -1,3 +1,5 @@
+'use client';
+
 import { Phone } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
 import MeasureRow from '@/components/ui/MeasureRow';
@@ -5,6 +7,7 @@ import { dateComplete, initialesDe, libelleRang, mesuresResumeesDe } from '@/lib
 import { paletteDe, type Client, type Commande } from '@/lib/mock/atelier';
 import type { ReleveCharge } from '@/lib/useReleveMesures';
 import { formatPrice } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 /** Ligne « libellé / valeur » du bloc de détails. */
 function Ligne({ label, children }: { label: string; children: React.ReactNode }) {
@@ -35,6 +38,7 @@ export default function RecapitulatifCommande({
   releve: ReleveCharge | null;
   rang: number;
 }) {
+  const t = useT();
   const encaisse = commande.encaisse ?? 0;
   const resteAPayer = commande.montant - encaisse;
   // Le récapitulatif montre le relevé entier, pas l'extrait de la colonne
@@ -47,15 +51,15 @@ export default function RecapitulatifCommande({
       <div className="border-border flex min-w-0 flex-1 flex-col gap-6 px-4 py-6 lg:border-r lg:px-8">
         <section className="bg-surface border-border rounded-lg border p-5">
           <h2 className="font-headings text-foreground mb-4 text-sm font-bold">
-            Détails de la commande
+            {t('Détails de la commande')}
           </h2>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Ligne label="Type de tenue">{commande.tenue}</Ligne>
-            <Ligne label="Tissu">{commande.tissu ?? 'Non renseigné'}</Ligne>
-            <Ligne label="Assigné à">
+            <Ligne label={t('Type de tenue')}>{commande.tenue}</Ligne>
+            <Ligne label={t('Tissu')}>{commande.tissu ?? 'Non renseigné'}</Ligne>
+            <Ligne label={t('Assigné à')}>
               {commande.assignee === '—' ? (
-                <span className="text-muted-foreground">Non assigné</span>
+                <span className="text-muted-foreground">{t('Non assigné')}</span>
               ) : (
                 <>
                   <Avatar
@@ -67,13 +71,13 @@ export default function RecapitulatifCommande({
                 </>
               )}
             </Ligne>
-            <Ligne label="Date de création">{dateComplete(commande.creeLe) || '—'}</Ligne>
-            <Ligne label="Livraison prévue">{commande.livraison}</Ligne>
-            <Ligne label="Statut">{commande.statut}</Ligne>
+            <Ligne label={t('Date de création')}>{dateComplete(commande.creeLe) || '—'}</Ligne>
+            <Ligne label={t('Livraison prévue')}>{commande.livraison}</Ligne>
+            <Ligne label={t('Statut')}>{commande.statut}</Ligne>
           </div>
 
           <div className="mt-4">
-            <span className="text-muted-foreground mb-1 block text-xs">Instructions</span>
+            <span className="text-muted-foreground mb-1 block text-xs">{t('Instructions')}</span>
             <p className="bg-muted text-foreground rounded-md px-3 py-2.5 text-sm">
               {commande.notes ?? 'Aucune consigne particulière n’a été saisie.'}
             </p>
@@ -82,7 +86,7 @@ export default function RecapitulatifCommande({
 
         <section className="bg-surface border-border overflow-hidden rounded-lg border">
           <div className="border-border border-b px-5 py-3">
-            <h2 className="font-headings text-foreground text-sm font-bold">Mesures</h2>
+            <h2 className="font-headings text-foreground text-sm font-bold">{t('Mesures')}</h2>
           </div>
           {mesures.length > 0 ? (
             <div className="grid sm:grid-cols-2">
@@ -107,7 +111,7 @@ export default function RecapitulatifCommande({
       {/* Client + tarification */}
       <aside className="border-border flex w-full flex-shrink-0 flex-col gap-5 border-t py-6 lg:w-80 lg:border-t-0">
         <div className="px-4 lg:px-6">
-          <h2 className="font-headings text-foreground mb-3 text-sm font-bold">Client</h2>
+          <h2 className="font-headings text-foreground mb-3 text-sm font-bold">{t('Client')}</h2>
           <div className="bg-muted flex items-center gap-3 rounded-lg p-3">
             <Avatar initiales={initialesDe(commande.client)} taille="lg" />
             <div className="min-w-0">
@@ -124,17 +128,19 @@ export default function RecapitulatifCommande({
         <div className="bg-border mx-4 h-px lg:mx-6" />
 
         <div className="px-4 lg:px-6">
-          <h2 className="font-headings text-foreground mb-3 text-sm font-bold">Tarification</h2>
+          <h2 className="font-headings text-foreground mb-3 text-sm font-bold">
+            {t('Tarification')}
+          </h2>
           {/* Deux lignes, pas une grille tarifaire : le détail par poste
               (façon, tissu, broderie) n'existe pas en base — une commande porte
               un prix et ce qui a été encaissé. */}
           <dl className="flex flex-col gap-2">
             <div className="flex items-center justify-between gap-3 text-xs">
-              <dt className="text-muted-foreground">Montant de la commande</dt>
+              <dt className="text-muted-foreground">{t('Montant de la commande')}</dt>
               <dd className="text-foreground">{formatPrice(commande.montant, 'F')}</dd>
             </div>
             <div className="flex items-center justify-between gap-3 text-xs">
-              <dt className="text-muted-foreground">Déjà encaissé</dt>
+              <dt className="text-muted-foreground">{t('Déjà encaissé')}</dt>
               <dd className={encaisse > 0 ? 'text-success' : 'text-muted-foreground'}>
                 {encaisse > 0 ? '− ' : ''}
                 {formatPrice(encaisse, 'F')}
@@ -142,7 +148,7 @@ export default function RecapitulatifCommande({
             </div>
             <div className="bg-border my-1 h-px" />
             <div className="flex items-center justify-between gap-3 text-sm font-bold">
-              <dt className="text-foreground">Reste à payer</dt>
+              <dt className="text-foreground">{t('Reste à payer')}</dt>
               <dd className="text-primary">{formatPrice(resteAPayer, 'F CFA')}</dd>
             </div>
           </dl>

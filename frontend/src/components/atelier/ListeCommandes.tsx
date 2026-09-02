@@ -8,6 +8,7 @@ import { couleurStatut } from '@/components/atelier/StatusBadge';
 import { useCommandes } from '@/lib/useCommandes';
 import { STATUTS, couleursAssignes, type StatutCommande } from '@/lib/mock/atelier';
 import { cn, formatPrice } from '@/lib/utils';
+import { useLangue } from '@/contexts/LangueContext';
 
 type Filtre = StatutCommande | 'Toutes';
 
@@ -23,6 +24,7 @@ const PAR_PAGE = 10;
  * pour qui teste l'écran.
  */
 export default function ListeCommandes() {
+  const { t, tp } = useLangue();
   const { commandes, source, chargement } = useCommandes();
 
   const [filtre, setFiltre] = useState<Filtre>('Toutes');
@@ -71,15 +73,15 @@ export default function ListeCommandes() {
               setRecherche(e.target.value);
               setPage(1);
             }}
-            placeholder="Rechercher un client, une tenue, une référence…"
-            aria-label="Rechercher une commande"
+            placeholder={t('Rechercher un client, une tenue, une référence…')}
+            aria-label={t('Rechercher une commande')}
             className="text-foreground placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm focus:outline-none"
           />
           {recherche && (
             <button
               type="button"
               onClick={() => setRecherche('')}
-              aria-label="Effacer la recherche"
+              aria-label={t('Effacer la recherche')}
               className="text-muted-foreground hover:text-foreground flex-shrink-0"
             >
               <X size={14} aria-hidden />
@@ -106,7 +108,7 @@ export default function ListeCommandes() {
                     : 'text-muted-foreground hover:text-foreground',
                 )}
               >
-                {f}
+                {t(f)}
                 <span
                   className={cn(
                     'rounded-sm px-1.5 py-0.5 text-xs',
@@ -126,18 +128,24 @@ export default function ListeCommandes() {
           « aucune commande » clignote à chaque ouverture. */}
       {visibles.length === 0 && chargement && (
         <p className="text-muted-foreground flex-1 px-4 py-16 text-center text-sm">
-          Chargement des commandes…
+          {t('Chargement des commandes…')}
         </p>
       )}
 
       {visibles.length === 0 && !chargement && (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-16 text-center">
           <Search size={28} className="text-muted-foreground" aria-hidden />
-          <p className="text-foreground text-sm font-medium">Aucune commande ne correspond</p>
+          <p className="text-foreground text-sm font-medium">
+            {t('Aucune commande ne correspond')}
+          </p>
           <p className="text-muted-foreground max-w-sm text-xs">
             {recherche
-              ? `Rien ne correspond à « ${recherche} »${filtre !== 'Toutes' ? ` dans le filtre « ${filtre} »` : ''}.`
-              : `Aucune commande avec le statut « ${filtre} ».`}
+              ? t('Rien ne correspond à « {recherche} »{filtre}.', {
+                  recherche,
+                  filtre:
+                    filtre !== 'Toutes' ? t(' dans le filtre « {nom} »', { nom: t(filtre) }) : '',
+                })
+              : t('Aucune commande avec le statut « {statut} ».', { statut: t(filtre) })}
           </p>
           {(recherche || filtre !== 'Toutes') && (
             <button
@@ -148,7 +156,7 @@ export default function ListeCommandes() {
               }}
               className="text-primary text-xs font-medium"
             >
-              Réinitialiser les filtres
+              {t('Réinitialiser les filtres')}
             </button>
           )}
         </div>
@@ -166,17 +174,23 @@ export default function ListeCommandes() {
       {/* ---------- Desktop : tableau ---------- */}
       <div className={cn('hidden flex-1 flex-col', visibles.length > 0 && 'lg:flex')}>
         <div className="border-border bg-muted flex items-center border-b px-6 py-2.5">
-          <div className="text-muted-foreground w-16 text-xs tracking-wide uppercase">Réf.</div>
+          <div className="text-muted-foreground w-16 text-xs tracking-wide uppercase">
+            {t('Réf.')}
+          </div>
           <div className="text-muted-foreground flex-1 text-xs tracking-wide uppercase">
-            Client &amp; tenue
+            {t('Client & tenue')}
           </div>
-          <div className="text-muted-foreground w-28 text-xs tracking-wide uppercase">Assigné</div>
           <div className="text-muted-foreground w-28 text-xs tracking-wide uppercase">
-            Livraison
+            {t('Assigné')}
           </div>
-          <div className="text-muted-foreground w-28 text-xs tracking-wide uppercase">Statut</div>
+          <div className="text-muted-foreground w-28 text-xs tracking-wide uppercase">
+            {t('Livraison')}
+          </div>
+          <div className="text-muted-foreground w-28 text-xs tracking-wide uppercase">
+            {t('Statut')}
+          </div>
           <div className="text-muted-foreground w-28 text-right text-xs tracking-wide uppercase">
-            Montant
+            {t('Montant')}
           </div>
           <div className="w-10" />
         </div>
@@ -205,7 +219,7 @@ export default function ListeCommandes() {
                 </div>
                 {!c.acompte && (
                   <span className="text-danger border-danger flex-shrink-0 rounded-sm border px-1.5 py-0.5 text-xs">
-                    Aucun acompte
+                    {t('Aucun acompte')}
                   </span>
                 )}
               </div>
@@ -237,7 +251,7 @@ export default function ListeCommandes() {
                   )}
                 >
                   <span className={cn('h-1.5 w-1.5 rounded-full', pastille)} aria-hidden />
-                  {c.statut}
+                  {t(c.statut)}
                 </span>
               </div>
 
@@ -256,8 +270,11 @@ export default function ListeCommandes() {
       {/* Pagination */}
       <div className="border-border bg-surface flex items-center justify-between gap-3 border-t px-4 py-3 lg:px-6">
         <span className="text-muted-foreground text-xs">
-          Affichage {filtrees.length === 0 ? 0 : debut + 1}–{debut + visibles.length} sur{' '}
-          {filtrees.length} commande{filtrees.length > 1 ? 's' : ''}
+          {t('Affichage {premiere}–{derniere} sur {total}', {
+            premiere: filtrees.length === 0 ? 0 : debut + 1,
+            derniere: debut + visibles.length,
+            total: tp('{n} commande', '{n} commandes', filtrees.length),
+          })}
           {/* La provenance est annoncée : des commandes d'exemple ne doivent
               jamais passer pour le carnet réel de l'atelier. */}
           {source === 'demonstration' && <span className="text-warning ml-1.5">· exemples</span>}
@@ -268,7 +285,7 @@ export default function ListeCommandes() {
             type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={pageSure === 1}
-            aria-label="Page précédente"
+            aria-label={t('Page précédente')}
             className="text-muted-foreground hover:text-foreground flex h-8 w-8 items-center justify-center rounded-md disabled:opacity-40"
           >
             <ChevronLeft size={14} aria-hidden />
@@ -295,7 +312,7 @@ export default function ListeCommandes() {
             type="button"
             onClick={() => setPage((p) => Math.min(nbPages, p + 1))}
             disabled={pageSure === nbPages}
-            aria-label="Page suivante"
+            aria-label={t('Page suivante')}
             className="text-muted-foreground hover:text-foreground flex h-8 w-8 items-center justify-center rounded-md disabled:opacity-40"
           >
             <ChevronRight size={14} aria-hidden />

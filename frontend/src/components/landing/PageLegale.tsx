@@ -1,7 +1,10 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import PiedDePage from '@/components/landing/PiedDePage';
+import { useT } from '@/contexts/LangueContext';
 
 /**
  * Cadre commun des deux pages légales.
@@ -15,6 +18,7 @@ import PiedDePage from '@/components/landing/PiedDePage';
  * lecture sont posées ici, une fois, au lieu d'être répétées dans chaque page.
  */
 export default function PageLegale({ titre, children }: { titre: string; children: ReactNode }) {
+  const t = useT();
   return (
     <>
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
@@ -23,7 +27,7 @@ export default function PageLegale({ titre, children }: { titre: string; childre
           className="text-muted-foreground hover:text-foreground mb-8 inline-flex items-center gap-2 text-sm transition-colors"
         >
           <ArrowLeft size={15} aria-hidden />
-          Retour à l’accueil
+          {t('Retour à l’accueil')}
         </Link>
 
         <h1 className="font-headings mb-8 text-2xl font-bold sm:text-3xl">{titre}</h1>

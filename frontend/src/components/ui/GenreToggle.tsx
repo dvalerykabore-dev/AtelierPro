@@ -3,6 +3,7 @@
 import { Mars, Venus } from 'lucide-react';
 import { GENRES, type Genre } from '@/lib/mock/atelier';
 import { cn } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 const ICONES = { Femme: Venus, Homme: Mars } as const;
 
@@ -11,7 +12,7 @@ export interface GenreToggleProps {
   onChange: (genre: Genre) => void;
   /** `sm` pour les formulaires, `md` pour l'en-tête de la prise de mesures. */
   taille?: 'sm' | 'md';
-  /** Libellé de groupe annoncé aux lecteurs d'écran. */
+  /** Libellé de groupe annoncé aux lecteurs d'écran, en français — traduit ici. */
   label?: string;
   className?: string;
 }
@@ -34,10 +35,11 @@ export default function GenreToggle({
   label = 'Genre du client',
   className,
 }: GenreToggleProps) {
+  const t = useT();
   return (
     <div
       role="radiogroup"
-      aria-label={label}
+      aria-label={t(label)}
       className={cn('border-border bg-input inline-flex rounded-md border p-0.5', className)}
     >
       {GENRES.map((g) => {
@@ -59,7 +61,7 @@ export default function GenreToggle({
             )}
           >
             <Icone size={taille === 'sm' ? 13 : 15} aria-hidden />
-            {g}
+            {t(g)}
           </button>
         );
       })}

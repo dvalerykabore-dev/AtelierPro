@@ -1,5 +1,8 @@
+'use client';
+
 import type { StatutCommande } from '@/lib/mock/atelier';
 import { cn } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 /**
  * Couleur associée à chaque statut de commande.
@@ -35,13 +38,14 @@ export default function StatusBadge({
   pastilleSeule = false,
   className,
 }: StatusBadgeProps) {
+  const t = useT();
   const { pastille, texte } = COULEURS[statut];
 
   if (pastilleSeule) {
     return (
       <span
         className={cn('block h-2 w-2 flex-shrink-0 rounded-full', pastille, className)}
-        title={statut}
+        title={t(statut)}
       />
     );
   }
@@ -49,7 +53,7 @@ export default function StatusBadge({
   return (
     <span className={cn('flex items-center gap-1 text-xs font-medium', texte, className)}>
       <span className={cn('h-1.5 w-1.5 flex-shrink-0 rounded-full', pastille)} aria-hidden />
-      {statut}
+      {t(statut)}
     </span>
   );
 }

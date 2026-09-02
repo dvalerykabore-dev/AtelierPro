@@ -12,6 +12,7 @@ import { HEURES_PAR_JOUR, STATUTS_TACHE, styleTache, type StatutTache } from '@/
 import { useArtisans } from '@/lib/useArtisans';
 import { usePlanning, type JourSemaine, type TachePlanifiee } from '@/lib/usePlanning';
 import { cn } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 /** Largeur d'une colonne-jour dans la grille desktop (px, comme la maquette). */
 const LARGEUR_COLONNE = 160;
@@ -92,6 +93,7 @@ function libelleMois(jours: JourSemaine[]): string {
  * dès la semaine suivante.
  */
 export default function PlanningEquipe() {
+  const t = useT();
   const {
     semaine,
     taches,
@@ -182,7 +184,7 @@ export default function PlanningEquipe() {
         <button
           type="button"
           className="text-muted-foreground hover:text-foreground px-2 py-2 disabled:opacity-40"
-          aria-label="Semaine précédente"
+          aria-label={t('Semaine précédente')}
           disabled={navigationDesactivee}
           onClick={() => decaler(-1)}
         >
@@ -204,7 +206,7 @@ export default function PlanningEquipe() {
         <button
           type="button"
           className="text-muted-foreground hover:text-foreground px-2 py-2 disabled:opacity-40"
-          aria-label="Semaine suivante"
+          aria-label={t('Semaine suivante')}
           disabled={navigationDesactivee}
           onClick={() => decaler(1)}
         >
@@ -217,7 +219,9 @@ export default function PlanningEquipe() {
   if (chargement || chargementEquipe) {
     return (
       <AppShell {...entete}>
-        <p className="text-muted-foreground p-12 text-center text-sm">Chargement du planning…</p>
+        <p className="text-muted-foreground p-12 text-center text-sm">
+          {t('Chargement du planning…')}
+        </p>
       </AppShell>
     );
   }
@@ -228,13 +232,14 @@ export default function PlanningEquipe() {
     return (
       <AppShell {...entete}>
         <div className="flex flex-col items-center gap-3 p-12 text-center">
-          <p className="text-foreground text-sm font-medium">Aucun artisan actif</p>
+          <p className="text-foreground text-sm font-medium">{t('Aucun artisan actif')}</p>
           <p className="text-muted-foreground max-w-sm text-xs">
-            Le planning se remplit par artisan. Composez votre équipe pour commencer à affecter des
-            tâches.
+            {t(
+              'Le planning se remplit par artisan. Composez votre équipe pour commencer à affecter des tâches.',
+            )}
           </p>
           <Link href="/parametres">
-            <Button>Composer l’équipe</Button>
+            <Button>{t('Composer l’équipe')}</Button>
           </Link>
         </div>
       </AppShell>
@@ -260,11 +265,11 @@ export default function PlanningEquipe() {
         {/* Légende + affectation */}
         <div className="border-border bg-background flex items-center gap-4 border-b px-4 py-2.5 lg:px-8">
           <div className="flex flex-1 items-center gap-4 overflow-x-auto">
-            <span className="text-muted-foreground flex-shrink-0 text-xs">Légende :</span>
+            <span className="text-muted-foreground flex-shrink-0 text-xs">{t('Légende :')}</span>
             {STATUTS_TACHE.map((s) => (
               <span key={s} className="flex flex-shrink-0 items-center gap-1.5">
                 <span className={cn('h-3 w-3 rounded-sm', styleTache[s])} aria-hidden />
-                <span className="text-muted-foreground text-xs">{s}</span>
+                <span className="text-muted-foreground text-xs">{t(s)}</span>
               </span>
             ))}
             {source === 'demonstration' && (
@@ -273,7 +278,7 @@ export default function PlanningEquipe() {
           </div>
           <Button taille="sm" className="flex-shrink-0" onClick={() => setAffectationOuverte(true)}>
             <Plus size={12} aria-hidden />
-            Affecter tâche
+            {t('Affecter tâche')}
           </Button>
         </div>
 
@@ -326,17 +331,17 @@ export default function PlanningEquipe() {
                   </div>
 
                   {duJour.length === 0 ? (
-                    <p className="text-muted-foreground text-xs">Libre</p>
+                    <p className="text-muted-foreground text-xs">{t('Libre')}</p>
                   ) : (
                     <ul className="flex flex-col gap-1">
-                      {duJour.map((t) => (
+                      {duJour.map((tache) => (
                         <li
-                          key={t.id}
-                          className={cn('rounded-sm px-2 py-1.5', styleTache[t.statut])}
+                          key={tache.id}
+                          className={cn('rounded-sm px-2 py-1.5', styleTache[tache.statut])}
                         >
-                          <div className="text-xs leading-tight font-medium">{t.label}</div>
+                          <div className="text-xs leading-tight font-medium">{tache.label}</div>
                           <div className="text-xs opacity-70">
-                            {t.duree}h · {t.statut}
+                            {tache.duree}h · {t(tache.statut)}
                           </div>
                         </li>
                       ))}
@@ -353,7 +358,9 @@ export default function PlanningEquipe() {
           {/* Entête des jours */}
           <div className="border-border bg-surface flex flex-shrink-0 border-b">
             <div className="border-border w-48 flex-shrink-0 border-r px-4 py-3">
-              <span className="text-muted-foreground text-xs tracking-wide uppercase">Artisan</span>
+              <span className="text-muted-foreground text-xs tracking-wide uppercase">
+                {t('Artisan')}
+              </span>
             </div>
             {semaine.map((j) => (
               <div
@@ -414,20 +421,20 @@ export default function PlanningEquipe() {
                   >
                     {duJour.length === 0 ? (
                       <div className="flex flex-1 items-center justify-center">
-                        <span className="text-muted-foreground text-xs">Libre</span>
+                        <span className="text-muted-foreground text-xs">{t('Libre')}</span>
                       </div>
                     ) : (
                       <>
-                        {duJour.map((t) => (
+                        {duJour.map((tache) => (
                           <div
-                            key={t.id}
-                            className={cn('min-h-7 rounded-sm px-2 py-1', styleTache[t.statut])}
-                            title={`${t.label} — ${t.duree}h · ${t.statut}`}
+                            key={tache.id}
+                            className={cn('min-h-7 rounded-sm px-2 py-1', styleTache[tache.statut])}
+                            title={`${tache.label} — ${tache.duree}h · ${t(tache.statut)}`}
                           >
                             <div className="truncate text-xs leading-tight font-medium">
-                              {t.label}
+                              {tache.label}
                             </div>
-                            <div className="text-xs opacity-70">{t.duree}h</div>
+                            <div className="text-xs opacity-70">{tache.duree}h</div>
                           </div>
                         ))}
                         <div className="bg-border mt-0.5 h-1 overflow-hidden rounded-full">
@@ -448,7 +455,7 @@ export default function PlanningEquipe() {
           <div className="border-border bg-surface flex flex-shrink-0 border-b">
             <div className="border-border w-48 flex-shrink-0 border-r px-4 py-3">
               <span className="text-muted-foreground text-xs tracking-wide uppercase">
-                Charge totale
+                {t('Charge totale')}
               </span>
             </div>
             {semaine.map((j) => {
@@ -488,7 +495,7 @@ export default function PlanningEquipe() {
         <Modal
           ouvert={affectationOuverte}
           onFermer={() => setAffectationOuverte(false)}
-          titre="Affecter une tâche"
+          titre={t('Affecter une tâche')}
           description={
             source === 'demonstration'
               ? 'Mode démonstration — la tâche restera à l’écran seulement.'
@@ -497,7 +504,7 @@ export default function PlanningEquipe() {
           pied={
             <>
               <Button variante="fantome" onClick={() => setAffectationOuverte(false)}>
-                Annuler
+                {t('Annuler')}
               </Button>
               <Button
                 type="submit"
@@ -511,17 +518,17 @@ export default function PlanningEquipe() {
         >
           <form id="formulaire-affectation" onSubmit={soumettre} className="flex flex-col gap-4">
             <Field
-              label="Intitulé de la tâche"
+              label={t('Intitulé de la tâche')}
               required
               autoFocus
-              placeholder="Robe wax cérémonie — Mariam C."
+              placeholder={t('Robe wax cérémonie — Mariam C.')}
               value={libelle}
               onChange={(e) => setLibelle(e.target.value)}
             />
 
             <div className="grid gap-4 sm:grid-cols-2">
               <SelectField
-                label="Artisan"
+                label={t('Artisan')}
                 value={artisanChoisi}
                 onChange={(e) => setArtisanChoisi(e.target.value)}
               >
@@ -533,7 +540,7 @@ export default function PlanningEquipe() {
               </SelectField>
 
               <SelectField
-                label="Jour"
+                label={t('Jour')}
                 value={jourChoisi}
                 onChange={(e) => setJourChoisi(e.target.value)}
               >
@@ -545,7 +552,7 @@ export default function PlanningEquipe() {
               </SelectField>
 
               <Field
-                label="Durée (heures)"
+                label={t('Durée (heures)')}
                 type="number"
                 required
                 min={1}
@@ -555,7 +562,7 @@ export default function PlanningEquipe() {
               />
 
               <SelectField
-                label="Statut"
+                label={t('Statut')}
                 value={statutChoisi}
                 onChange={(e) => setStatutChoisi(e.target.value as StatutTache)}
               >

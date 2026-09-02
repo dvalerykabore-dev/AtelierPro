@@ -16,6 +16,7 @@ import {
 import { CATEGORIES_NOTIF, type Notification } from '@/lib/mock/atelier';
 import { useNotifications } from '@/lib/useNotifications';
 import { cn } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 const ICONES: Record<Notification['icone'], LucideIcon> = {
   paiement: Banknote,
@@ -37,6 +38,7 @@ type Filtre = 'Toutes' | 'Non lues' | (typeof CATEGORIES_NOTIF)[number];
  * la pastille revient et l'on relit dix fois la même chose.
  */
 export default function ListeNotifications() {
+  const t = useT();
   const { notifications, nonLues, session, chargement, marquerLues } = useNotifications();
   const [filtre, setFiltre] = useState<Filtre>('Toutes');
 
@@ -70,11 +72,11 @@ export default function ListeNotifications() {
     return (
       <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
         <Lock size={26} className="text-muted-foreground mb-3" aria-hidden />
-        <p className="text-foreground mb-1 text-sm font-bold">Notifications indisponibles</p>
+        <p className="text-foreground mb-1 text-sm font-bold">{t('Notifications indisponibles')}</p>
         <p className="text-muted-foreground max-w-md text-xs">
-          Vos alertes ne s’affichent qu’une fois connecté. Aucun jeu d’exemple n’est proposé ici :
-          une notification affirme un fait daté, et une alerte inventée se confondrait avec une
-          vraie.
+          {t(
+            'Vos alertes ne s’affichent qu’une fois connecté. Aucun jeu d’exemple n’est proposé ici : une notification affirme un fait daté, et une alerte inventée se confondrait avec une vraie.',
+          )}
         </p>
         <Link href="/connexion" className="text-primary mt-4 text-sm font-medium">
           Se connecter
@@ -122,7 +124,7 @@ export default function ListeNotifications() {
             disabled={nonLues === 0}
             className="text-primary ml-auto flex-shrink-0 px-3 py-1.5 text-xs font-medium disabled:opacity-40"
           >
-            Tout marquer comme lu
+            {t('Tout marquer comme lu')}
           </button>
         </div>
       </div>
@@ -130,7 +132,7 @@ export default function ListeNotifications() {
       {/* Liste */}
       {chargement && notifications.length === 0 ? (
         <p className="text-muted-foreground px-4 py-10 text-center text-sm lg:px-8">
-          Chargement des notifications…
+          {t('Chargement des notifications…')}
         </p>
       ) : visibles.length === 0 ? (
         <div className="px-4 py-10 text-center lg:px-8">
@@ -143,8 +145,9 @@ export default function ListeNotifications() {
             /* Dire pourquoi c'est vide : sans cette phrase, un écran nu passe
                pour une panne de chargement. */
             <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs">
-              Rien ne vous a été signalé. Les retards et les livraisons du lendemain sont vérifiés
-              chaque matin — aucune échéance ne tombe aujourd’hui.
+              {t(
+                'Rien ne vous a été signalé. Les retards et les livraisons du lendemain sont vérifiés chaque matin — aucune échéance ne tombe aujourd’hui.',
+              )}
             </p>
           )}
         </div>
@@ -182,7 +185,7 @@ export default function ListeNotifications() {
                       {n.titre}
                     </h2>
                     {nonLue && (
-                      <span className="bg-primary h-1.5 w-1.5 rounded-full" title="Non lue" />
+                      <span className="bg-primary h-1.5 w-1.5 rounded-full" title={t('Non lue')} />
                     )}
                   </div>
                   <p className="text-muted-foreground mt-0.5 text-sm">{n.corps}</p>
@@ -215,7 +218,7 @@ export default function ListeNotifications() {
                         onClick={() => void marquerLues([n.id])}
                         className="text-muted-foreground hover:text-foreground text-xs"
                       >
-                        Marquer comme lue
+                        {t('Marquer comme lue')}
                       </button>
                     )}
                   </div>

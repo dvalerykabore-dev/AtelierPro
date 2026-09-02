@@ -1,6 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ANCRES, FONCTIONNALITES } from '@/lib/landing-contenu';
+import { useT } from '@/contexts/LangueContext';
 
 /**
  * Les six fonctions de l'atelier.
@@ -15,6 +18,7 @@ import { ANCRES, FONCTIONNALITES } from '@/lib/landing-contenu';
  * `sm`, trois en desktop.
  */
 export default function SectionFonctionnalites() {
+  const t = useT();
   return (
     <section
       id={ANCRES.fonctionnalites}
@@ -23,11 +27,12 @@ export default function SectionFonctionnalites() {
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-6 max-w-2xl text-center lg:mb-12">
           <h2 className="font-headings mb-2 text-2xl font-bold sm:text-3xl lg:mb-3 lg:text-4xl">
-            Tout ce qu’un atelier a besoin de retenir
+            {t('Tout ce qu’un atelier a besoin de retenir')}
           </h2>
           <p className="text-muted-foreground text-xs sm:text-base lg:text-lg">
-            De la prise de commande à la livraison. Touchez une carte pour voir l’écran
-            correspondant.
+            {t(
+              'De la prise de commande à la livraison. Touchez une carte pour voir l’écran correspondant.',
+            )}
           </p>
         </div>
 
@@ -44,13 +49,13 @@ export default function SectionFonctionnalites() {
                   <Icone className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
                 </span>
                 <h3 className="text-foreground mb-1 text-sm font-bold sm:mb-2 sm:text-base">
-                  {f.titre}
+                  {t(f.titre)}
                 </h3>
                 <p className="text-muted-foreground mb-3 flex-1 text-xs sm:mb-4 sm:text-sm">
-                  {f.description}
+                  {t(f.description)}
                 </p>
                 <span className="text-primary flex items-center gap-1.5 text-xs font-medium sm:text-sm">
-                  {f.lienLabel}
+                  {t(f.lienLabel)}
                   <ArrowRight
                     className="h-3 w-3 transition-transform group-hover:translate-x-0.5 sm:h-3.5 sm:w-3.5"
                     aria-hidden

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { ImagePlus, Loader2, Trash2, TriangleAlert } from 'lucide-react';
 import { envoyerFichier } from '@/lib/envoi-fichier';
 import { cn } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 export interface PhotoEnvoyee {
   id: string;
@@ -45,6 +46,7 @@ export default function PhotoUpload({
   maximum = 6,
   className,
 }: PhotoUploadProps) {
+  const t = useT();
   const champ = useRef<HTMLInputElement>(null);
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const [survol, setSurvol] = useState(false);
@@ -199,8 +201,10 @@ export default function PhotoUpload({
               ) : (
                 <ImagePlus size={20} aria-hidden />
               )}
-              <span className="text-xs font-medium">{envoiEnCours ? 'Envoi…' : 'Ajouter'}</span>
-              <span className="text-[10px] leading-tight">Photo ou glisser-déposer</span>
+              <span className="text-xs font-medium">
+                {envoiEnCours ? t('Envoi…') : t('Ajouter')}
+              </span>
+              <span className="text-[10px] leading-tight">{t('Photo ou glisser-déposer')}</span>
             </label>
           </div>
         )}

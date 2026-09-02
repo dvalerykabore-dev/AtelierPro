@@ -8,6 +8,7 @@ import { Field, SelectField } from '@/components/ui/Field';
 import { MODES, libelleMode } from '@/lib/tresorerie';
 import { aujourdhuiIso, useMouvements } from '@/lib/useTresorerie';
 import { cn, formatPrice } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 export interface PaiementsCommandeProps {
   /** Identifiant de la commande — clé du journal des encaissements. */
@@ -56,6 +57,7 @@ export default function PaiementsCommande({
   montant,
   encaisse,
 }: PaiementsCommandeProps) {
+  const t = useT();
   const filtres = useMemo(() => ({ commande: commandeId }), [commandeId]);
   const { mouvements, chargement, erreur, ajouter, supprimer } = useMouvements(filtres);
 
@@ -104,13 +106,13 @@ export default function PaiementsCommande({
   return (
     <section className="border-border border-b px-4 py-5 lg:px-6">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="font-headings text-foreground text-sm font-bold">Paiements</h2>
+        <h2 className="font-headings text-foreground text-sm font-bold">{t('Paiements')}</h2>
         <span className="text-muted-foreground text-xs">{formatPrice(montant, 'F')} dû</span>
       </div>
 
       <div className="mb-3">
         <div className="mb-1 flex items-center justify-between">
-          <span className="text-muted-foreground text-xs">Encaissé</span>
+          <span className="text-muted-foreground text-xs">{t('Encaissé')}</span>
           <span className="text-success text-xs font-medium">
             {formatPrice(total, 'F')}
             {restant > 0 && (
@@ -124,7 +126,7 @@ export default function PaiementsCommande({
           aria-valuenow={pourcentage}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label="Part du montant encaissée"
+          aria-label={t('Part du montant encaissée')}
         >
           <div className="bg-success h-full rounded-full" style={{ width: `${pourcentage}%` }} />
         </div>
@@ -139,10 +141,10 @@ export default function PaiementsCommande({
 
       <div className="flex flex-col gap-2">
         {chargement ? (
-          <p className="text-muted-foreground text-xs">Chargement des versements…</p>
+          <p className="text-muted-foreground text-xs">{t('Chargement des versements…')}</p>
         ) : mouvements.length === 0 ? (
           <p className="text-muted-foreground text-xs">
-            Aucun versement enregistré. La commande est entièrement due.
+            {t('Aucun versement enregistré. La commande est entièrement due.')}
           </p>
         ) : (
           mouvements.map((p) => (
@@ -154,7 +156,9 @@ export default function PaiementsCommande({
                 <div className="text-foreground text-xs font-medium">{p.label}</div>
                 <div className="text-muted-foreground text-xs">
                   {jourLisible(p.occurredAt)} · {libelleMode(p.method)}
-                  {p.backfilled && <span className="text-warning"> · date reconstituée</span>}
+                  {p.backfilled && (
+                    <span className="text-warning"> {t('· date reconstituée')}</span>
+                  )}
                 </div>
               </div>
               <div className="flex flex-shrink-0 flex-col items-end">
@@ -163,7 +167,7 @@ export default function PaiementsCommande({
                 </span>
                 <span className="text-success flex items-center gap-1 text-xs font-medium">
                   <Check size={10} aria-hidden />
-                  Encaissé
+                  {t('Encaissé')}
                 </span>
               </div>
               <button
@@ -200,12 +204,12 @@ export default function PaiementsCommande({
       <Modal
         ouvert={ouvert}
         onFermer={() => setOuvert(false)}
-        titre="Enregistrer un versement"
+        titre={t('Enregistrer un versement')}
         description={`Reste à encaisser : ${formatPrice(restant, 'F CFA')}. Le versement entre aussitôt en trésorerie.`}
       >
         <form onSubmit={enregistrer} className="flex flex-col gap-4">
           <Field
-            label="Montant (F CFA)"
+            label={t('Montant (F CFA)')}
             type="number"
             inputMode="numeric"
             min={1}
@@ -215,17 +219,21 @@ export default function PaiementsCommande({
             onChange={(e) => setSaisi(e.target.value)}
           />
           <Field
-            label="Date de l’encaissement"
+            label={t('Date de l’encaissement')}
             type="date"
             required
-            aide="Le jour où l’argent est entré, pas celui de la saisie."
+            aide={t('Le jour où l’argent est entré, pas celui de la saisie.')}
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
-          <SelectField label="Réglé par" value={mode} onChange={(e) => setMode(e.target.value)}>
+          <SelectField
+            label={t('Réglé par')}
+            value={mode}
+            onChange={(e) => setMode(e.target.value)}
+          >
             {MODES.map((m) => (
               <option key={m.cle} value={m.cle}>
-                {m.label}
+                {t(m.label)}
               </option>
             ))}
           </SelectField>
@@ -239,7 +247,7 @@ export default function PaiementsCommande({
 
           <div className="flex justify-end gap-2">
             <Button type="button" variante="contour" onClick={() => setOuvert(false)}>
-              Annuler
+              {t('Annuler')}
             </Button>
             <Button type="submit" disabled={envoi}>
               {envoi ? 'Enregistrement…' : 'Enregistrer'}

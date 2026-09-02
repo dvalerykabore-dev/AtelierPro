@@ -9,6 +9,8 @@
  * visuelle avec le design soit fidèle.
  */
 
+import { ETIQUETTE_INTL, LANGUE_DEFAUT, type Langue } from '@/lib/langue';
+
 export const STATUTS = ['En cours', 'Essayage', 'Livraison', 'En retard', 'Livré'] as const;
 export type StatutCommande = (typeof STATUTS)[number];
 
@@ -408,25 +410,31 @@ export const statistiques: StatistiqueCle[] = [
   },
 ];
 
-/** Date affichée dans les en-têtes — figée tant que les données sont simulées. */
 /**
- * Date du jour, dans la langue de l'atelier.
+ * Date du jour, dans la langue de l'écran.
  *
  * C'était une chaîne figée (« Jeudi 23 janvier 2025 ») : le tableau de bord
  * affichait une date fausse dès le lendemain de la maquette. Calculée au rendu,
  * elle suit l'horloge — c'est la seule donnée d'accueil qui n'a besoin ni du
  * serveur ni de la base.
  */
-export function dateDuJourFr(): { long: string; court: string } {
+export function dateDuJour(langue: Langue = LANGUE_DEFAUT): { long: string; court: string } {
   const d = new Date();
-  const long = d.toLocaleDateString('fr-FR', {
+  const etiquette = ETIQUETTE_INTL[langue];
+  const long = d.toLocaleDateString(etiquette, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
-  const court = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' });
-  const majuscule = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+  const court = d.toLocaleDateString(etiquette, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+  });
+  // Majuscule initiale : c'est un titre d'en-tête, pas un mot dans une phrase.
+  // Sans effet sur l'arabe, qui n'a pas de casse.
+  const majuscule = (s: string) => s.charAt(0).toLocaleUpperCase() + s.slice(1);
   return { long: majuscule(long), court: majuscule(court) };
 }
 

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { ANCRES, QUESTIONS } from '@/lib/landing-contenu';
+import { useT } from '@/contexts/LangueContext';
 
 /**
  * Questions fréquentes — accordéon réel.
@@ -21,13 +22,14 @@ import { ANCRES, QUESTIONS } from '@/lib/landing-contenu';
  * suivante.
  */
 export default function SectionFaq() {
+  const t = useT();
   const [ouverte, setOuverte] = useState<number | null>(null);
 
   return (
     <section id={ANCRES.faq} className="scroll-mt-20 px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
       <div className="mx-auto max-w-3xl">
         <h2 className="font-headings mb-6 text-center text-2xl font-bold sm:text-3xl lg:mb-12 lg:text-4xl">
-          Questions fréquentes
+          {t('Questions fréquentes')}
         </h2>
 
         <div className="flex flex-col gap-2 sm:gap-3">
@@ -45,7 +47,7 @@ export default function SectionFaq() {
                     className="bg-surface hover:bg-muted flex min-h-12 w-full items-center justify-between gap-2 px-4 py-3 text-left transition-colors sm:gap-4 sm:px-6"
                   >
                     <span className="text-foreground text-xs font-bold sm:text-base">
-                      {q.question}
+                      {t(q.question)}
                     </span>
                     {active ? (
                       <Minus
@@ -67,7 +69,7 @@ export default function SectionFaq() {
                     aria-labelledby={`faq-question-${i}`}
                     className="bg-background text-muted-foreground px-4 py-3 text-xs sm:px-6 sm:py-4 sm:text-sm"
                   >
-                    {q.reponse}
+                    {t(q.reponse)}
                   </div>
                 )}
               </div>

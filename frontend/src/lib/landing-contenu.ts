@@ -261,7 +261,7 @@ export const QUESTIONS: Question[] = [
   {
     question: 'C’est pour quel pays ?',
     reponse:
-      'Conçu pour l’Afrique de l’Ouest : interface en français, montants en francs CFA sans décimales.',
+      'Conçu pour l’Afrique de l’Ouest : interface en français, en anglais ou en arabe, montants en francs CFA sans décimales.',
   },
 ];
 

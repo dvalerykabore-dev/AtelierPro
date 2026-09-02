@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { api, ApiError } from '@/lib/api';
 import { PLANS_TARIFAIRES } from '@/lib/landing-contenu';
+import { useT } from '@/contexts/LangueContext';
 
 const MESSAGES: Record<string, string> = {
   PASSWORD_TOO_SHORT: 'Le mot de passe doit faire au moins 10 caractères.',
@@ -20,6 +21,7 @@ const MESSAGES: Record<string, string> = {
 };
 
 export default function FormulaireInscription() {
+  const t = useT();
   const router = useRouter();
   const params = useSearchParams();
   const [email, setEmail] = useState('');
@@ -57,7 +59,7 @@ export default function FormulaireInscription() {
 
   return (
     <AuthCard
-      titre="Créer votre atelier"
+      titre={t('Créer votre atelier')}
       sousTitre="Quelques secondes pour commencer à suivre vos commandes."
       pied={
         <>
@@ -77,7 +79,7 @@ export default function FormulaireInscription() {
         )}
 
         <Field
-          label="Adresse e-mail"
+          label={t('Adresse e-mail')}
           type="email"
           required
           autoComplete="email"
@@ -86,7 +88,7 @@ export default function FormulaireInscription() {
           onChange={(e) => setEmail(e.target.value)}
         />
         <Field
-          label="Mot de passe"
+          label={t('Mot de passe')}
           type="password"
           required
           minLength={10}
@@ -109,7 +111,7 @@ export default function FormulaireInscription() {
         </Button>
 
         <p className="text-muted-foreground text-center text-xs">
-          Un code de vérification vous sera envoyé par e-mail.
+          {t('Un code de vérification vous sera envoyé par e-mail.')}
         </p>
       </form>
 

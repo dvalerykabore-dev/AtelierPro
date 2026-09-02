@@ -5,6 +5,7 @@ import { Clock } from 'lucide-react';
 import CapacityBar, { chargeArtisan } from '@/components/ui/CapacityBar';
 import { useArtisans } from '@/lib/useArtisans';
 import { cn } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 export interface EtatBadge {
   chargement: boolean;
@@ -67,6 +68,7 @@ export interface CapaciteEquipeProps {
  * 6 h n'est pas saturé au même seuil qu'un tailleur senior.
  */
 export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
+  const t = useT();
   const { artisans, chargement } = useArtisans();
   const equipe = artisans.filter((a) => a.actif);
 
@@ -124,7 +126,7 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
     return (
       <>
         <div className="mb-2 flex items-center justify-between gap-2">
-          <span className="text-background/70 text-xs">Capacité du jour</span>
+          <span className="text-background/70 text-xs">{t('Capacité du jour')}</span>
           <span
             className={cn(
               'rounded-full px-2 py-0.5 text-xs font-bold',
@@ -141,7 +143,7 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
           aria-valuenow={chargeGlobale}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label="Charge globale de l’atelier"
+          aria-label={t('Charge globale de l’atelier')}
         >
           <div
             className={cn('h-full rounded-full', atelierSature ? 'bg-danger' : 'bg-success')}
@@ -184,7 +186,9 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
   return (
     <>
       <div className="px-5">
-        <h2 className="font-headings text-foreground mb-1 text-sm font-bold">Capacité du jour</h2>
+        <h2 className="font-headings text-foreground mb-1 text-sm font-bold">
+          {t('Capacité du jour')}
+        </h2>
         <p className="text-muted-foreground mb-4 text-xs">
           {chargement ? 'Chargement…' : `Équipe de ${equipe.length} — d’après les tâches du jour`}
         </p>
@@ -192,11 +196,11 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
         <div className="mb-5 flex gap-3">
           <div className="bg-muted flex-1 rounded-lg p-3 text-center">
             <div className="font-headings text-danger text-2xl font-bold">{satures}</div>
-            <div className="text-muted-foreground text-xs">Saturés</div>
+            <div className="text-muted-foreground text-xs">{t('Saturés')}</div>
           </div>
           <div className="bg-muted flex-1 rounded-lg p-3 text-center">
             <div className="font-headings text-success text-2xl font-bold">{disponibles}</div>
-            <div className="text-muted-foreground text-xs">Disponibles</div>
+            <div className="text-muted-foreground text-xs">{t('Disponibles')}</div>
           </div>
         </div>
 
@@ -226,7 +230,7 @@ export default function CapaciteEquipe({ variante }: CapaciteEquipeProps) {
         <div className="bg-muted rounded-lg p-3">
           <div className="mb-1 flex items-center gap-2">
             <Clock size={13} className="text-muted-foreground" aria-hidden />
-            <span className="text-foreground text-xs font-medium">Prochaine dispo</span>
+            <span className="text-foreground text-xs font-medium">{t('Prochaine dispo')}</span>
           </div>
           {prochainDispo ? (
             <>

@@ -9,6 +9,8 @@ import {
   type Commande,
   type StatutCommande,
 } from '@/lib/mock/atelier';
+import { ETIQUETTE_INTL, type Langue } from '@/lib/langue';
+import { useLangue } from '@/contexts/LangueContext';
 
 /** Statuts tels que stockés en base — l'affichage reste en français. */
 type StatutApi = 'IN_PROGRESS' | 'FITTING' | 'DELIVERY' | 'LATE' | 'DELIVERED';
@@ -51,9 +53,12 @@ function reference(sequence: number): string {
   return `#${String(sequence).padStart(3, '0')}`;
 }
 
-function echeance(dueDate: string | null): string {
+function echeance(dueDate: string | null, langue: Langue): string {
   if (!dueDate) return '—';
-  return new Date(dueDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  return new Intl.DateTimeFormat(ETIQUETTE_INTL[langue], {
+    day: 'numeric',
+    month: 'short',
+  }).format(new Date(dueDate));
 }
 
 /**
@@ -67,7 +72,7 @@ function tissuDe(fabric: string | null, color: string | null): string | null {
   return parts.length > 0 ? parts.join(' · ') : null;
 }
 
-function versUI(c: CommandeApi): Commande {
+function versUI(c: CommandeApi, langue: Langue): Commande {
   return {
     id: c.id,
     reference: reference(c.sequence),
@@ -77,7 +82,7 @@ function versUI(c: CommandeApi): Commande {
     tenue: c.garment,
     tissu: tissuDe(c.fabric, c.color),
     statut: STATUT_AFFICHE[c.status],
-    livraison: echeance(c.dueDate),
+    livraison: echeance(c.dueDate, langue),
     // Initiales de l'artisan : l'équipe n'a pas encore de table dédiée.
     assignee: c.assignee ?? '—',
     // Une commande en retard porte l'urgence du jour dans toutes les vues.
@@ -104,6 +109,9 @@ interface EtatCommandes {
 }
 
 export function useCommandes() {
+  // L’échéance affichée suit la langue de l’écran : une liste retournée en arabe
+  // ne doit pas garder « 24 jan » au milieu.
+  const { langue } = useLangue();
   const [etat, poserEtat, dejaCharge] = useEtatMemorise<EtatCommandes>('/api/commandes', {
     commandes: commandesSimulees,
     source: 'demonstration',
@@ -119,7 +127,7 @@ export function useCommandes() {
       if (!silencieux) setChargement(true);
       try {
         const res = await avecReessai401<{ commandes: CommandeApi[] }>('/api/commandes');
-        poserEtat({ commandes: res.commandes.map(versUI), source: 'serveur' });
+        poserEtat({ commandes: res.commandes.map((c) => versUI(c, langue)), source: 'serveur' });
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
           poserEtat({ commandes: commandesSimulees, source: 'demonstration' });
@@ -130,7 +138,7 @@ export function useCommandes() {
         setChargement(false);
       }
     },
-    [poserEtat],
+    [poserEtat, langue],
   );
 
   useEffect(() => {
@@ -152,14 +160,14 @@ export function useCommandes() {
         method: 'PATCH',
         body: { status: STATUT_API[statut] },
       });
-      const maj = versUI(res.commande);
+      const maj = versUI(res.commande, langue);
       poserEtat((prec) => ({
         ...prec,
         commandes: prec.commandes.map((c) => (c.id === id ? maj : c)),
       }));
       return maj;
     },
-    [poserEtat],
+    [poserEtat, langue],
   );
 
   return { commandes, source, chargement, recharger, changerStatut };

@@ -21,8 +21,10 @@ import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { useAuth, useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useT } from '@/contexts/LangueContext';
 
 export default function SettingsPage() {
+  const t = useT();
   const user = useUser();
   const { refresh } = useAuth();
   const { toast } = useToast();
@@ -100,7 +102,7 @@ export default function SettingsPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col gap-8 px-4 py-12">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold">Paramètres</h1>
+        <h1 className="text-2xl font-bold">{t('Paramètres')}</h1>
         <p className="text-sm text-muted-foreground">Connecté en tant que {user.email}</p>
       </header>
 
@@ -117,7 +119,7 @@ export default function SettingsPage() {
         <form onSubmit={onSubmitPassword} className="mt-2 flex flex-col gap-4">
           {hasPassword && (
             <label className="flex flex-col gap-1 text-sm">
-              Mot de passe actuel
+              {t('Mot de passe actuel')}
               <input
                 type="password"
                 required
@@ -129,7 +131,7 @@ export default function SettingsPage() {
             </label>
           )}
           <label className="flex flex-col gap-1 text-sm">
-            Nouveau mot de passe
+            {t('Nouveau mot de passe')}
             <input
               type="password"
               required
@@ -140,7 +142,7 @@ export default function SettingsPage() {
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            Confirmer le nouveau mot de passe
+            {t('Confirmer le nouveau mot de passe')}
             <input
               type="password"
               required
@@ -171,10 +173,10 @@ export default function SettingsPage() {
 
       {/* ── Linked providers section ────────────────────────────────── */}
       <section className="flex flex-col gap-3 rounded-lg border border-border p-5">
-        <h2 className="text-lg font-semibold">Comptes liés</h2>
+        <h2 className="text-lg font-semibold">{t('Comptes liés')}</h2>
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-col">
-            <span className="text-sm font-medium">Google</span>
+            <span className="text-sm font-medium">{t('Google')}</span>
             <span className="text-xs text-muted-foreground">
               {googleLinked
                 ? 'Tu peux te connecter via Google.'
@@ -183,21 +185,21 @@ export default function SettingsPage() {
           </div>
           {googleLinked ? (
             <span className="rounded-full border border-success/40 bg-success/10 px-3 py-1 text-xs font-medium text-success">
-              Lié
+              {t('Lié')}
             </span>
           ) : (
             <a
               href="/api/auth/oauth/google/start?next=/settings"
               className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
             >
-              Lier Google
+              {t('Lier Google')}
             </a>
           )}
         </div>
       </section>
 
       <Link href="/dashboard" className="text-center text-sm text-muted-foreground underline">
-        Retour au dashboard
+        {t('Retour au dashboard')}
       </Link>
     </main>
   );

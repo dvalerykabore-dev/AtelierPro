@@ -106,4 +106,49 @@ describe('versUI', () => {
     expect(avec.action).toBe('Voir la commande');
     expect(avec.href).toBe('/commandes/c1');
   });
+
+  const alerte = notif({
+    type: 'LIVRAISON_DEMAIN',
+    title: 'Livraison demain — Mariam C.',
+    body: 'Robe wax (#007) est attendue demain.',
+    data: { commandeId: 'c1', reference: '#007', client: 'Mariam C.', tenue: 'Robe wax' },
+  });
+
+  it('rejoue la phrase dans la langue du lecteur', () => {
+    const ui = versUI(alerte, maintenant, 'en');
+    expect(ui.titre).toBe('Delivery tomorrow — Mariam C.');
+    expect(ui.corps).toBe('Robe wax (#007) is expected tomorrow.');
+  });
+
+  it('garde la phrase du serveur quand les éléments manquent', () => {
+    // Cas des notifications écrites avant que le serveur ne range les éléments
+    // dans `data` : mieux vaut une phrase française qu'une ligne vide.
+    const ancienne = notif({
+      type: 'LIVRAISON_DEMAIN',
+      title: 'Livraison demain — Mariam C.',
+      body: 'Robe wax (#007) est attendue demain.',
+      data: { commandeId: 'c1', sequence: 7 },
+    });
+    const ui = versUI(ancienne, maintenant, 'en');
+    expect(ui.titre).toBe('Livraison demain — Mariam C.');
+    expect(ui.corps).toBe('Robe wax (#007) est attendue demain.');
+  });
+
+  it('formate l’échéance d’un retard dans la langue demandée', () => {
+    const retard = notif({
+      type: 'COMMANDE_EN_RETARD',
+      title: 'Commande #007 en retard — Mariam C.',
+      body: 'Robe wax devait être livrée le 20 août.',
+      data: {
+        commandeId: 'c1',
+        reference: '#007',
+        client: 'Mariam C.',
+        tenue: 'Robe wax',
+        echeance: '2026-08-20T12:00:00.000Z',
+      },
+    });
+    expect(versUI(retard, maintenant, 'en').corps).toBe(
+      'Robe wax was due for delivery on 20 August.',
+    );
+  });
 });

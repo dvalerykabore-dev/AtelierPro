@@ -5,6 +5,7 @@ import Avatar from '@/components/ui/Avatar';
 import StatTile from '@/components/ui/StatTile';
 import { useRapports } from '@/lib/useRapports';
 import { cn, formatPrice } from '@/lib/utils';
+import { useLangue } from '@/contexts/LangueContext';
 
 /** Hauteur maximale de l'histogramme, en pixels (comme la maquette). */
 const HAUTEUR_BARRE = 120;
@@ -23,11 +24,14 @@ function pluriel(nombre: number, mot: string): string {
 }
 
 export default function Rapports() {
+  const { t, tp } = useLangue();
   const { rapports, source, chargement, erreur } = useRapports();
 
   if (chargement) {
     return (
-      <p className="text-muted-foreground p-12 text-center text-sm">Calcul des indicateurs…</p>
+      <p className="text-muted-foreground p-12 text-center text-sm">
+        {t('Calcul des indicateurs…')}
+      </p>
     );
   }
 
@@ -37,10 +41,11 @@ export default function Rapports() {
     return (
       <div className="flex flex-col items-center gap-3 p-12 text-center">
         <Lock size={24} className="text-muted-foreground" aria-hidden />
-        <p className="text-foreground text-sm font-medium">Indicateurs indisponibles</p>
+        <p className="text-foreground text-sm font-medium">{t('Indicateurs indisponibles')}</p>
         <p className="text-muted-foreground max-w-md text-xs">
-          Les rapports se calculent depuis vos commandes réelles. Connectez-vous pour les consulter
-          — afficher des chiffres d’exemple ici induirait en erreur.
+          {t(
+            'Les rapports se calculent depuis vos commandes réelles. Connectez-vous pour les consulter — afficher des chiffres d’exemple ici induirait en erreur.',
+          )}
         </p>
       </div>
     );
@@ -67,26 +72,26 @@ export default function Rapports() {
             variation : « 19 commandes » en vert laisserait croire à une
             hausse qui n'a jamais été calculée. Seule la ponctualité se juge. */}
         <StatTile
-          label="Chiffre d’affaires du mois"
+          label={t('Chiffre d’affaires du mois')}
           valeur={formatPrice(indicateurs.chiffreAffairesMois, 'F')}
           icone={Banknote}
           tendance={pluriel(indicateurs.totalCommandes, 'commande')}
         />
         <StatTile
-          label="Commandes livrées"
+          label={t('Commandes livrées')}
           valeur={String(indicateurs.commandesLivrees)}
           icone={Package}
           tendance={`sur ${indicateurs.totalCommandes}`}
         />
         <StatTile
-          label="Livraison à temps"
+          label={t('Livraison à temps')}
           valeur={ouTiret(indicateurs.tauxPonctualite, ' %')}
           icone={Clock}
           tendance={indicateurs.tauxPonctualite === null ? 'non mesurable' : 'des livraisons'}
           enHausse={indicateurs.tauxPonctualite === null ? null : indicateurs.tauxPonctualite >= 80}
         />
         <StatTile
-          label="Délai moyen"
+          label={t('Délai moyen')}
           valeur={ouTiret(indicateurs.delaiMoyenJours, ' j')}
           icone={Calendar}
           tendance={
@@ -100,7 +105,7 @@ export default function Rapports() {
         <section className="bg-surface border-border flex-1 rounded-lg border p-5">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-headings text-foreground text-sm font-bold">
-              Chiffre d’affaires mensuel
+              {t('Chiffre d’affaires mensuel')}
             </h2>
             <span className="text-muted-foreground text-xs">6 derniers mois · F CFA</span>
           </div>
@@ -117,7 +122,7 @@ export default function Rapports() {
                 <div
                   className={cn('w-full rounded-sm', m.courant ? 'bg-primary' : 'bg-secondary')}
                   style={{ height: Math.round((m.chiffreAffaires / maximum) * HAUTEUR_BARRE) }}
-                  title={`${m.label} : ${formatPrice(m.chiffreAffaires, 'F')} · ${m.commandes} commandes`}
+                  title={`${t(m.label)} : ${formatPrice(m.chiffreAffaires, 'F')} · ${tp('{n} commande', '{n} commandes', m.commandes)}`}
                 />
                 <span
                   className={cn(
@@ -125,14 +130,14 @@ export default function Rapports() {
                     m.courant ? 'text-primary' : 'text-muted-foreground',
                   )}
                 >
-                  {m.label}
+                  {t(m.label)}
                 </span>
               </li>
             ))}
           </ul>
 
           <div className="border-border mt-4 flex items-center justify-between border-t pt-4">
-            <span className="text-muted-foreground text-xs">Total 6 mois</span>
+            <span className="text-muted-foreground text-xs">{t('Total 6 mois')}</span>
             <span className="text-primary text-sm font-bold">
               {formatPrice(totalSemestre, 'F CFA')}
             </span>
@@ -142,22 +147,24 @@ export default function Rapports() {
         {/* Tenues les plus commandées */}
         <section className="bg-surface border-border rounded-lg border p-5 xl:w-80">
           <h2 className="font-headings text-foreground mb-5 text-sm font-bold">
-            Tenues les plus commandées
+            {t('Tenues les plus commandées')}
           </h2>
           {tenuesPopulaires.length === 0 ? (
-            <p className="text-muted-foreground text-xs">Aucune commande enregistrée.</p>
+            <p className="text-muted-foreground text-xs">{t('Aucune commande enregistrée.')}</p>
           ) : (
             <ul className="flex flex-col gap-3">
-              {tenuesPopulaires.map((t) => (
-                <li key={t.label}>
+              {tenuesPopulaires.map((tenue) => (
+                <li key={tenue.label}>
                   <div className="mb-1 flex items-center justify-between gap-3">
-                    <span className="text-foreground truncate text-xs">{t.label}</span>
-                    <span className="text-muted-foreground flex-shrink-0 text-xs">{t.nombre}</span>
+                    <span className="text-foreground truncate text-xs">{tenue.label}</span>
+                    <span className="text-muted-foreground flex-shrink-0 text-xs">
+                      {tenue.nombre}
+                    </span>
                   </div>
                   <div className="bg-muted h-2 overflow-hidden rounded-full">
                     <div
                       className="bg-primary h-full rounded-full"
-                      style={{ width: `${t.pourcentage}%` }}
+                      style={{ width: `${tenue.pourcentage}%` }}
                     />
                   </div>
                 </li>
@@ -172,13 +179,13 @@ export default function Rapports() {
         <section className="bg-surface border-border flex-1 overflow-hidden rounded-lg border">
           <div className="border-border border-b px-5 py-3">
             <h2 className="font-headings text-foreground text-sm font-bold">
-              Performance par artisan
+              {t('Performance par artisan')}
             </h2>
           </div>
 
           {performancesArtisans.length === 0 ? (
             <p className="text-muted-foreground px-5 py-6 text-xs">
-              Aucune commande assignée pour l’instant.
+              {t('Aucune commande assignée pour l’instant.')}
             </p>
           ) : (
             <div className="overflow-x-auto">
@@ -186,13 +193,13 @@ export default function Rapports() {
                 <thead>
                   <tr className="border-border bg-muted border-b">
                     <th className="text-muted-foreground px-5 py-2 text-left text-xs font-normal tracking-wide uppercase">
-                      Artisan
+                      {t('Artisan')}
                     </th>
                     <th className="text-muted-foreground px-3 py-2 text-right text-xs font-normal tracking-wide uppercase">
-                      Commandes
+                      {t('Commandes')}
                     </th>
                     <th className="text-muted-foreground px-5 py-2 text-right text-xs font-normal tracking-wide uppercase">
-                      CA généré
+                      {t('CA généré')}
                     </th>
                   </tr>
                 </thead>
@@ -222,7 +229,7 @@ export default function Rapports() {
         {/* Répartition des paiements */}
         <section className="bg-surface border-border rounded-lg border p-5 xl:w-80">
           <h2 className="font-headings text-foreground mb-4 text-sm font-bold">
-            Statut des paiements
+            {t('Statut des paiements')}
           </h2>
 
           <div className="bg-muted mb-4 flex h-3 overflow-hidden rounded-full">
@@ -231,7 +238,7 @@ export default function Rapports() {
                 key={p.label}
                 className={COULEURS_PAIEMENT[i] ?? 'bg-muted'}
                 style={{ width: `${p.pourcentage}%` }}
-                title={`${p.label} : ${p.nombre} commandes`}
+                title={`${t(p.label)} : ${tp('{n} commande', '{n} commandes', p.nombre)}`}
               />
             ))}
           </div>
@@ -246,7 +253,7 @@ export default function Rapports() {
                   )}
                   aria-hidden
                 />
-                <span className="text-foreground flex-1 text-xs">{p.label}</span>
+                <span className="text-foreground flex-1 text-xs">{t(p.label)}</span>
                 <span className="text-muted-foreground text-xs">{p.nombre}</span>
                 <span className="text-foreground w-10 text-right text-xs font-medium">
                   {p.pourcentage} %

@@ -1,7 +1,9 @@
+'use client';
+
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
 import VisuelHero from '@/components/landing/VisuelHero';
 import { CHIFFRES_CLES } from '@/lib/landing-contenu';
+import { useT } from '@/contexts/LangueContext';
 
 /**
  * Premier écran de la page publique — deux maquettes Banani fusionnées.
@@ -20,20 +22,23 @@ import { CHIFFRES_CLES } from '@/lib/landing-contenu';
  * c'est la correction qu'il faut garder, pas l'encadré qui la portait.
  */
 export default function SectionHero() {
+  const t = useT();
   return (
     <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-24">
       <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-center lg:gap-12">
         <div className="mb-6 lg:col-start-1 lg:row-start-1 lg:mb-0">
           <h1 className="font-headings mb-3 text-3xl leading-tight font-bold sm:text-4xl lg:mb-6 lg:text-5xl">
-            Votre atelier, enfin tenu au clair
+            {t('Votre atelier, enfin tenu au clair')}
           </h1>
           <p className="text-muted-foreground mb-2 text-sm sm:text-base lg:mb-3 lg:text-lg">
-            Commandes, mesures, acomptes, planning de l’équipe. AtelierPro rassemble ce qui vit
-            aujourd’hui dans des carnets, des SMS et de la mémoire.
+            {t(
+              'Commandes, mesures, acomptes, planning de l’équipe. AtelierPro rassemble ce qui vit aujourd’hui dans des carnets, des SMS et de la mémoire.',
+            )}
           </p>
           <p className="text-muted-foreground mb-4 text-xs sm:text-sm lg:mb-0 lg:text-base">
-            Trente jours d’essai gratuit. Sans carte bancaire. En français, dans le navigateur —
-            rien à installer.
+            {t(
+              'Trente jours d’essai gratuit. Sans carte bancaire. En français, en anglais ou en arabe, dans le navigateur — rien à installer.',
+            )}
           </p>
         </div>
 
@@ -50,20 +55,9 @@ export default function SectionHero() {
               href="/inscription"
               className="bg-primary text-primary-foreground hover:bg-accent flex min-h-11 items-center justify-center rounded-lg px-4 text-sm font-bold transition-colors sm:px-6 sm:text-base"
             >
-              Créer mon atelier
-            </Link>
-            <Link
-              href="/dashboard"
-              className="border-primary text-primary hover:bg-primary/10 flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 text-xs font-medium transition-colors sm:px-5 sm:text-sm"
-            >
-              Parcourir la démonstration
-              <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
+              {t('Créer mon atelier')}
             </Link>
           </div>
-          <p className="text-muted-foreground mt-2 text-xs lg:mt-3">
-            La démonstration ouvre l’application remplie d’un atelier d’exemple. Aucune inscription
-            n’est demandée.
-          </p>
         </div>
       </div>
 
@@ -80,9 +74,9 @@ export default function SectionHero() {
               </span>
               <div className="min-w-0 flex-1 sm:flex-none sm:text-center">
                 <div className="font-headings text-foreground text-lg font-bold sm:mb-1 sm:text-3xl">
-                  {c.valeur}
+                  {t(c.valeur)}
                 </div>
-                <div className="text-muted-foreground text-xs sm:text-sm">{c.label}</div>
+                <div className="text-muted-foreground text-xs sm:text-sm">{t(c.label)}</div>
               </div>
             </div>
           );

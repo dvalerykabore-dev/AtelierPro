@@ -11,6 +11,8 @@
  * exactement ce qui manquait pour attraper le défaut d'origine.
  */
 
+import { ETIQUETTE_INTL, LANGUE_DEFAUT, type Langue } from '@/lib/langue';
+
 /** Un jour au format du champ `<input type="date">` : `2026-08-31`. */
 export type JourISO = string;
 
@@ -75,36 +77,41 @@ export function validerEcheance(jour: JourISO, aujourdhui = aujourdhuiISO()): st
   return null;
 }
 
-const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
-const MOIS = [
-  'janvier',
-  'février',
-  'mars',
-  'avril',
-  'mai',
-  'juin',
-  'juillet',
-  'août',
-  'septembre',
-  'octobre',
-  'novembre',
-  'décembre',
-];
-
-/** « mardi 8 septembre » — le jour de la semaine compte autant que la date en atelier. */
-export function libelleEcheance(jour: JourISO): string {
+/**
+ * « mardi 8 septembre » — le jour de la semaine compte autant que la date en
+ * atelier : une livraison promise « le 8 » se négocie autrement quand on voit
+ * que le 8 tombe un dimanche.
+ *
+ * Les noms de jours et de mois viennent d'`Intl` plutôt que d'un tableau figé :
+ * le tableau ne connaissait que le français, et l'écran retourné en arabe
+ * affichait « mardi 8 septembre » au milieu d'un texte arabe.
+ */
+export function libelleEcheance(jour: JourISO, langue: Langue = LANGUE_DEFAUT): string {
   const p = partsDe(jour);
   if (!p) return '—';
   const d = new Date(Date.UTC(p.a, p.m - 1, p.j, 12));
-  return `${JOURS[d.getUTCDay()]} ${p.j} ${MOIS[p.m - 1]}`;
+  return new Intl.DateTimeFormat(ETIQUETTE_INTL[langue], {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(d);
 }
 
-/** « dans 5 jours », « demain », « aujourd'hui » — plus parlant qu'une date à comparer. */
-export function delaiEnJours(jour: JourISO, aujourdhui = aujourdhuiISO()): string {
+/**
+ * « dans 5 jours », « demain », « aujourd'hui » — plus parlant qu'une date à
+ * comparer de tête.
+ *
+ * `Intl.RelativeTimeFormat` rend « demain » et « hier » de lui-même avec
+ * `numeric: 'auto'`, dans les trois langues, et décline les pluriels selon les
+ * règles de chacune — l'arabe en compte six.
+ */
+export function delaiEnJours(
+  jour: JourISO,
+  aujourdhui = aujourdhuiISO(),
+  langue: Langue = LANGUE_DEFAUT,
+): string {
   const n = joursEntre(aujourdhui, jour);
   if (n === null) return '';
-  if (n < 0) return `il y a ${-n} jour${-n > 1 ? 's' : ''}`;
-  if (n === 0) return 'aujourd’hui';
-  if (n === 1) return 'demain';
-  return `dans ${n} jours`;
+  return new Intl.RelativeTimeFormat(ETIQUETTE_INTL[langue], { numeric: 'auto' }).format(n, 'day');
 }

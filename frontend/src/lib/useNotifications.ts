@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { avecReessai401 } from '@/lib/api-repli';
 import { versUI, type NotificationApi } from '@/lib/notifications';
+import { useLangue } from '@/contexts/LangueContext';
 import type { Notification } from '@/lib/mock/atelier';
 
 /** Une page suffit : le centre de notifications n'a pas de défilement infini. */
@@ -51,7 +52,13 @@ export function useNotifications() {
     void recharger();
   }, [recharger]);
 
-  const notifications: Notification[] = useMemo(() => brutes.map((n) => versUI(n)), [brutes]);
+  // La langue entre dans le calcul : « Il y a 18 min » et le titre du serveur
+  // doivent se retourner en même temps que le reste de l'écran.
+  const { langue } = useLangue();
+  const notifications: Notification[] = useMemo(
+    () => brutes.map((n) => versUI(n, undefined, langue)),
+    [brutes, langue],
+  );
   const nonLues = notifications.filter((n) => !n.lue).length;
 
   /**

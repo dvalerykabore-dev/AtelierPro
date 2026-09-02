@@ -88,7 +88,19 @@ export function commandeEnRetard(
     type: 'COMMANDE_EN_RETARD',
     title: `Commande ${ref} en retard — ${alerte.client}`,
     body: `${alerte.tenue} devait être livrée le ${date}.`,
-    data: { commandeId: alerte.commandeId, sequence: alerte.sequence },
+    // `title` et `body` sont rendus ici en français, une fois pour toutes ; les
+    // mêmes éléments repartent séparément dans `data` pour que l'écran puisse
+    // recomposer la phrase dans la langue du lecteur. Les deux coexistent : les
+    // notifications écrites avant ce changement n'ont que la phrase figée, et
+    // restent lisibles.
+    data: {
+      commandeId: alerte.commandeId,
+      sequence: alerte.sequence,
+      reference: ref,
+      client: alerte.client,
+      tenue: alerte.tenue,
+      echeance: alerte.echeance.toISOString(),
+    },
     dedupeKey: `commande-retard:${alerte.commandeId}:${alerte.jour}`,
   };
 }
@@ -100,7 +112,13 @@ export function livraisonDemain(alerte: AlerteCommande): CreateNotificationInput
     type: 'LIVRAISON_DEMAIN',
     title: `Livraison demain — ${alerte.client}`,
     body: `${alerte.tenue} (${ref}) est attendue demain.`,
-    data: { commandeId: alerte.commandeId, sequence: alerte.sequence },
+    data: {
+      commandeId: alerte.commandeId,
+      sequence: alerte.sequence,
+      reference: ref,
+      client: alerte.client,
+      tenue: alerte.tenue,
+    },
     dedupeKey: `livraison-demain:${alerte.commandeId}:${alerte.jour}`,
   };
 }

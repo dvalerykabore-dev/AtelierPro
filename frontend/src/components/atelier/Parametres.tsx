@@ -575,7 +575,7 @@ export default function Parametres() {
                 <ChampEnregistrable
                   label={t('Ville')}
                   valeur={user?.workshopCity ?? ''}
-                  placeholder="Ouagadougou"
+                  placeholder={t('Ouagadougou')}
                   messageEchec="La ville n’a pas pu être enregistrée."
                   onEnregistrer={enregistrerVille}
                 />
@@ -586,7 +586,7 @@ export default function Parametres() {
               <ChampEnregistrable
                 label={t('Adresse')}
                 valeur={user?.workshopAddress ?? ''}
-                placeholder="Secteur 15, rue 15.42"
+                placeholder={t('Secteur 15, rue 15.42')}
                 messageEchec="L’adresse n’a pas pu être enregistrée."
                 onEnregistrer={enregistrerAdresse}
               />
@@ -1000,7 +1000,7 @@ export default function Parametres() {
             label={t('Type de tenue')}
             required
             autoFocus
-            placeholder="Boubou bazin brodé"
+            placeholder={t('Boubou bazin brodé')}
             value={nomTenue}
             onChange={(e) => setNomTenue(e.target.value)}
           />
@@ -1051,14 +1051,14 @@ export default function Parametres() {
             label={t('Nom complet')}
             required
             autoFocus
-            placeholder="Moussa Koné"
+            placeholder={t('Moussa Koné')}
             value={nomArtisan}
             onChange={(e) => setNomArtisan(e.target.value)}
           />
           <Field
             label={t('Rôle')}
             required
-            placeholder="Tailleur senior"
+            placeholder={t('Tailleur senior')}
             value={roleArtisan}
             onChange={(e) => setRoleArtisan(e.target.value)}
           />

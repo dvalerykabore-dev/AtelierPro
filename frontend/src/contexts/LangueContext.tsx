@@ -52,7 +52,7 @@ export function LangueProvider({ children }: { children: ReactNode }) {
   const [monte, setMonte] = useState(false);
 
   useEffect(() => {
-    setLangue(lireLangue(window.localStorage, navigator.languages));
+    setLangue(lireLangue(window.localStorage));
     setMonte(true);
   }, []);
 

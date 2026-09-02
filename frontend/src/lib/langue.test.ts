@@ -12,7 +12,6 @@ import {
   SCRIPT_ANTI_FLASH_LANGUE,
   SENS,
   appliquerLangue,
-  detecterLangue,
   ecrireLangue,
   estLangue,
   lireLangue,
@@ -35,48 +34,25 @@ describe('estLangue', () => {
   });
 });
 
-describe('detecterLangue', () => {
-  it('retient la première langue que nous parlons', () => {
-    expect(detecterLangue(['es-ES', 'ar-MA', 'fr'])).toBe('ar');
-  });
-
-  it('ignore la région', () => {
-    // Un arabophone du Maroc et un du Tchad lisent la même interface.
-    expect(detecterLangue(['ar-MA'])).toBe('ar');
-    expect(detecterLangue(['en-US'])).toBe('en');
-  });
-
-  it('retombe sur le français, pas sur l’anglais', () => {
-    // L'anglais par défaut serait un choix ; le français est la langue dans
-    // laquelle l'atelier a été écrit.
-    expect(detecterLangue(['es-ES', 'de'])).toBe('fr');
-    expect(detecterLangue([])).toBe('fr');
-    expect(detecterLangue(undefined)).toBe('fr');
-  });
-});
-
 describe('lireLangue', () => {
   it('rend la langue mémorisée', () => {
     expect(lireLangue(stockage('ar'))).toBe('ar');
   });
 
-  it('devine d’après le navigateur quand rien n’est mémorisé', () => {
-    expect(lireLangue(stockage(null), ['en-US'])).toBe('en');
-  });
-
-  it('préfère le choix mémorisé à la langue du navigateur', () => {
-    // Quelqu'un qui a explicitement choisi le français sur un téléphone en
-    // anglais ne doit pas le voir revenir à l'anglais au rechargement.
-    expect(lireLangue(stockage('fr'), ['en-US'])).toBe('fr');
+  it('rend le français quand rien n’est mémorisé', () => {
+    // On n'interroge pas le navigateur : l'atelier est francophone, et un
+    // client de passage sur un téléphone en anglais verrait sinon la vitrine
+    // dans une langue que l'atelier n'a pas choisie.
+    expect(lireLangue(stockage(null))).toBe('fr');
   });
 
   it('ignore une valeur corrompue', () => {
-    expect(lireLangue(stockage('klingon'), ['ar'])).toBe('ar');
+    expect(lireLangue(stockage('klingon'))).toBe(LANGUE_DEFAUT);
   });
 
   it('survit à un stockage absent ou refusé', () => {
     // Safari en navigation privée lève à la lecture.
-    expect(lireLangue(null, ['ar'])).toBe('ar');
+    expect(lireLangue(null)).toBe(LANGUE_DEFAUT);
     const casse = {
       getItem: () => {
         throw new Error('refusé');
@@ -170,16 +146,12 @@ describe('SCRIPT_ANTI_FLASH_LANGUE', () => {
     expect(executer('fr', [])).toEqual({ lang: 'fr', dir: 'ltr' });
   });
 
-  it('devine d’après le navigateur à la première visite', () => {
-    expect(executer(null, ['ar-MA', 'fr'])).toEqual({ lang: 'ar', dir: 'rtl' });
+  it('rend le français à la première visite, sans consulter le navigateur', () => {
+    expect(executer(null, ['ar-MA', 'fr'])).toEqual({ lang: 'fr', dir: 'ltr' });
   });
 
   it('ignore une valeur corrompue en stockage', () => {
-    expect(executer('klingon', ['en-US'])).toEqual({ lang: 'en', dir: 'ltr' });
-  });
-
-  it('retombe sur le français quand le navigateur ne nous parle pas', () => {
-    expect(executer(null, ['es-ES'])).toEqual({ lang: 'fr', dir: 'ltr' });
+    expect(executer('klingon', ['en-US'])).toEqual({ lang: 'fr', dir: 'ltr' });
   });
 
   it('pose quand même les attributs si le stockage lève', () => {

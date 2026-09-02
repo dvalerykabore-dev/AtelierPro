@@ -63,37 +63,23 @@ export function estLangue(valeur: unknown): valeur is Langue {
 }
 
 /**
- * Devine la langue à la toute première visite, d'après le navigateur.
+ * Lit la langue mémorisée. À défaut, le français.
  *
- * On ne retient que la partie primaire (`ar-MA` → `ar`) : un arabophone du
- * Maroc et un du Tchad lisent la même interface. Toute langue que nous ne
- * parlons pas retombe sur le français plutôt que sur un anglais par défaut,
- * qui serait un choix, pas une absence de choix.
- */
-export function detecterLangue(preferences: readonly string[] | undefined): Langue {
-  for (const p of preferences ?? []) {
-    const primaire = p.toLowerCase().split('-')[0];
-    if (estLangue(primaire)) return primaire;
-  }
-  return LANGUE_DEFAUT;
-}
-
-/**
- * Lit la langue mémorisée, ou la devine si rien n'est mémorisé.
+ * On n'interroge PAS `navigator.languages`. L'atelier est francophone : un
+ * client de passage sur un téléphone réglé en anglais verrait sinon la vitrine
+ * dans une langue que l'atelier n'a pas choisie, et il faudrait la corriger à
+ * chaque appareil. Le français est le défaut, les deux autres langues sont un
+ * choix explicite — que le sélecteur rend disponible dès la page d'accueil.
  *
  * Toute anomalie — pas de stockage (rendu serveur), accès refusé (Safari en
- * navigation privée), valeur corrompue — retombe silencieusement sur le
- * défaut : une langue n'est jamais une raison de casser la page.
+ * navigation privée), valeur corrompue — retombe sur ce même défaut : une
+ * langue n'est jamais une raison de casser la page.
  */
-export function lireLangue(
-  stockage: StockageLangue | null | undefined,
-  preferences?: readonly string[],
-): Langue {
-  if (!stockage) return detecterLangue(preferences);
+export function lireLangue(stockage: StockageLangue | null | undefined): Langue {
+  if (!stockage) return LANGUE_DEFAUT;
   try {
     const brut = stockage.getItem(CLE_STOCKAGE);
-    if (estLangue(brut)) return brut;
-    return detecterLangue(preferences);
+    return estLangue(brut) ? brut : LANGUE_DEFAUT;
   } catch {
     return LANGUE_DEFAUT;
   }
@@ -134,11 +120,7 @@ export const SCRIPT_ANTI_FLASH_LANGUE = [
   'try{',
   `var L=${JSON.stringify(LANGUES)};`,
   `var l=localStorage.getItem(${JSON.stringify(CLE_STOCKAGE)});`,
-  'if(L.indexOf(l)<0){l=null;',
-  'var n=(navigator.languages||[navigator.language||""]);',
-  'for(var i=0;i<n.length&&!l;i++){var p=String(n[i]).toLowerCase().split("-")[0];if(L.indexOf(p)>=0)l=p}',
-  '}',
-  `l=l||${JSON.stringify(LANGUE_DEFAUT)};`,
+  `if(L.indexOf(l)<0)l=${JSON.stringify(LANGUE_DEFAUT)};`,
   'document.documentElement.setAttribute("lang",l);',
   `document.documentElement.setAttribute("dir",l===${JSON.stringify('ar' satisfies Langue)}?"rtl":"ltr")`,
   '}catch(e){',

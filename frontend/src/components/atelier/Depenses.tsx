@@ -9,6 +9,7 @@ import { Field, SelectField, TextareaField } from '@/components/ui/Field';
 import { MODES, POSTES, libelleMode, libelleMois, libellePoste, moisIso } from '@/lib/tresorerie';
 import { aujourdhuiIso, useMouvements } from '@/lib/useTresorerie';
 import { cn, formatPrice } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 /** Décale une clé « AAAA-MM » de `n` mois. */
 function decaler(cle: string, n: number): string {
@@ -47,6 +48,7 @@ function jourLisible(iso: string): string {
  * trésorerie : un chiffre d'argent est exact ou absent.
  */
 export default function Depenses() {
+  const t = useT();
   const [mois, setMois] = useState(() => moisIso(new Date()));
   const [poste, setPoste] = useState('');
 
@@ -117,12 +119,12 @@ export default function Depenses() {
     <Modal
       ouvert={ouvert}
       onFermer={() => setOuvert(false)}
-      titre="Enregistrer une dépense"
-      description="La date est celle où l’argent est sorti, pas celle de la saisie."
+      titre={t('Enregistrer une dépense')}
+      description={t('La date est celle où l’argent est sorti, pas celle de la saisie.')}
     >
       <form onSubmit={enregistrer} className="flex flex-col gap-4">
         <Field
-          label="Montant (F CFA)"
+          label={t('Montant (F CFA)')}
           type="number"
           inputMode="numeric"
           min={1}
@@ -132,41 +134,41 @@ export default function Depenses() {
           onChange={(e) => setMontant(e.target.value)}
         />
         <Field
-          label="Date du décaissement"
+          label={t('Date du décaissement')}
           type="date"
           required
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
         <SelectField
-          label="Poste"
+          label={t('Poste')}
           required
           value={posteSaisi}
           onChange={(e) => setPosteSaisi(e.target.value)}
         >
           {POSTES.map((p) => (
             <option key={p.cle} value={p.cle}>
-              {p.label}
+              {t(p.label)}
             </option>
           ))}
         </SelectField>
-        <SelectField label="Réglé par" value={mode} onChange={(e) => setMode(e.target.value)}>
+        <SelectField label={t('Réglé par')} value={mode} onChange={(e) => setMode(e.target.value)}>
           {MODES.map((m) => (
             <option key={m.cle} value={m.cle}>
-              {m.label}
+              {t(m.label)}
             </option>
           ))}
         </SelectField>
         <Field
-          label="Libellé"
+          label={t('Libellé')}
           required
           maxLength={160}
-          placeholder="Wax 6 yards — marché de Rood Woko"
+          placeholder={t('Wax 6 yards — marché de Rood Woko')}
           value={libelle}
           onChange={(e) => setLibelle(e.target.value)}
         />
         <TextareaField
-          label="Note (facultatif)"
+          label={t('Note (facultatif)')}
           rows={2}
           maxLength={500}
           value={note}
@@ -182,7 +184,7 @@ export default function Depenses() {
 
         <div className="flex justify-end gap-2">
           <Button type="button" variante="contour" onClick={() => setOuvert(false)}>
-            Annuler
+            {t('Annuler')}
           </Button>
           <Button type="submit" disabled={envoi}>
             {envoi ? 'Enregistrement…' : 'Enregistrer'}
@@ -196,10 +198,11 @@ export default function Depenses() {
     return (
       <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
         <Lock size={26} className="text-muted-foreground mb-3" aria-hidden />
-        <p className="text-foreground mb-1 text-sm font-bold">Dépenses indisponibles</p>
+        <p className="text-foreground mb-1 text-sm font-bold">{t('Dépenses indisponibles')}</p>
         <p className="text-muted-foreground max-w-md text-xs">
-          Les dépenses de votre atelier ne s’affichent qu’une fois connecté. Aucun jeu d’exemple
-          n’est proposé ici : un chiffre d’argent inventé n’aiderait personne.
+          {t(
+            'Les dépenses de votre atelier ne s’affichent qu’une fois connecté. Aucun jeu d’exemple n’est proposé ici : un chiffre d’argent inventé n’aiderait personne.',
+          )}
         </p>
         <Link href="/connexion" className="text-primary mt-4 text-sm font-medium">
           Se connecter
@@ -217,7 +220,7 @@ export default function Depenses() {
             type="button"
             onClick={() => setMois((m) => decaler(m, -1))}
             className="border-border text-muted-foreground hover:text-foreground flex h-9 w-9 items-center justify-center rounded-md border transition-colors"
-            aria-label="Mois précédent"
+            aria-label={t('Mois précédent')}
           >
             <ChevronLeft size={16} aria-hidden />
           </button>
@@ -228,14 +231,14 @@ export default function Depenses() {
             type="button"
             onClick={() => setMois((m) => decaler(m, 1))}
             className="border-border text-muted-foreground hover:text-foreground flex h-9 w-9 items-center justify-center rounded-md border transition-colors"
-            aria-label="Mois suivant"
+            aria-label={t('Mois suivant')}
           >
             <ChevronRight size={16} aria-hidden />
           </button>
         </div>
 
         <div className="text-center">
-          <div className="text-muted-foreground mb-1 text-xs">Total des dépenses</div>
+          <div className="text-muted-foreground mb-1 text-xs">{t('Total des dépenses')}</div>
           <div className="font-headings text-danger text-3xl font-bold">
             {chargement ? '—' : formatPrice(total, 'F')}
           </div>
@@ -250,7 +253,7 @@ export default function Depenses() {
       {/* Répartition par poste */}
       {parPoste.length > 0 && (
         <section className="border-border bg-surface rounded-xl border p-4 lg:p-5">
-          <h2 className="font-headings text-foreground mb-3 text-sm font-bold">Par poste</h2>
+          <h2 className="font-headings text-foreground mb-3 text-sm font-bold">{t('Par poste')}</h2>
           <ul className="flex flex-col gap-2.5">
             {parPoste.map(([cle, montantPoste]) => {
               const pourcentage = total > 0 ? Math.round((montantPoste / total) * 100) : 0;
@@ -280,19 +283,19 @@ export default function Depenses() {
         <select
           value={poste}
           onChange={(e) => setPoste(e.target.value)}
-          aria-label="Filtrer par poste"
+          aria-label={t('Filtrer par poste')}
           className="border-border bg-input text-foreground rounded-md border px-3 py-2 text-xs"
         >
-          <option value="">Tous les postes</option>
+          <option value="">{t('Tous les postes')}</option>
           {POSTES.map((p) => (
             <option key={p.cle} value={p.cle}>
-              {p.label}
+              {t(p.label)}
             </option>
           ))}
         </select>
         <Button onClick={() => setOuvert(true)} className="ml-auto">
           <Plus size={14} aria-hidden />
-          Enregistrer une dépense
+          {t('Enregistrer une dépense')}
         </Button>
       </div>
 
@@ -305,7 +308,9 @@ export default function Depenses() {
 
       {/* Journal */}
       {chargement ? (
-        <p className="text-muted-foreground py-8 text-center text-sm">Chargement du journal…</p>
+        <p className="text-muted-foreground py-8 text-center text-sm">
+          {t('Chargement du journal…')}
+        </p>
       ) : mouvements.length === 0 ? (
         <div className="border-border flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-12 text-center">
           <Wallet size={24} className="text-muted-foreground mb-3" aria-hidden />
@@ -313,12 +318,13 @@ export default function Depenses() {
             Aucune dépense en {libelleMois(mois)}
           </p>
           <p className="text-muted-foreground mb-4 max-w-sm text-xs">
-            Enregistrez vos achats de tissu, salaires et charges au fur et à mesure : la trésorerie
-            s’en déduit toute seule.
+            {t(
+              'Enregistrez vos achats de tissu, salaires et charges au fur et à mesure : la trésorerie s’en déduit toute seule.',
+            )}
           </p>
           <Button onClick={() => setOuvert(true)}>
             <Plus size={14} aria-hidden />
-            Enregistrer une dépense
+            {t('Enregistrer une dépense')}
           </Button>
         </div>
       ) : (

@@ -124,7 +124,24 @@ describe('delaiEnJours', () => {
   });
 
   it('dit le retard au lieu d’un nombre négatif', () => {
-    expect(delaiEnJours('2026-08-29', LUNDI_31_AOUT)).toBe('il y a 2 jours');
-    expect(delaiEnJours('2026-08-30', LUNDI_31_AOUT)).toBe('il y a 1 jour');
+    // `Intl` nomme les jours proches plutôt que de les compter : « avant-hier »
+    // et « hier » plutôt que « il y a 2 jours ». C'est ce que dirait l'artisan.
+    expect(delaiEnJours('2026-08-29', LUNDI_31_AOUT)).toBe('avant-hier');
+    expect(delaiEnJours('2026-08-30', LUNDI_31_AOUT)).toBe('hier');
+    expect(delaiEnJours('2026-08-25', LUNDI_31_AOUT)).toBe('il y a 6 jours');
+  });
+
+  it('suit la langue demandée', () => {
+    expect(delaiEnJours('2026-09-05', LUNDI_31_AOUT, 'en')).toBe('in 5 days');
+    expect(delaiEnJours('2026-09-01', LUNDI_31_AOUT, 'ar')).toBe('غدًا');
+  });
+});
+
+describe('libelleEcheance · langues', () => {
+  it('nomme le jour et le mois dans la langue demandée', () => {
+    expect(libelleEcheance('2026-09-08', 'en')).toBe('Tuesday 8 September');
+    // Les chiffres restent latins : un montant ou une date doivent se relire
+    // à l'identique sur la facture, quelle que soit la langue de l'écran.
+    expect(libelleEcheance('2026-09-08', 'ar')).toContain('8');
   });
 });

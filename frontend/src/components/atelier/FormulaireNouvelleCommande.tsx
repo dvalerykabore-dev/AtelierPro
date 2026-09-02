@@ -30,6 +30,7 @@ import {
   versISO,
 } from '@/lib/echeance';
 import { cn, formatPrice } from '@/lib/utils';
+import { useLangue } from '@/contexts/LangueContext';
 
 /** Couleurs de tissu proposées — pastille + libellé, comme la maquette. */
 const COULEURS = [
@@ -51,6 +52,7 @@ const ACOMPTE_PAR_DEFAUT = 10000;
  * confirmation valide la cohérence de l'ensemble avant de conclure.
  */
 export default function FormulaireNouvelleCommande() {
+  const { t, langue } = useLangue();
   const { clients, source } = useClients();
   const { artisans } = useArtisans();
   /** Une commande ne s'assigne qu'à un artisan encore en poste. */
@@ -196,12 +198,12 @@ export default function FormulaireNouvelleCommande() {
   if (!client) {
     return (
       <div className="flex flex-col items-center gap-3 p-12 text-center">
-        <p className="text-foreground text-sm font-medium">Aucun client enregistré</p>
+        <p className="text-foreground text-sm font-medium">{t('Aucun client enregistré')}</p>
         <p className="text-muted-foreground max-w-sm text-xs">
-          Créez d’abord un client dans le carnet : une commande lui sera rattachée.
+          {t('Créez d’abord un client dans le carnet : une commande lui sera rattachée.')}
         </p>
         <Link href="/clients">
-          <Button>Ouvrir le carnet clients</Button>
+          <Button>{t('Ouvrir le carnet clients')}</Button>
         </Link>
       </div>
     );
@@ -238,7 +240,7 @@ export default function FormulaireNouvelleCommande() {
                         : 'text-muted-foreground',
                   )}
                 >
-                  {etape.label}
+                  {t(etape.label)}
                 </span>
                 {i < etapes.length - 1 && (
                   <span className="bg-border ml-2 hidden h-px w-12 lg:block" aria-hidden />
@@ -254,12 +256,12 @@ export default function FormulaireNouvelleCommande() {
         <div className="flex flex-1 flex-col gap-6 px-4 py-6 lg:px-8">
           <section className="bg-surface border-border rounded-lg border p-5">
             <h2 className="font-headings text-foreground mb-4 text-sm font-bold">
-              Détails du modèle
+              {t('Détails du modèle')}
             </h2>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <SelectField
-                label="Cliente / client"
+                label={t('Cliente / client')}
                 value={client.id}
                 onChange={(e) => {
                   modifier(setClientId)(e.target.value);
@@ -267,13 +269,13 @@ export default function FormulaireNouvelleCommande() {
               >
                 {clients.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.nom} · {c.genre}
+                    {c.nom} · {t(c.genre)}
                   </option>
                 ))}
               </SelectField>
 
               <SelectField
-                label="Type de tenue"
+                label={t('Type de tenue')}
                 value={typeTenue}
                 onChange={(e) => modifier(setTypeTenue)(e.target.value)}
                 aide={`Tarif de façon : ${formatPrice(prixTenue, 'F')}`}
@@ -286,10 +288,10 @@ export default function FormulaireNouvelleCommande() {
               </SelectField>
 
               <Field
-                label="Tissu"
+                label={t('Tissu')}
                 value={tissu}
                 onChange={(e) => modifier(setTissu)(e.target.value)}
-                placeholder="Wax hollandais — 6 yards"
+                placeholder={t('Wax hollandais — 6 yards')}
                 erreur={!tissu.trim() ? 'Champ requis' : undefined}
               />
 
@@ -298,7 +300,7 @@ export default function FormulaireNouvelleCommande() {
                   htmlFor="couleur-tissu"
                   className="text-muted-foreground flex items-center gap-2 text-xs"
                 >
-                  Couleur / motif
+                  {t('Couleur / motif')}
                   <span className={cn('h-3 w-3 rounded-sm', couleurChoisie.classe)} aria-hidden />
                 </label>
                 <select
@@ -309,14 +311,14 @@ export default function FormulaireNouvelleCommande() {
                 >
                   {COULEURS.map((c) => (
                     <option key={c.label} value={c.label}>
-                      {c.label}
+                      {t(c.label)}
                     </option>
                   ))}
                 </select>
               </div>
 
               <SelectField
-                label="Assigné à"
+                label={t('Assigné à')}
                 value={assigne}
                 onChange={(e) => modifier(setAssigne)(e.target.value)}
                 aide={
@@ -325,7 +327,7 @@ export default function FormulaireNouvelleCommande() {
                     : 'Aucun artisan actif — composez l’équipe dans les paramètres'
                 }
               >
-                {equipe.length === 0 && <option value="">Aucun artisan actif</option>}
+                {equipe.length === 0 && <option value="">{t('Aucun artisan actif')}</option>}
                 {equipe.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.nom} — {a.role}
@@ -334,26 +336,26 @@ export default function FormulaireNouvelleCommande() {
               </SelectField>
 
               <Field
-                label="Acompte versé"
+                label={t('Acompte versé')}
                 type="number"
                 min={0}
                 step={500}
                 value={acompte}
                 onChange={(e) => modifier(setAcompte)(e.target.value)}
-                aide="En francs CFA. Enregistré comme recette dans la caisse."
+                aide={t('En francs CFA. Enregistré comme recette dans la caisse.')}
               />
 
               {/* Le mode n'a de sens que s'il y a de l'argent à encaisser. */}
               {acompteVerse > 0 && (
                 <SelectField
-                  label="Réglé en"
+                  label={t('Réglé en')}
                   value={modeAcompte}
                   onChange={(e) => modifier(setModeAcompte)(e.target.value as ModeCle)}
-                  aide="Sert au rapprochement de caisse en fin de mois."
+                  aide={t('Sert au rapprochement de caisse en fin de mois.')}
                 >
                   {MODES.map((m) => (
                     <option key={m.cle} value={m.cle}>
-                      {m.label}
+                      {t(m.label)}
                     </option>
                   ))}
                 </SelectField>
@@ -362,11 +364,13 @@ export default function FormulaireNouvelleCommande() {
 
             <div className="mt-4">
               <TextareaField
-                label="Notes / instructions"
+                label={t('Notes / instructions')}
                 value={notes}
                 onChange={(e) => modifier(setNotes)(e.target.value)}
-                placeholder="Ex : col bateau, fermeture invisible dos, finitions dorées sur les ourlets."
-                aide="Ces consignes sont lues par l’artisan au moment de la coupe."
+                placeholder={t(
+                  'Ex : col bateau, fermeture invisible dos, finitions dorées sur les ourlets.',
+                )}
+                aide={t('Ces consignes sont lues par l’artisan au moment de la coupe.')}
               />
             </div>
 
@@ -383,7 +387,7 @@ export default function FormulaireNouvelleCommande() {
           <section className="bg-surface border-border overflow-hidden rounded-lg border">
             <div className="border-border flex flex-wrap items-center justify-between gap-2 border-b px-5 py-3">
               <h2 className="font-headings text-foreground text-sm font-bold">
-                Mesures
+                {t('Mesures')}
                 <span className="text-muted-foreground ml-2 font-normal">
                   · palette {client.genre.toLowerCase()}
                 </span>
@@ -394,7 +398,7 @@ export default function FormulaireNouvelleCommande() {
                   {nombreDeChamps(palette)} mesures au dossier
                 </span>
                 <Link href="/mesures" className="text-primary text-xs font-medium">
-                  Modifier
+                  {t('Modifier')}
                 </Link>
               </div>
             </div>
@@ -403,15 +407,15 @@ export default function FormulaireNouvelleCommande() {
               <div key={section.titre}>
                 <div className="bg-muted border-border flex items-baseline gap-2 border-b px-5 py-1.5">
                   <span className="text-primary text-xs font-bold tracking-wide uppercase">
-                    {section.titre}
+                    {t(section.titre)}
                   </span>
-                  <span className="text-muted-foreground text-xs">{section.precision}</span>
+                  <span className="text-muted-foreground text-xs">{t(section.precision)}</span>
                 </div>
                 <div className="grid sm:grid-cols-2">
                   {section.champs.map((c, i) => (
                     <MeasureRow
                       key={`${section.titre}-${c.numero}`}
-                      label={`${c.numero}. ${c.label}`}
+                      label={`${c.numero}. ${t(c.label)}`}
                       valeur="—"
                       unite={c.unite}
                       contraste={i % 4 >= 2}
@@ -426,7 +430,7 @@ export default function FormulaireNouvelleCommande() {
         {/* ---- Colonne récapitulatif ---- */}
         <aside className="border-border bg-surface flex w-full flex-shrink-0 flex-col gap-5 border-t py-6 lg:w-80 lg:border-t-0 lg:border-l">
           <div className="px-5">
-            <h2 className="font-headings text-foreground mb-3 text-sm font-bold">Client</h2>
+            <h2 className="font-headings text-foreground mb-3 text-sm font-bold">{t('Client')}</h2>
             <div className="bg-muted flex items-center gap-3 rounded-lg p-3">
               <Avatar initiales={client.initiales} taille="lg" />
               <div className="min-w-0">
@@ -437,7 +441,7 @@ export default function FormulaireNouvelleCommande() {
               </div>
               <Link href="/clients" className="text-muted-foreground hover:text-foreground ml-auto">
                 <ExternalLink size={14} aria-hidden />
-                <span className="sr-only">Voir la fiche client</span>
+                <span className="sr-only">{t('Voir la fiche client')}</span>
               </Link>
             </div>
           </div>
@@ -462,14 +466,16 @@ export default function FormulaireNouvelleCommande() {
           */}
           <div className="px-5">
             <h2 className="font-headings text-foreground mb-1 text-sm font-bold">
-              Date de livraison
+              {t('Date de livraison')}
             </h2>
             <p className="text-muted-foreground mb-3 text-xs">
-              C’est la date promise au client — elle sert au planning et aux alertes de retard.
+              {t(
+                'C’est la date promise au client — elle sert au planning et aux alertes de retard.',
+              )}
             </p>
 
             <Field
-              label="Livraison prévue"
+              label={t('Livraison prévue')}
               type="date"
               value={echeance}
               min={aujourdhui}
@@ -487,9 +493,11 @@ export default function FormulaireNouvelleCommande() {
                 <CalendarCheck size={15} className="text-muted-foreground" aria-hidden />
                 <div className="min-w-0">
                   <div className="text-foreground text-sm font-medium">
-                    {libelleEcheance(echeance)}
+                    {libelleEcheance(echeance, langue)}
                   </div>
-                  <div className="text-muted-foreground text-xs">{delaiEnJours(echeance)}</div>
+                  <div className="text-muted-foreground text-xs">
+                    {delaiEnJours(echeance, undefined, langue)}
+                  </div>
                 </div>
               </div>
             )}
@@ -498,7 +506,9 @@ export default function FormulaireNouvelleCommande() {
           <div className="bg-border mx-5 h-px" />
 
           <div className="px-5">
-            <h2 className="font-headings text-foreground mb-3 text-sm font-bold">Tarification</h2>
+            <h2 className="font-headings text-foreground mb-3 text-sm font-bold">
+              {t('Tarification')}
+            </h2>
             <dl className="flex flex-col gap-2">
               <div className="flex items-center justify-between gap-3 text-xs">
                 <dt className="text-muted-foreground">
@@ -507,12 +517,12 @@ export default function FormulaireNouvelleCommande() {
                 <dd className="text-foreground">{formatPrice(prixTenue, 'F')}</dd>
               </div>
               <div className="flex items-center justify-between gap-3 text-xs">
-                <dt className="text-muted-foreground">Acompte versé</dt>
+                <dt className="text-muted-foreground">{t('Acompte versé')}</dt>
                 <dd className="text-success">− {formatPrice(acompteVerse, 'F')}</dd>
               </div>
               <div className="bg-border my-1 h-px" />
               <div className="flex items-center justify-between gap-3 text-sm font-bold">
-                <dt className="text-foreground">Reste à payer</dt>
+                <dt className="text-foreground">{t('Reste à payer')}</dt>
                 <dd className="text-primary">{formatPrice(resteAPayer, 'F CFA')}</dd>
               </div>
             </dl>
@@ -547,24 +557,30 @@ export default function FormulaireNouvelleCommande() {
                     commandes. On n'annonce plus que l'échéance réellement
                     saisie, et rien du tout quand il n'y en a pas.
                   */}
-                  {reference
-                    ? `Commande ${reference} enregistrée pour ${client.nom} — ${tarif?.tenue ?? ''}${
-                        echeance ? `, livraison ${libelleEcheance(echeance)}` : ''
-                      }.`
-                    : `Commande confirmée pour ${client.nom} — ${tarif?.tenue ?? ''}${
-                        echeance ? `, livraison ${libelleEcheance(echeance)}` : ''
-                      }.`}
+                  {t(
+                    reference
+                      ? 'Commande {reference} enregistrée pour {client} — {tenue}{livraison}.'
+                      : 'Commande confirmée pour {client} — {tenue}{livraison}.',
+                    {
+                      reference: reference ?? '',
+                      client: client.nom,
+                      tenue: tarif?.tenue ?? '',
+                      livraison: echeance
+                        ? t(', livraison {date}', { date: libelleEcheance(echeance, langue) })
+                        : '',
+                    },
+                  )}
                 </p>
                 {/* Sans numéro, c'est que rien n'est parti en base : on le dit
                     plutôt que de laisser croire à un enregistrement. */}
                 {!reference && (
                   <p className="text-warning text-xs">
-                    Confirmée à l’écran seulement — connectez-vous pour l’enregistrer.
+                    {t('Confirmée à l’écran seulement — connectez-vous pour l’enregistrer.')}
                   </p>
                 )}
                 <Link href="/commandes">
                   <Button variante="contour" pleineLargeur>
-                    Voir toutes les commandes
+                    {t('Voir toutes les commandes')}
                     <ArrowRight size={14} aria-hidden />
                   </Button>
                 </Link>

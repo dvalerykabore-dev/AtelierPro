@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Plus, Search } from 'lucide-react';
 import OrderCard from '@/components/atelier/OrderCard';
 import { useCommandes } from '@/lib/useCommandes';
+import { useT } from '@/contexts/LangueContext';
 
 /**
  * Commandes en cours du tableau de bord — cartes sur mobile, tableau sur desktop.
@@ -15,13 +16,14 @@ import { useCommandes } from '@/lib/useCommandes';
  * jour, l'historique se consulte depuis /commandes.
  */
 export default function CommandesDuJour() {
+  const t = useT();
   const { commandes, source, chargement } = useCommandes();
   const enCours = commandes.filter((c) => c.statut !== 'Livré');
 
   return (
     <>
       {/* ---------- Mobile ---------- */}
-      <section className="lg:hidden" aria-label="Commandes du jour">
+      <section className="lg:hidden" aria-label={t('Commandes du jour')}>
         <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2">
           <h2 className="font-headings text-foreground text-sm font-bold">
             Commandes du jour
@@ -34,7 +36,7 @@ export default function CommandesDuJour() {
             className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium"
           >
             <Plus size={12} aria-hidden />
-            Nouvelle
+            {t('Nouvelle')}
           </Link>
         </div>
 
@@ -56,7 +58,7 @@ export default function CommandesDuJour() {
       {/* ---------- Desktop ---------- */}
       <section
         className="bg-surface border-border hidden flex-1 overflow-hidden rounded-lg border lg:block"
-        aria-label="Commandes en cours"
+        aria-label={t('Commandes en cours')}
       >
         <div className="border-border flex items-center justify-between border-b px-4 py-3">
           <h2 className="font-headings text-foreground text-sm font-bold">
@@ -71,7 +73,7 @@ export default function CommandesDuJour() {
               <span className="text-muted-foreground text-xs">Rechercher…</span>
             </span>
             <Link href="/commandes" className="text-primary text-xs font-medium">
-              Voir tout
+              {t('Voir tout')}
             </Link>
           </div>
         </div>
@@ -80,11 +82,13 @@ export default function CommandesDuJour() {
         <div className="border-border flex items-center gap-3 border-b px-4 py-2">
           <div className="w-2 flex-shrink-0" />
           <div className="text-muted-foreground flex-1 text-xs tracking-wide uppercase">
-            Client / Tenue
+            {t('Client / Tenue')}
           </div>
-          <div className="text-muted-foreground w-20 text-xs tracking-wide uppercase">Statut</div>
+          <div className="text-muted-foreground w-20 text-xs tracking-wide uppercase">
+            {t('Statut')}
+          </div>
           <div className="text-muted-foreground w-16 text-right text-xs tracking-wide uppercase">
-            Livraison
+            {t('Livraison')}
           </div>
           <div className="w-7 flex-shrink-0" />
         </div>

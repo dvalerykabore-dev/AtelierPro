@@ -33,6 +33,7 @@ import {
   type Genre,
 } from '@/lib/mock/atelier';
 import { cn, formatPrice } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 const ONGLETS = ['Infos', 'Mesures', 'Tissus', 'Commandes'] as const;
 type Onglet = (typeof ONGLETS)[number];
@@ -62,6 +63,7 @@ function bilan(commandes: Commande[]) {
  * découpage que suit déjà la maquette mobile.
  */
 export default function CarnetClients() {
+  const t = useT();
   const { clients, source, chargement, ajouter } = useClients();
   const { commandes } = useCommandes();
 
@@ -162,12 +164,12 @@ export default function CarnetClients() {
     <Modal
       ouvert={ajoutOuvert}
       onFermer={() => setAjoutOuvert(false)}
-      titre="Nouveau client"
-      description="Le genre détermine la palette de mesures qui lui sera présentée."
+      titre={t('Nouveau client')}
+      description={t('Le genre détermine la palette de mesures qui lui sera présentée.')}
       pied={
         <>
           <Button variante="fantome" onClick={() => setAjoutOuvert(false)}>
-            Annuler
+            {t('Annuler')}
           </Button>
           <Button
             type="submit"
@@ -181,10 +183,10 @@ export default function CarnetClients() {
     >
       <form id="formulaire-nouveau-client" onSubmit={ajouterClient} className="flex flex-col gap-4">
         <Field
-          label="Nom complet"
+          label={t('Nom complet')}
           required
           autoFocus
-          placeholder="Aminata Ouédraogo"
+          placeholder={t('Aminata Ouédraogo')}
           value={nouveauNom}
           onChange={(e) => setNouveauNom(e.target.value)}
         />
@@ -196,14 +198,14 @@ export default function CarnetClients() {
           carnet et celle de la commande.
         */}
         <ChampTelephone
-          label="Téléphone"
+          label={t('Téléphone')}
           valeur={nouveauTelephone}
           onChange={setNouveauTelephone}
-          aide="Sert au bouton WhatsApp de la fiche client et de la commande."
+          aide={t('Sert au bouton WhatsApp de la fiche client et de la commande.')}
         />
 
         <div className="flex flex-col gap-1.5">
-          <span className="text-muted-foreground text-xs">Palette de mesures</span>
+          <span className="text-muted-foreground text-xs">{t('Palette de mesures')}</span>
           <GenreToggle valeur={nouveauGenre} onChange={setNouveauGenre} />
           <p className="text-muted-foreground text-xs">
             {nouveauGenre === 'Femme'
@@ -222,16 +224,16 @@ export default function CarnetClients() {
   );
 
   if (chargement && clients.length === 0) {
-    return <p className="text-muted-foreground p-8 text-sm">Chargement des clients…</p>;
+    return <p className="text-muted-foreground p-8 text-sm">{t('Chargement des clients…')}</p>;
   }
 
   if (!selectionne) {
     return (
       <div className="flex flex-col items-center gap-3 p-12 text-center">
-        <p className="text-foreground text-sm font-medium">Aucun client enregistré</p>
+        <p className="text-foreground text-sm font-medium">{t('Aucun client enregistré')}</p>
         <Button onClick={() => setAjoutOuvert(true)}>
           <UserPlus size={14} aria-hidden />
-          Ajouter le premier client
+          {t('Ajouter le premier client')}
         </Button>
         {modaleAjout}
       </div>
@@ -254,15 +256,15 @@ export default function CarnetClients() {
               type="search"
               value={recherche}
               onChange={(e) => setRecherche(e.target.value)}
-              placeholder="Rechercher un client…"
-              aria-label="Rechercher un client"
+              placeholder={t('Rechercher un client…')}
+              aria-label={t('Rechercher un client')}
               className="text-foreground placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm focus:outline-none"
             />
             {recherche && (
               <button
                 type="button"
                 onClick={() => setRecherche('')}
-                aria-label="Effacer la recherche"
+                aria-label={t('Effacer la recherche')}
                 className="text-muted-foreground hover:text-foreground flex-shrink-0"
               >
                 <X size={13} aria-hidden />
@@ -285,7 +287,7 @@ export default function CarnetClients() {
             className="bg-primary text-primary-foreground hover:bg-accent flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
             <UserPlus size={12} aria-hidden />
-            Ajouter
+            {t('Ajouter')}
           </button>
         </div>
 
@@ -316,7 +318,7 @@ export default function CarnetClients() {
                       {c.fidele && (
                         <span
                           className="bg-primary h-1.5 w-1.5 flex-shrink-0 rounded-full"
-                          title="Client fidèle"
+                          title={t('Client fidèle')}
                         />
                       )}
                     </div>
@@ -350,7 +352,7 @@ export default function CarnetClients() {
               type="button"
               onClick={() => setFicheOuverte(false)}
               className="border-border text-muted-foreground flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border lg:hidden"
-              aria-label="Retour à la liste"
+              aria-label={t('Retour à la liste')}
             >
               <ArrowLeft size={16} aria-hidden />
             </button>
@@ -364,7 +366,7 @@ export default function CarnetClients() {
                 </h2>
                 {selectionne.fidele && (
                   <span className="bg-primary text-primary-foreground rounded-sm px-2 py-0.5 text-xs font-medium">
-                    Client fidèle
+                    {t('Client fidèle')}
                   </span>
                 )}
               </div>
@@ -406,11 +408,11 @@ export default function CarnetClients() {
               <button
                 type="button"
                 disabled
-                title="Aucun numéro enregistré pour ce client."
+                title={t('Aucun numéro enregistré pour ce client.')}
                 className="border-border text-muted-foreground flex cursor-not-allowed items-center gap-2 rounded-md border px-3 py-2 text-sm opacity-50"
               >
                 <MessageCircle size={14} aria-hidden />
-                Pas de numéro
+                {t('Pas de numéro')}
               </button>
             )}
             <Link
@@ -418,8 +420,8 @@ export default function CarnetClients() {
               className="bg-primary text-primary-foreground hover:bg-accent flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors"
             >
               <Plus size={14} aria-hidden />
-              <span className="hidden sm:inline">Nouvelle commande</span>
-              <span className="sm:hidden">Commande</span>
+              <span className="hidden sm:inline">{t('Nouvelle commande')}</span>
+              <span className="sm:hidden">{t('Commande')}</span>
             </Link>
           </div>
         </div>
@@ -454,7 +456,7 @@ export default function CarnetClients() {
             >
               <div className="border-border flex flex-wrap items-center justify-between gap-2 border-b px-5 py-3">
                 <h3 className="font-headings text-foreground text-sm font-bold">
-                  Mesures corporelles
+                  {t('Mesures corporelles')}
                   <span className="text-muted-foreground ml-2 font-normal">
                     · palette {selectionne.genre.toLowerCase()}
                   </span>
@@ -476,9 +478,9 @@ export default function CarnetClients() {
                 <div key={section.titre}>
                   <div className="bg-muted border-border flex items-baseline gap-2 border-b px-4 py-1.5">
                     <span className="text-primary text-xs font-bold tracking-wide uppercase">
-                      {section.titre}
+                      {t(section.titre)}
                     </span>
-                    <span className="text-muted-foreground text-xs">{section.precision}</span>
+                    <span className="text-muted-foreground text-xs">{t(section.precision)}</span>
                   </div>
                   <div className="grid sm:grid-cols-2">
                     {section.champs.map((c, i) => (
@@ -490,10 +492,14 @@ export default function CarnetClients() {
                         )}
                       >
                         <span className="text-muted-foreground text-sm">
-                          <span className="text-muted-foreground/60 mr-1.5 font-mono text-xs">
+                          {/* `dir="ltr"` : sans lui, « 9B » se lit « B9 » en arabe. */}
+                          <span
+                            dir="ltr"
+                            className="text-muted-foreground/60 mr-1.5 font-mono text-xs"
+                          >
                             {c.numero}
                           </span>
-                          {c.label}
+                          {t(c.label)}
                         </span>
                         {/* Une mesure relevée s'écrit en crème, une absente reste
                             grise : la fiche doit dire d'un coup d'œil ce qui a
@@ -524,10 +530,10 @@ export default function CarnetClients() {
             >
               <div className="border-border flex items-center justify-between gap-2 border-b px-5 py-3">
                 <h3 className="font-headings text-foreground text-sm font-bold">
-                  Tissus apportés par le client
+                  {t('Tissus apportés par le client')}
                 </h3>
                 <Link href="/mesures" className="text-primary text-xs font-medium">
-                  Ajouter
+                  {t('Ajouter')}
                 </Link>
               </div>
 
@@ -537,8 +543,9 @@ export default function CarnetClients() {
                   yards de wax qu'il n'avait jamais apportés. */}
               {tissusDuClient.length === 0 ? (
                 <p className="text-muted-foreground px-5 py-4 text-xs">
-                  Aucun tissu photographié. Les tissus se prennent en photo pendant le relevé de
-                  mesures.
+                  {t(
+                    'Aucun tissu photographié. Les tissus se prennent en photo pendant le relevé de mesures.',
+                  )}
                 </p>
               ) : (
                 <div className="grid grid-cols-3 gap-3 p-4 sm:grid-cols-4">
@@ -569,7 +576,9 @@ export default function CarnetClients() {
 
               {releve?.modele && (
                 <div className="border-border border-t px-4 py-4">
-                  <span className="text-muted-foreground mb-2 block text-xs">Modèle choisi</span>
+                  <span className="text-muted-foreground mb-2 block text-xs">
+                    {t('Modèle choisi')}
+                  </span>
                   <div className="border-border relative h-48 w-full overflow-hidden rounded-md border">
                     <Image
                       src={releve.modele}
@@ -587,25 +596,25 @@ export default function CarnetClients() {
             <section className={cn(onglet === 'Infos' ? 'block' : 'hidden', 'lg:hidden')}>
               <div className="bg-surface border-border flex flex-col gap-3 rounded-lg border p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground text-xs">Téléphone</span>
+                  <span className="text-muted-foreground text-xs">{t('Téléphone')}</span>
                   <span className="text-foreground text-sm font-medium">
                     {formaterAffichage(selectionne.telephone)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground text-xs">Commandes passées</span>
+                  <span className="text-muted-foreground text-xs">{t('Commandes passées')}</span>
                   <span className="text-foreground text-sm font-medium">
                     {selectionne.nbCommandes}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground text-xs">Total facturé</span>
+                  <span className="text-muted-foreground text-xs">{t('Total facturé')}</span>
                   <span className="text-primary text-sm font-medium">
                     {formatPrice(selectionne.totalFacture, 'F CFA')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground text-xs">Dernière commande</span>
+                  <span className="text-muted-foreground text-xs">{t('Dernière commande')}</span>
                   <span className="text-foreground text-sm font-medium">
                     {selectionne.derniereCommande}
                   </span>
@@ -623,7 +632,7 @@ export default function CarnetClients() {
           >
             <div className="px-4 lg:px-6">
               <h3 className="font-headings text-foreground mb-1 text-sm font-bold">
-                Historique commandes
+                {t('Historique commandes')}
               </h3>
               <p className="text-muted-foreground text-xs">
                 {bilanClient.nombre} commande{bilanClient.nombre > 1 ? 's' : ''} ·{' '}
@@ -634,7 +643,7 @@ export default function CarnetClients() {
             <div className="flex flex-1 flex-col">
               {commandesDuClient.length === 0 && (
                 <p className="text-muted-foreground px-4 py-3.5 text-xs lg:px-6">
-                  Aucune commande enregistrée pour ce client.
+                  {t('Aucune commande enregistrée pour ce client.')}
                 </p>
               )}
 
@@ -667,7 +676,7 @@ export default function CarnetClients() {
                             : 'text-accent',
                       )}
                     >
-                      {h.statut}
+                      {t(h.statut)}
                     </span>
                     <span className="text-foreground text-xs font-medium">
                       {formatPrice(h.montant, 'F')}
@@ -682,20 +691,20 @@ export default function CarnetClients() {
                   className="bg-surface border-primary hover:bg-muted/40 mx-4 mt-4 rounded-lg border p-4 transition-colors lg:mx-6"
                 >
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <span className="text-primary text-xs font-bold">Commande en cours</span>
+                    <span className="text-primary text-xs font-bold">{t('Commande en cours')}</span>
                     <span className="text-muted-foreground text-xs">
                       {commandeEnCours.reference}
                     </span>
                   </div>
                   <div className="text-foreground text-sm font-medium">{commandeEnCours.tenue}</div>
                   <div className="mt-2 flex items-center justify-between gap-2">
-                    <span className="text-muted-foreground text-xs">Statut</span>
+                    <span className="text-muted-foreground text-xs">{t('Statut')}</span>
                     <span className="text-accent text-xs font-medium">
-                      {commandeEnCours.statut}
+                      {t(commandeEnCours.statut)}
                     </span>
                   </div>
                   <div className="mt-1 flex items-center justify-between gap-2">
-                    <span className="text-muted-foreground text-xs">Livraison calculée</span>
+                    <span className="text-muted-foreground text-xs">{t('Livraison calculée')}</span>
                     <span className="text-primary text-xs font-medium">
                       {commandeEnCours.livraison}
                     </span>

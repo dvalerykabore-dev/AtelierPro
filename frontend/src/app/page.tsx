@@ -30,9 +30,10 @@ export const metadata: Metadata = {
  * Elle porte désormais la maquette Banani « AtelierPro — Landing Page ».
  *
  * Pas de redirection pour les visiteurs déjà connectés : c'est la barre de
- * navigation qui s'adapte (« Tableau de bord » au lieu d'« Essai gratuit »).
- * Rediriger rendrait la page d'accueil invisible à ses propres clients, qui
- * ont pourtant de bonnes raisons d'y revenir — les tarifs, la FAQ, le contact.
+ * navigation qui s'adapte (elle retire le bouton d'essai et le lien de
+ * connexion). Rediriger rendrait la page d'accueil invisible à ses propres
+ * clients, qui ont pourtant de bonnes raisons d'y revenir — les tarifs, la
+ * FAQ, le contact.
  *
  * Composant serveur : la page est presque entièrement statique et doit l'être
  * pour le référencement. Seuls la barre de navigation (état de session, tiroir

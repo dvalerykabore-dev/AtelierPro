@@ -1,9 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import { AlertCircle, Calendar, ChevronRight } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
 import StatusBadge from '@/components/atelier/StatusBadge';
 import type { Commande } from '@/lib/mock/atelier';
 import { cn } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 export interface OrderCardProps {
   commande: Commande;
@@ -26,6 +29,7 @@ export interface OrderCardProps {
 }
 
 export default function OrderCard({ commande, variante, href }: OrderCardProps) {
+  const t = useT();
   const { client, tenue, statut, livraison, assignee, urgent } = commande;
   const enRetard = statut === 'En retard';
 
@@ -48,7 +52,11 @@ export default function OrderCard({ commande, variante, href }: OrderCardProps) 
           <div className="mb-0.5 flex items-center gap-1.5">
             <span className="text-foreground truncate text-sm font-medium">{client}</span>
             {urgent && (
-              <AlertCircle size={13} className="text-danger flex-shrink-0" aria-label="Urgent" />
+              <AlertCircle
+                size={13}
+                className="text-danger flex-shrink-0"
+                aria-label={t('Urgent')}
+              />
             )}
           </div>
           <span className="text-muted-foreground block truncate text-xs">{tenue}</span>
@@ -91,7 +99,7 @@ export default function OrderCard({ commande, variante, href }: OrderCardProps) 
           <span className="text-foreground text-sm font-medium">{client}</span>
           {urgent && (
             <span className="bg-danger text-foreground rounded-sm px-1.5 py-0.5 text-xs font-medium">
-              Urgent
+              {t('Urgent')}
             </span>
           )}
         </div>

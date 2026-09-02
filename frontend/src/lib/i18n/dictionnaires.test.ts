@@ -122,3 +122,66 @@ describe('dictionnaires', () => {
     expect(plates).toEqual([]);
   });
 });
+
+/**
+ * Chaînes citées en français dans le code et volontairement laissées telles
+ * quelles. Ce sont des exemples locaux — un nom, une ville, une adresse, un
+ * modèle de tenue — affichés en `placeholder` d'un champ vide, plus le nom d'un
+ * fournisseur. Les traduire ne rendrait service à personne : un atelier de
+ * Ouagadougou saisit ses vrais clients par-dessus.
+ */
+const HORS_DICTIONNAIRE = new Set([
+  'Aminata Ouédraogo',
+  'Moussa Koné',
+  'Ouagadougou',
+  'Secteur 15, rue 15.42',
+  'Boubou bazin brodé',
+  'Google',
+  // Exemple d'appel cité dans la doc de `LangueContext`, pas un texte d'écran.
+  '{n} commandes',
+]);
+
+/** Tous les `.ts`/`.tsx` du projet, tests exclus. */
+function sources(racine: string, acc: string[] = []): string[] {
+  for (const e of fs.readdirSync(racine, { withFileTypes: true })) {
+    const p = path.join(racine, e.name);
+    if (e.isDirectory()) sources(p, acc);
+    else if (/\.tsx?$/.test(e.name) && !/\.test\./.test(e.name)) acc.push(p);
+  }
+  return acc;
+}
+
+describe('couverture des dictionnaires', () => {
+  // Le vrai défaut que ce test attrape n'est pas une faute de traduction : c'est
+  // un écran qui appelle `t('…')` sur une phrase absente des dictionnaires. Rien
+  // ne casse — le moteur rend le français — et l'écran reste donc en français au
+  // milieu d'une interface arabe, sans la moindre erreur pour le signaler.
+  const utilisees = new Set<string>();
+  for (const f of sources('src')) {
+    const s = fs.readFileSync(f, 'utf8');
+    for (const m of s.matchAll(/\bt\(\s*'((?:[^'\\]|\\.)*)'/g)) utilisees.add(m[1] as string);
+    for (const m of s.matchAll(/\btp\(\s*'(?:[^'\\]|\\.)*'\s*,\s*'((?:[^'\\]|\\.)*)'/g))
+      utilisees.add(m[1] as string);
+    // Les modules hors composant n'ont pas de hook : ils appellent `traduire`
+    // directement, et leurs clés comptent tout autant.
+    for (const m of s.matchAll(/\btraduire\([^,]+,\s*'((?:[^'\\]|\\.)*)'/g))
+      utilisees.add(m[1] as string);
+  }
+
+  it('trouve bien les appels à traduire', () => {
+    // Garde-fou du garde-fou : si l'extraction cassait, le test ci-dessous
+    // passerait sur un ensemble vide sans rien vérifier.
+    expect(utilisees.size).toBeGreaterThan(200);
+  });
+
+  for (const langue of CIBLES) {
+    it(`déclare en ${langue} chaque phrase que le code demande`, () => {
+      const dictionnaire = DICTIONNAIRES[langue] as Dictionnaire;
+      const manquantes = [...utilisees]
+        .filter((cle) => !HORS_DICTIONNAIRE.has(cle))
+        .filter((cle) => dictionnaire[cle] === undefined)
+        .sort();
+      expect(manquantes).toEqual([]);
+    });
+  }
+});

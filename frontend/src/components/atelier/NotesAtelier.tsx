@@ -6,6 +6,7 @@ import Avatar from '@/components/ui/Avatar';
 import Button from '@/components/ui/Button';
 import { PastilleAtelier } from '@/components/atelier/IdentiteAtelier';
 import { useNotesCommande } from '@/lib/useNotesCommande';
+import { useT } from '@/contexts/LangueContext';
 
 export interface NotesAtelierProps {
   /** Commande commentée. Les notes lui appartiennent et la suivent. */
@@ -22,6 +23,7 @@ export interface NotesAtelierProps {
  * signées du compte connecté.
  */
 export default function NotesAtelier({ commandeId }: NotesAtelierProps) {
+  const t = useT();
   const { notes, chargement, session, erreur, ajouter } = useNotesCommande(commandeId);
   const [brouillon, setBrouillon] = useState('');
   const [envoi, setEnvoi] = useState(false);
@@ -46,7 +48,7 @@ export default function NotesAtelier({ commandeId }: NotesAtelierProps) {
   return (
     <section className="px-4 py-5 lg:px-8">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="font-headings text-foreground text-sm font-bold">Notes atelier</h2>
+        <h2 className="font-headings text-foreground text-sm font-bold">{t('Notes atelier')}</h2>
         <Button
           variante="contour"
           taille="sm"
@@ -54,23 +56,26 @@ export default function NotesAtelier({ commandeId }: NotesAtelierProps) {
           onClick={() => document.getElementById('nouvelle-note')?.focus()}
         >
           <Plus size={11} aria-hidden />
-          Ajouter note
+          {t('Ajouter note')}
         </Button>
       </div>
 
       <div className="flex flex-col gap-3">
-        {chargement && <p className="text-muted-foreground py-3 text-sm">Chargement des notes…</p>}
+        {chargement && (
+          <p className="text-muted-foreground py-3 text-sm">{t('Chargement des notes…')}</p>
+        )}
 
         {!chargement && notes.length === 0 && session && (
           <p className="text-muted-foreground py-3 text-sm">
-            Aucune note pour l’instant. Ce qui s’écrit ici suit la commande — essayage, retouche
-            demandée, tissu manquant.
+            {t(
+              'Aucune note pour l’instant. Ce qui s’écrit ici suit la commande — essayage, retouche demandée, tissu manquant.',
+            )}
           </p>
         )}
 
         {!session && (
           <p className="text-muted-foreground py-3 text-sm">
-            Connectez-vous pour lire et écrire les notes de cette commande.
+            {t('Connectez-vous pour lire et écrire les notes de cette commande.')}
           </p>
         )}
 
@@ -115,14 +120,14 @@ export default function NotesAtelier({ commandeId }: NotesAtelierProps) {
                     }
                   }}
                   rows={1}
-                  placeholder="Ajouter une note ou observation…"
-                  aria-label="Nouvelle note d’atelier"
+                  placeholder={t('Ajouter une note ou observation…')}
+                  aria-label={t('Nouvelle note d’atelier')}
                   className="text-foreground placeholder:text-muted-foreground min-h-6 flex-1 resize-none bg-transparent text-sm focus:outline-none"
                 />
                 <button
                   type="submit"
                   disabled={!brouillon.trim() || envoi}
-                  aria-label="Publier la note"
+                  aria-label={t('Publier la note')}
                   className="text-primary flex-shrink-0 disabled:opacity-30"
                 >
                   <Send size={16} aria-hidden />

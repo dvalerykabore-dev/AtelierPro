@@ -309,4 +309,591 @@ export const ar: Dictionnaire = {
   // ------------------------------------------------------------ téléphone
   'Indicatif du pays': 'رمز الدولة',
   'Numéro de téléphone invalide.': 'رقم هاتف غير صالح.',
+
+  // ------------------------------------------------------- tableau de bord
+  'Bonjour {nom}': 'مرحبًا {nom}',
+  'Commandes du jour': 'طلبات اليوم',
+  'Commandes en cours': 'الطلبات الجارية',
+  'Commandes livrées': 'الطلبات المسلَّمة',
+  'Chiffre d’affaires du mois': 'إيرادات الشهر',
+  'Livraison à temps': 'التسليم في الموعد',
+  'Délai moyen': 'متوسط المهلة',
+  'Calcul des indicateurs…': 'جارٍ حساب المؤشرات…',
+  'Indicateurs indisponibles': 'المؤشرات غير متاحة',
+  'Notifications indisponibles': 'الإشعارات غير متاحة',
+  'Non lue': 'غير مقروء',
+  'AtelierPro, accueil': 'أتولييه برو، الصفحة الرئيسية',
+  'Ouvrir le carnet clients': 'فتح دفتر العملاء',
+
+  // -------------------------------------------- commandes · liste et fiche
+  Commande: 'الطلب',
+  'Commande en cours': 'طلب قيد التنفيذ',
+  'Rechercher une commande': 'البحث عن طلب',
+  'Rechercher un client, une tenue, une référence…': 'ابحث عن عميل أو ثوب أو مرجع…',
+  'Aucune commande ne correspond': 'لا يوجد طلب مطابق',
+  'Aucune commande enregistrée.': 'لا توجد طلبات مسجّلة.',
+  'Cette commande n’existe pas': 'هذا الطلب غير موجود',
+  'Chargement de la commande…': 'جارٍ تحميل الطلب…',
+  'Retour aux commandes': 'العودة إلى الطلبات',
+  'Retour à la liste': 'العودة إلى القائمة',
+  'Réf.': 'المرجع',
+  Statut: 'الحالة',
+  Avancement: 'التقدّم',
+  'Livraison prévue': 'التسليم المقرّر',
+  'Livraison calculée': 'التسليم المحتسب',
+  'Date de création': 'تاريخ الإنشاء',
+  Assigné: 'مُسنَد',
+  'Assigné à': 'مُسنَد إلى',
+  'Non assigné': 'غير مُسنَد',
+  Artisan: 'خياط',
+  Tissu: 'القماش',
+  Instructions: 'التعليمات',
+  'Modèle choisi': 'الموديل المختار',
+  'Palette de mesures': 'مجموعة المقاسات',
+  'Montant de la commande': 'مبلغ الطلب',
+  'Voir la fiche client': 'عرض بطاقة العميل',
+  'Page précédente': 'الصفحة السابقة',
+  'Page suivante': 'الصفحة التالية',
+
+  // ------------------------------------------- commandes · notes d’atelier
+  'Notes atelier': 'ملاحظات الورشة',
+  'Chargement des notes…': 'جارٍ تحميل الملاحظات…',
+  'Ajouter une note ou observation…': 'أضف ملاحظة أو ملحوظة…',
+  'Nouvelle note d’atelier': 'ملاحظة ورشة جديدة',
+  'Publier la note': 'نشر الملاحظة',
+
+  // ----------------------------------------------------- nouvelle commande
+  'Cliente / client': 'العميلة / العميل',
+  Client: 'العميل',
+  'Client concerné': 'العميل المعني',
+  'Nouveau client': 'عميل جديد',
+  'Le genre détermine la palette de mesures qui lui sera présentée.':
+    'يحدّد النوع مجموعة المقاسات التي ستُعرض.',
+  'La référence visuelle que le client souhaite reproduire.':
+    'المرجع البصري الذي يريد العميل تنفيذه.',
+  'Tissus apportés': 'الأقمشة المُحضَرة',
+  'Photographiez chaque coupon : motif, métrage, couleur réelle.':
+    'صوّر كل قطعة قماش: النقشة، الطول، اللون الحقيقي.',
+  'Wax hollandais — 6 yards': 'واكس هولندي — 6 ياردات',
+  'Wax 6 yards — marché de Rood Woko': 'واكس 6 ياردات — سوق رود ووكو',
+  'Notes / instructions': 'ملاحظات / تعليمات',
+  'Ces consignes sont lues par l’artisan au moment de la coupe.':
+    'يقرأ الخياط هذه التعليمات عند القصّ.',
+  'Ex : col bateau, fermeture invisible dos, finitions dorées sur les ourlets.':
+    'مثال: ياقة قارب، سحّاب خفي في الظهر، تشطيب ذهبي على الأطراف.',
+  'Ex : épaule droite légèrement plus basse, prévoir 1 cm de reprise.':
+    'مثال: الكتف الأيمن أخفض قليلًا، احسب 1 سم للتضييق.',
+  'Acompte versé': 'العربون المدفوع',
+  'En francs CFA. Enregistré comme recette dans la caisse.':
+    'بالفرنك الأفريقي. يُسجَّل كإيراد في الصندوق.',
+  'Réglé en': 'طريقة الدفع',
+  'Sert au rapprochement de caisse en fin de mois.': 'يُستخدم لمطابقة الصندوق في نهاية الشهر.',
+  'Sert au bouton WhatsApp de la fiche client et de la commande.':
+    'يُستخدم لزر واتساب في بطاقة العميل وفي الطلب.',
+  'Robe wax cérémonie — Mariam C.': 'فستان واكس للمناسبات — Mariam C.',
+
+  // --------------------------------------------------------------- clients
+  'Rechercher un client': 'البحث عن عميل',
+  'Rechercher un client…': 'ابحث عن عميل…',
+  'Chargement des clients…': 'جارٍ تحميل العملاء…',
+  'Aucun client enregistré': 'لا يوجد عميل مسجّل',
+  'Aucun numéro enregistré pour ce client.': 'لا يوجد رقم مسجّل لهذا العميل.',
+  'Client fidèle': 'عميل وفي',
+  'Commandes passées': 'الطلبات السابقة',
+  'Dernière commande': 'آخر طلب',
+  Effacer: 'مسح',
+  'Effacer la recherche': 'مسح البحث',
+
+  // -------------------------------------------------- planning et capacité
+  'Chargement du planning…': 'جارٍ تحميل الجدول…',
+  'Semaine précédente': 'الأسبوع السابق',
+  'Semaine suivante': 'الأسبوع التالي',
+  Jour: 'اليوم',
+  'Légende :': 'الدليل:',
+  Libre: 'متفرّغ',
+  'Affecter une tâche': 'إسناد مهمة',
+  'Intitulé de la tâche': 'عنوان المهمة',
+  'Durée (heures)': 'المدة (بالساعات)',
+  'Capacité du jour': 'طاقة اليوم',
+  'Charge globale de l’atelier': 'الحِمل الإجمالي للورشة',
+  Disponibles: 'متاحون',
+  Saturés: 'محمَّلون بالكامل',
+  'Prochaine dispo': 'أقرب موعد متاح',
+  'Aucun artisan actif': 'لا يوجد خياط نشط',
+  'Composer l’équipe': 'تكوين الفريق',
+
+  // ---------------------------------------------- paiements d’une commande
+  Paiements: 'المدفوعات',
+  'Chargement des versements…': 'جارٍ تحميل الدفعات…',
+  'Enregistrer un versement': 'تسجيل دفعة',
+  'Montant (F CFA)': 'المبلغ (فرنك أفريقي)',
+  'Date de l’encaissement': 'تاريخ القبض',
+  'Le jour où l’argent est entré, pas celui de la saisie.': 'يوم دخول المال، لا يوم إدخاله.',
+  'Réglé par': 'طريقة الدفع',
+  'Note (facultatif)': 'ملاحظة (اختياري)',
+  'Déjà encaissé': 'المقبوض حتى الآن',
+  'Reste à payer': 'المتبقّي للدفع',
+  'Part du montant encaissée': 'نسبة المبلغ المقبوض',
+  '· date reconstituée': '· تاريخ مُستنتَج',
+
+  // ------------------------------------------------ trésorerie et dépenses
+  'Trésorerie indisponible': 'الخزينة غير متاحة',
+  'Dépenses indisponibles': 'المصاريف غير متاحة',
+  'Calcul du solde…': 'جارٍ حساب الرصيد…',
+  'Chargement du journal…': 'جارٍ تحميل السجل…',
+  Recettes: 'الإيرادات',
+  Encaissé: 'مقبوض',
+  Résultat: 'النتيجة',
+  Prévision: 'التوقّع',
+  'Six derniers mois': 'آخر ستة أشهر',
+  'Total 6 mois': 'إجمالي ستة أشهر',
+  'Total facturé': 'إجمالي الفوترة',
+  'Total des dépenses': 'إجمالي المصاريف',
+  'Mois précédent': 'الشهر السابق',
+  'Mois suivant': 'الشهر التالي',
+  'Enregistrer une dépense': 'تسجيل مصروف',
+  Libellé: 'البيان',
+  'Loyer de l’atelier': 'إيجار الورشة',
+  Poste: 'البند',
+  'Par poste': 'حسب البند',
+  'Tous les postes': 'كل البنود',
+  'Filtrer par poste': 'تصفية حسب البند',
+  'Date du décaissement': 'تاريخ الصرف',
+  'La date est celle où l’argent est sorti, pas celle de la saisie.':
+    'التاريخ هو يوم خروج المال، لا يوم إدخاله.',
+  'Charges fixes': 'المصاريف الثابتة',
+  'Déclarer une charge fixe': 'تسجيل مصروف ثابت',
+  'Montant mensuel (F CFA)': 'المبلغ الشهري (فرنك أفريقي)',
+  'Jour d’échéance': 'يوم الاستحقاق',
+  'Entre 1 et 28 — au-delà, février n’aurait pas d’échéance certaines années.':
+    'بين 1 و28 — بعد ذلك لن يكون لفبراير موعد استحقاق في بعض السنوات.',
+  'Elle sert uniquement à la prévision. Aucun mouvement n’est écrit en caisse tant que vous n’avez pas payé.':
+    'تُستخدم للتوقّع فقط. لا يُسجَّل أي مبلغ في الصندوق ما لم تدفع فعلًا.',
+  'solde projeté': 'الرصيد المتوقّع',
+  '— reste du mois': '— بقية الشهر',
+  encaissé: 'مقبوض',
+  facturé: 'مفوتَر',
+
+  // ----------------------------------------------- téléversement de photos
+  'Photo ou glisser-déposer': 'صورة أو سحب وإفلات',
+
+  // --------------------------------------- vocabulaire · genres et statuts
+  Femme: 'نساء',
+  Homme: 'رجال',
+  'En cours': 'قيد التنفيذ',
+  Essayage: 'بروفة',
+  Livraison: 'التسليم',
+  'En retard': 'متأخر',
+  Livré: 'تم التسليم',
+  Terminé: 'منجز',
+  Planifié: 'مجدول',
+  Bloqué: 'معطّل',
+
+  // ------------------------- vocabulaire · étapes et jalons d’une commande
+  Modèle: 'الموديل',
+  'Commande enregistrée': 'تم تسجيل الطلب',
+  Confection: 'التنفيذ',
+
+  // --------------------------------------- vocabulaire · postes de dépense
+  'Tissus et fournitures': 'الأقمشة واللوازم',
+  'Salaires et main-d’œuvre': 'الأجور واليد العاملة',
+  'Broderie et façon': 'التطريز والخياطة',
+  Commissions: 'العمولات',
+  Loyer: 'الإيجار',
+  'Électricité et eau': 'الكهرباء والماء',
+  'Internet et téléphone': 'الإنترنت والهاتف',
+  'Machines et entretien': 'الآلات والصيانة',
+  'Transport et livraison': 'النقل والتسليم',
+  'Taxes et patente': 'الضرائب والرخصة',
+  Publicité: 'الإعلان',
+  Divers: 'متفرقات',
+
+  // -------------------------------------- vocabulaire · modes de règlement
+  Espèces: 'نقدًا',
+  'Mobile Money': 'الدفع عبر الهاتف',
+  Virement: 'تحويل بنكي',
+  Carte: 'بطاقة',
+
+  // ---------------------------------------- palettes de mesures · sections
+  Haut: 'الأعلى',
+  Bas: 'الأسفل',
+  'Buste, manches et longueur d’habit': 'الصدر والأكمام وطول الثوب',
+  Pantalon: 'البنطلون',
+  'Buste, robe et manches': 'الصدر والفستان والأكمام',
+  'Jupe, pantalon et montant': 'التنورة والبنطلون والارتفاع',
+
+  // ------------------------------------------ palettes de mesures · relevé
+  'Tour de cou': 'محيط الرقبة',
+  Épaule: 'الكتف',
+  Épaules: 'الكتفان',
+  'Longueur d’épaule': 'طول الكتف',
+  Poitrine: 'محيط الصدر',
+  'Écart poitrine': 'المسافة بين الصدرين',
+  'Hauteur poitrine': 'ارتفاع الصدر',
+  'Longueur de manche': 'طول الكم',
+  'Tour de bras': 'محيط الذراع',
+  'Longueur bras': 'طول الذراع',
+  'Longueur bras total plié': 'طول الذراع كاملًا مثنيًا',
+  Coude: 'المرفق',
+  Poignet: 'المعصم',
+  'Tour du poignet': 'محيط المعصم',
+  Taille: 'الخصر',
+  'Tour de taille': 'محيط الخصر',
+  'Longueur taille devant': 'طول الخصر الأمامي',
+  'Longueur taille dos': 'طول الخصر الخلفي',
+  'Longueur habit': 'طول الثوب',
+  'Longueur habit A': 'طول الثوب أ',
+  'Longueur habit B': 'طول الثوب ب',
+  Ceinture: 'الحزام',
+  'Tour hanche': 'محيط الورك',
+  'Tour de hanches': 'محيط الوركين',
+  'Hauteur taille-hanches': 'من الخصر إلى الورك',
+  'Hauteur taille-genou': 'من الخصر إلى الركبة',
+  'Hauteur taille-cheville': 'من الخصر إلى الكاحل',
+  'Hauteur épaules-longueur finie': 'من الكتف إلى الطول النهائي',
+  'Hauteur bassin': 'ارتفاع الحوض',
+  'Hauteur montant assis': 'ارتفاع الجلوس',
+  Entrejambe: 'طول الساق الداخلي',
+  'Fourche (entrejambe)': 'المسافة بين الساقين',
+  Cuisse: 'الفخذ',
+  Mollet: 'السمانة',
+  Cheville: 'الكاحل',
+  'Longueur pantalon': 'طول البنطلون',
+
+  // ------------------------------------------------------ prise de mesures
+  'Rechercher…': 'ابحث…',
+  'Mesures {palette}': 'مقاسات {palette}',
+  'Palette {palette} sur un client enregistré comme {client}.':
+    'مجموعة {palette} لعميل مسجَّل بصفة {client}.',
+  '{remplies}/{total} renseignées': '{remplies}/{total} مُدخَلة',
+  '{remplies}/{total} mesures': '{remplies}/{total} مقاس',
+  '{n} mesures': {
+    zero: 'لا مقاسات',
+    one: 'مقاس واحد',
+    two: 'مقاسان',
+    few: '{n} مقاسات',
+    many: '{n} مقاسًا',
+    other: '{n} مقاس',
+  },
+  '{n} photos de tissu': {
+    zero: 'لا صور قماش',
+    one: 'صورة قماش واحدة',
+    two: 'صورتا قماش',
+    few: '{n} صور قماش',
+    many: '{n} صورة قماش',
+    other: '{n} صورة قماش',
+  },
+  'modèle photographié': 'تم تصوير الموديل',
+  'aucun modèle': 'لا يوجد موديل',
+  'Remarques sur la morphologie': 'ملاحظات حول القياسات الجسدية',
+  'Relevé enregistré': 'تم حفظ المقاسات',
+  'Conservé à l’écran seulement — connectez-vous pour enregistrer.':
+    'محفوظ على الشاشة فقط — سجّل الدخول للحفظ.',
+  'Créer la commande': 'إنشاء الطلب',
+  'Enregistrer le relevé': 'حفظ المقاسات',
+
+  // --------------------------------------------------------------- landing
+  'Essai gratuit': 'تجربة مجانية',
+
+  // ---------------------------------------------------- landing · accroche
+  'Votre atelier, enfin tenu au clair': 'ورشتك، أخيرًا تحت السيطرة',
+  'Commandes, mesures, acomptes, planning de l’équipe. AtelierPro rassemble ce qui vit aujourd’hui dans des carnets, des SMS et de la mémoire.':
+    'الطلبات والمقاسات والعرابين وجدول الفريق. يجمع أتولييه برو ما يعيش اليوم في الدفاتر والرسائل والذاكرة.',
+  'Trente jours d’essai gratuit. Sans carte bancaire. En français, en anglais ou en arabe, dans le navigateur — rien à installer.':
+    'ثلاثون يومًا مجانًا. دون بطاقة بنكية. بالفرنسية أو الإنجليزية أو العربية، في المتصفح — دون أي تثبيت.',
+  'Créer mon atelier': 'إنشاء ورشتي',
+  '30 jours': '30 يومًا',
+  'D’essai gratuit, sans carte bancaire': 'تجربة مجانية دون بطاقة بنكية',
+  '0 F': '0 F',
+  'À installer — tout passe par le navigateur': 'للتثبيت — كل شيء يجري في المتصفح',
+  'Écrans de gestion, du planning à la trésorerie': 'شاشات إدارية، من الجدولة إلى الخزينة',
+
+  // --------------------------------------------- landing · fonctionnalités
+  'Tout ce qu’un atelier a besoin de retenir': 'كل ما تحتاج الورشة إلى تذكّره',
+  'De la prise de commande à la livraison. Touchez une carte pour voir l’écran correspondant.':
+    'من تسجيل الطلب إلى التسليم. المس بطاقة لرؤية الشاشة المقابلة.',
+  'Planification de l’équipe': 'جدولة الفريق',
+  'Affectez les tâches jour par jour et voyez immédiatement qui est saturé. La capacité est propre à chaque artisan : un apprenti à 6 h n’est pas jugé au seuil d’un tailleur senior.':
+    'وزّع المهام يومًا بيوم وشاهد فورًا من تجاوز طاقته. الطاقة خاصة بكل خياط: المتدرّب بست ساعات لا يُقاس بعتبة خياط متمرّس.',
+  'Voir le planning': 'عرض الجدول',
+  'Mesures conservées': 'مقاسات محفوظة',
+  'Un relevé corporel par client, enregistré une fois et repris à chaque commande. Photos des tissus apportés et du modèle choisi.':
+    'سجل قياسات واحد لكل عميل، يُحفظ مرة ويُستعمل في كل طلب. صور للأقمشة المُحضَرة وللموديل المختار.',
+  'Voir le relevé': 'عرض المقاسات',
+  'Acomptes et soldes': 'العرابين والأرصدة',
+  'Chaque commande porte son montant, son acompte et son reste à payer, en francs CFA. Le solde se lit sans calcul mental.':
+    'كل طلب يحمل مبلغه وعربونه والمتبقّي منه، بالفرنك الأفريقي. يُقرأ الرصيد دون حساب ذهني.',
+  'Voir les commandes': 'عرض الطلبات',
+  'Carnet client': 'دفتر العملاء',
+  'Coordonnées, historique des commandes et mesures d’un client au même endroit. Plus de carnet papier à retrouver.':
+    'بيانات الاتصال وسجل الطلبات والمقاسات في مكان واحد. لا دفتر ورقي تبحث عنه بعد اليوم.',
+  'Voir le carnet': 'عرض الدفتر',
+  'Rapports d’atelier': 'تقارير الورشة',
+  'Chiffre d’affaires, tenues les plus demandées, délais de livraison — calculés sur vos commandes réelles, jamais sur des exemples.':
+    'الإيرادات، والأثواب الأكثر طلبًا، ومهل التسليم — محسوبة من طلباتك الحقيقية، لا من أمثلة.',
+  'Voir les rapports': 'عرض التقارير',
+  'Pensé pour le téléphone': 'مصمّم للهاتف',
+  'Chaque écran est conçu d’abord pour un écran de téléphone, puis élargi. L’atelier se gère debout, entre deux essayages.':
+    'كل شاشة مصمّمة للهاتف أولًا ثم موسّعة. تُدار الورشة وقوفًا، بين بروفة وأخرى.',
+  'Voir le tableau de bord': 'عرض لوحة القيادة',
+
+  // ------------------------------------------- landing · profils d’atelier
+  'Pour tout type d’atelier': 'لكل نوع من الورشات',
+  'Que vous cousiez seul ou que vous meniez une équipe de dix personnes.':
+    'سواء كنت تخيط وحدك أو تقود فريقًا من عشرة.',
+  'Atelier de quartier': 'ورشة الحي',
+  'Un tailleur seul ou deux à trois couturières. Commandes régulières, clientèle fidèle.':
+    'خياط بمفرده أو خيّاطتان إلى ثلاث. طلبات منتظمة وزبائن أوفياء.',
+  'Carnet client, mesures et acomptes au même endroit':
+    'دفتر العملاء والمقاسات والعرابين في مكان واحد',
+  'Production collective': 'إنتاج جماعي',
+  'Cinq à dix tailleurs, forte charge. Besoin de coordination et de délais tenus.':
+    'من خمسة إلى عشرة خياطين، حِمل ثقيل. تحتاج تنسيقًا ومواعيد محترمة.',
+  'Charge de chaque artisan, jour par jour, avec sa capacité propre':
+    'حِمل كل خياط، يومًا بيوم، مقابل طاقته الخاصة',
+  'Maison de mode': 'دار أزياء',
+  'Pièces de valeur, retouches nombreuses, clientèle exigeante.':
+    'قطع ثمينة، تعديلات كثيرة، زبائن متطلّبون.',
+  'Relevé corporel conservé, photos des tissus, solde suivi à l’écriture près':
+    'سجل قياسات محفوظ، صور للأقمشة، رصيد متابَع حتى آخر قيد',
+  'Ce que ça change': 'ما الذي يتغيّر',
+
+  // ------------------------------------------------------ landing · tarifs
+  'Des tarifs lisibles': 'أسعار واضحة',
+  'Trente jours d’essai sur tous les plans. Sans engagement.':
+    'تجربة ثلاثين يومًا على كل الخطط. دون التزام.',
+  'Le paiement en ligne n’est pas encore ouvert : l’essai démarre sans moyen de paiement, et nous vous contactons avant tout prélèvement.':
+    'الدفع الإلكتروني غير متاح بعد: تبدأ التجربة دون وسيلة دفع، ونتواصل معك قبل أي خصم.',
+  'Le plus choisi': 'الأكثر اختيارًا',
+  'Commencer l’essai': 'ابدأ التجربة',
+  'Nous écrire': 'راسلنا',
+  Découverte: 'البداية',
+  'Pour un atelier qui démarre': 'لورشة في بدايتها',
+  'Jusqu’à 50 commandes par mois': 'حتى 50 طلبًا شهريًا',
+  'Jusqu’à 5 artisans': 'حتى 5 خياطين',
+  'Mesures et paiements': 'المقاسات والمدفوعات',
+  'Notes d’atelier': 'ملاحظات الورشة',
+  'Assistance par e-mail': 'الدعم عبر البريد',
+  'Pour une équipe qui grandit': 'لفريق يكبر',
+  'Commandes illimitées': 'طلبات غير محدودة',
+  'Jusqu’à 10 artisans': 'حتى 10 خياطين',
+  'Planning et capacité par artisan': 'الجدولة والطاقة لكل خياط',
+  'Rapports complets': 'تقارير كاملة',
+  'Assistance prioritaire': 'دعم ذو أولوية',
+  Maison: 'الدار',
+  'Pour les grands ateliers': 'للورشات الكبيرة',
+  'Sur devis': 'حسب الطلب',
+  'Artisans illimités': 'خياطون غير محدودين',
+  'Accès à l’API': 'الوصول إلى الواجهة البرمجية',
+  'Mise en route accompagnée': 'مرافقة عند الانطلاق',
+  'Formation de l’équipe': 'تدريب الفريق',
+  'Interlocuteur dédié': 'مسؤول مخصّص',
+  '/mois': '/شهر',
+
+  // ---------------------------------------- landing · questions fréquentes
+  'Questions fréquentes': 'أسئلة شائعة',
+  'Faut-il un téléphone récent ?': 'هل أحتاج هاتفًا حديثًا؟',
+  'Non. AtelierPro s’ouvre dans le navigateur, y compris sur un Android ancien et une connexion lente. Aucune installation n’est nécessaire.':
+    'لا. يفتح أتولييه برو في المتصفح، حتى على أندرويد قديم واتصال بطيء. لا حاجة إلى أي تثبيت.',
+  'Combien ça coûte ?': 'كم يكلّف؟',
+  'Trente jours d’essai gratuit, puis de 2 000 à 5 000 F CFA par mois selon le plan. Moins cher qu’une retouche.':
+    'ثلاثون يومًا مجانًا، ثم من 2000 إلى 5000 فرنك أفريقي شهريًا حسب الخطة. أرخص من تعديل واحد.',
+  'Et si internet est coupé ?': 'وإن انقطع الإنترنت؟',
+  'L’atelier a besoin d’une connexion pour enregistrer ses commandes. Le travail hors-ligne avec synchronisation différée est prévu, il n’est pas encore disponible.':
+    'تحتاج الورشة إلى اتصال لحفظ طلباتها. العمل دون اتصال مع مزامنة لاحقة مُخطَّط له، وليس متاحًا بعد.',
+  'Comment reprendre mes anciens clients ?': 'كيف أنقل عملائي السابقين؟',
+  'Le carnet s’alimente au fil des commandes : le premier client se saisit en moins d’une minute, mesures comprises. Un import de fichier est à l’étude.':
+    'يمتلئ الدفتر مع تدفّق الطلبات: يُدخَل العميل الأول في أقل من دقيقة، بمقاساته. استيراد ملف قيد الدراسة.',
+  'C’est pour quel pays ?': 'لأي بلد هو؟',
+  'Conçu pour l’Afrique de l’Ouest : interface en français, en anglais ou en arabe, montants en francs CFA sans décimales.':
+    'مصمَّم لغرب أفريقيا: واجهة بالفرنسية أو الإنجليزية أو العربية، ومبالغ بالفرنك الأفريقي دون كسور.',
+
+  // ---------------------------------- landing · témoignages et appel final
+  'Ce que disent les tailleurs': 'ما يقوله الخياطون',
+  'Des ateliers qui ont troqué le carnet contre l’écran.': 'ورشات استبدلت الدفتر بالشاشة.',
+  'Du fil à la livraison': 'من الخيط إلى التسليم',
+  'Prêt à mettre votre atelier au clair ?': 'مستعد لترتيب ورشتك؟',
+  'Trente jours gratuits, sans moyen de paiement. La première commande se saisit en deux minutes.':
+    'ثلاثون يومًا مجانًا، دون وسيلة دفع. يُدخَل الطلب الأول في دقيقتين.',
+  'Une question ? Écrivez-nous sur WhatsApp': 'سؤال؟ راسلنا على واتساب',
+
+  // ---------------------------------- landing · navigation et pied de page
+  Fonctionnalités: 'المزايا',
+  Tarifs: 'الأسعار',
+  Témoignages: 'الشهادات',
+  Questions: 'الأسئلة',
+  'Liens de bas de page': 'روابط أسفل الصفحة',
+  Confidentialité: 'الخصوصية',
+  'Conditions d’utilisation': 'شروط الاستخدام',
+  Contact: 'اتصل بنا',
+  'Fait pour l’Afrique de l’Ouest. © {annee}': 'صُنع لغرب أفريقيا. © {annee}',
+  'Retour à l’accueil': 'العودة إلى الرئيسية',
+
+  // ---------------------------------- alertes d’atelier · phrases rejouées
+  'Commande {reference} en retard — {client}': 'الطلب {reference} متأخر — {client}',
+  '{tenue} devait être livrée le {date}.': 'كان من المفترض تسليم {tenue} في {date}.',
+  'Livraison demain — {client}': 'التسليم غدًا — {client}',
+  '{tenue} ({reference}) est attendue demain.': '{tenue} ({reference}) متوقَّع غدًا.',
+  'Voir la commande': 'عرض الطلب',
+  'À l’instant': 'الآن',
+
+  // -------------------------------------------------------- titres d’écran
+  'Prise de mesures': 'أخذ المقاسات',
+  'Capacité de l’équipe': 'طاقة الفريق',
+  'Trésorerie de l’atelier': 'خزينة الورشة',
+  'Politique de confidentialité': 'سياسة الخصوصية',
+  'Retour au dashboard': 'العودة إلى لوحة القيادة',
+  'Retour à la connexion': 'العودة إلى تسجيل الدخول',
+  'Échec de connexion': 'فشل تسجيل الدخول',
+  Imprimer: 'طباعة',
+  'Voir tout': 'عرض الكل',
+  'Voir toutes les commandes': 'عرض كل الطلبات',
+  'Réinitialiser les filtres': 'إعادة ضبط عوامل التصفية',
+
+  // ------------------------------ commandes · liste, fiche et écrans vides
+  'Client & tenue': 'العميل والثوب',
+  'Client / Tenue': 'العميل / الثوب',
+  'Chargement des commandes…': 'جارٍ تحميل الطلبات…',
+  'Détails de la commande': 'تفاصيل الطلب',
+  'Détails du modèle': 'تفاصيل الموديل',
+  'Mesures corporelles': 'مقاسات الجسم',
+  'Tissus apportés par le client': 'أقمشة أحضرها العميل',
+  'Couleur / motif': 'اللون / النقشة',
+  'Date de livraison': 'تاريخ التسليم',
+  'C’est la date promise au client — elle sert au planning et aux alertes de retard.':
+    'هذا هو التاريخ الموعود للعميل — يُستخدم في الجدولة وتنبيهات التأخير.',
+  Urgent: 'عاجل',
+  Nouvelle: 'جديد',
+  Saisir: 'إدخال',
+  Montant: 'المبلغ',
+  'Elle a peut-être été supprimée, ou appartient à un autre atelier.':
+    'ربما حُذف، أو أنه يخصّ ورشة أخرى.',
+  'Aucun tissu photographié. Les tissus se prennent en photo pendant le relevé de mesures.':
+    'لا صور للأقمشة. تُصوَّر الأقمشة أثناء أخذ المقاسات.',
+  'Confirmée à l’écran seulement — connectez-vous pour l’enregistrer.':
+    'مؤكَّد على الشاشة فقط — سجّل الدخول لحفظه.',
+  'Créez d’abord un client dans le carnet : une commande lui sera rattachée.':
+    'أنشئ عميلًا في الدفتر أولًا: سيُربط الطلب به.',
+  'En créer un': 'أنشئ واحدًا',
+  'En ajouter une': 'أضف واحدة',
+  ', livraison {date}': '، التسليم {date}',
+  'Commande {reference} enregistrée pour {client} — {tenue}{livraison}.':
+    'تم تسجيل الطلب {reference} لـ {client} — {tenue}{livraison}.',
+  'Commande confirmée pour {client} — {tenue}{livraison}.':
+    'تم تأكيد الطلب لـ {client} — {tenue}{livraison}.',
+
+  // ---------------------------------------------------- paiements et notes
+  'Aucun acompte': 'لا يوجد عربون',
+  'Aucun versement enregistré. La commande est entièrement due.':
+    'لا دفعات مسجّلة. الطلب مستحق بالكامل.',
+  'Ajouter note': 'إضافة ملاحظة',
+  'Aucune note pour l’instant. Ce qui s’écrit ici suit la commande — essayage, retouche demandée, tissu manquant.':
+    'لا ملاحظات بعد. ما يُكتب هنا يرافق الطلب — بروفة، تعديل مطلوب، قماش ناقص.',
+  'Connectez-vous pour lire et écrire les notes de cette commande.':
+    'سجّل الدخول لقراءة ملاحظات هذا الطلب وكتابتها.',
+
+  // --------------------------------------------------------------- clients
+  'Ajouter le premier client': 'أضف أول عميل',
+  'Historique commandes': 'سجل الطلبات',
+  'Aucune commande enregistrée pour ce client.': 'لا طلبات مسجّلة لهذا العميل.',
+  Fidèle: 'وفي',
+  'Pas de numéro': 'لا يوجد رقم',
+  'Les mesures se rattachent à un client. Créez-en un depuis le carnet, puis revenez ici.':
+    'ترتبط المقاسات بعميل. أنشئ عميلًا من الدفتر ثم عد إلى هنا.',
+
+  // ---------------------------------------------------- planning et équipe
+  'Affecter tâche': 'إسناد مهمة',
+  'Charge totale': 'الحِمل الإجمالي',
+  'CA généré': 'الإيرادات المحقّقة',
+  'Aucune commande assignée pour l’instant.': 'لا طلبات مُسنَدة بعد.',
+  'Le planning se remplit par artisan. Composez votre équipe pour commencer à affecter des tâches.':
+    'يُملأ الجدول حسب الخياط. كوّن فريقك لتبدأ إسناد المهام.',
+
+  // -------------------------------------------------------------- rapports
+  'Chiffre d’affaires mensuel': 'الإيرادات الشهرية',
+  'Tenues les plus commandées': 'الأثواب الأكثر طلبًا',
+  'Performance par artisan': 'الأداء حسب الخياط',
+  'Statut des paiements': 'حالة المدفوعات',
+  'Payé intégral': 'مدفوع بالكامل',
+  'Non payé': 'غير مدفوع',
+  'Les rapports se calculent depuis vos commandes réelles. Connectez-vous pour les consulter — afficher des chiffres d’exemple ici induirait en erreur.':
+    'تُحسب التقارير من طلباتك الحقيقية. سجّل الدخول للاطّلاع عليها — عرض أرقام تجريبية هنا سيكون مضلّلًا.',
+
+  // ------------------------------------------------ trésorerie et dépenses
+  'Argent réellement encaissé, moins les dépenses décaissées, depuis l’ouverture du journal.':
+    'المال المقبوض فعلًا، ناقص المصروف، منذ فتح السجل.',
+  'Dernier solde connu — vérification en cours…': 'آخر رصيد معروف — جارٍ التحقّق…',
+  'Entrées attendues d’après le reste à payer de vos commandes, sorties d’après vos charges déclarées. Ce n’est pas un constat.':
+    'المداخيل متوقّعة من المتبقّي على طلباتك، والمصاريف من أعبائك المصرّح بها. هذا ليس واقعًا مثبتًا.',
+  'La caisse passe sous zéro dans les mois qui viennent si rien ne change.':
+    'سينزل الصندوق تحت الصفر في الأشهر القادمة إن لم يتغيّر شيء.',
+  'Déclarer une charge': 'تسجيل عبء',
+  'Aucune charge déclarée — la prévision ne compte donc aucune sortie.':
+    'لا أعباء مصرَّح بها — لذا لا يحسب التوقّع أي صرف.',
+  'Déclarées une fois, elles alimentent la prévision. Elles n’écrivent rien en caisse : c’est la saisie d’une dépense qui fait bouger le solde.':
+    'تُصرَّح مرة وتغذّي التوقّع. لا تكتب شيئًا في الصندوق: إدخال المصروف وحده يحرّك الرصيد.',
+  'Enregistrez vos achats de tissu, salaires et charges au fur et à mesure : la trésorerie s’en déduit toute seule.':
+    'سجّل مشتريات القماش والأجور والأعباء أولًا بأول: تُستنتج الخزينة وحدها.',
+  'Le solde de votre atelier ne s’affiche qu’une fois connecté. Aucun jeu d’exemple n’est proposé ici : on prend des décisions d’achat avec ce chiffre.':
+    'لا يظهر رصيد ورشتك إلا بعد تسجيل الدخول. لا تُعرض بيانات تجريبية هنا: تُتّخذ قرارات الشراء بهذا الرقم.',
+  'Les dépenses de votre atelier ne s’affichent qu’une fois connecté. Aucun jeu d’exemple n’est proposé ici : un chiffre d’argent inventé n’aiderait personne.':
+    'لا تظهر مصاريف ورشتك إلا بعد تسجيل الدخول. لا تُعرض بيانات تجريبية هنا: رقم مالي مختلَق لن يفيد أحدًا.',
+
+  // --------------------------------------------------------- notifications
+  'Chargement des notifications…': 'جارٍ تحميل الإشعارات…',
+  'Marquer comme lue': 'وضع علامة مقروء',
+  'Tout marquer comme lu': 'وضع علامة مقروء على الكل',
+  'Rien ne vous a été signalé. Les retards et les livraisons du lendemain sont vérifiés chaque matin — aucune échéance ne tombe aujourd’hui.':
+    'لم يُبلَّغ عن شيء. تُفحَص التأخيرات وتسليمات الغد كل صباح — لا موعد استحقاق اليوم.',
+  'Vos alertes ne s’affichent qu’une fois connecté. Aucun jeu d’exemple n’est proposé ici : une notification affirme un fait daté, et une alerte inventée se confondrait avec une vraie.':
+    'لا تظهر تنبيهاتك إلا بعد تسجيل الدخول. لا تُعرض بيانات تجريبية هنا: الإشعار يؤكّد واقعة مؤرّخة، والتنبيه المختلَق سيُخلط بالحقيقي.',
+
+  // ------------------------------------------------- compte et inscription
+  'Créer votre atelier': 'أنشئ ورشتك',
+  'Quelques secondes pour commencer à suivre vos commandes.': 'ثوانٍ قليلة لتبدأ متابعة طلباتك.',
+  'Un code de vérification vous sera envoyé par e-mail.':
+    'سيُرسَل إليك رمز تحقّق بالبريد الإلكتروني.',
+  '10 caractères minimum. Une phrase est plus sûre qu’un mot compliqué.':
+    'عشرة أحرف على الأقل. الجملة أأمن من كلمة معقّدة.',
+  'Mot de passe actuel': 'كلمة المرور الحالية',
+  'Confirmer le nouveau mot de passe': 'تأكيد كلمة المرور الجديدة',
+  'Comptes liés': 'الحسابات المرتبطة',
+  'Lier Google': 'ربط جوجل',
+  Lié: 'مرتبط',
+
+  // --------------------------------------------------------- pages légales
+  'Ce document n’est pas encore rédigé. Il le sera avant l’ouverture des inscriptions payantes, et cette page portera alors le texte complet plutôt que cet avis.':
+    'لم تُكتب هذه الوثيقة بعد. ستُكتب قبل فتح الاشتراكات المدفوعة، وستحمل هذه الصفحة عندئذٍ النص الكامل بدل هذا التنويه.',
+  'Deux points méritent d’être dits dès maintenant, parce qu’ils engagent les deux parties :':
+    'نقطتان تستحقّان الذكر الآن، لأنهما تُلزمان الطرفين:',
+  'Le paiement en ligne n’est pas ouvert. Aucun prélèvement n’est possible aujourd’hui, quel que soit le plan affiché sur la page d’accueil.':
+    'الدفع الإلكتروني غير مفتوح. لا خصم ممكن اليوم، أيًّا كانت الخطة المعروضة في الصفحة الرئيسية.',
+  'Le service est en cours de construction. Certaines fonctions annoncées sur la page d’accueil — travail hors-ligne, import de fichier clients — ne sont pas encore disponibles.':
+    'الخدمة قيد الإنشاء. بعض المزايا المعلنة في الصفحة الرئيسية — العمل دون اتصال، استيراد ملف العملاء — ليست متاحة بعد.',
+  'En attendant, voici ce que l’application fait réellement des données, tel qu’on peut le vérifier dans son code :':
+    'في هذه الأثناء، إليك ما يفعله التطبيق فعليًا بالبيانات، كما يمكن التحقّق منه في شيفرته:',
+  'Les données d’un atelier — clients, mesures, commandes, planning, équipe — sont rattachées à son compte et ne sont jamais lues par un autre atelier.':
+    'بيانات الورشة — العملاء والمقاسات والطلبات والجدول والفريق — مرتبطة بحسابها ولا تقرأها ورشة أخرى أبدًا.',
+  'Les mots de passe ne sont pas conservés en clair ; seule une empreinte est stockée.':
+    'لا تُحفظ كلمات المرور بنصّها؛ تُخزَّن بصمتها فقط.',
+  'Les photos de tissus et de modèles sont hébergées chez Cloudinary. Les e-mails de vérification transitent par Resend.':
+    'تُستضاف صور الأقمشة والموديلات لدى Cloudinary. وتمرّ رسائل التحقّق عبر Resend.',
+  'Aucune donnée n’est revendue ni cédée à des fins publicitaires.':
+    'لا تُباع أي بيانات ولا تُسلَّم لأغراض إعلانية.',
+  'Pour une demande de suppression de compte ou d’export de vos données, écrivez-nous depuis la page d’accueil.':
+    'لطلب حذف الحساب أو تصدير بياناتك، راسلنا من الصفحة الرئيسية.',
+
+  // --------------------------- liste des commandes · filtres et pagination
+  'Affichage {premiere}–{derniere} sur {total}': 'عرض {premiere}–{derniere} من {total}',
+  'Rien ne correspond à « {recherche} »{filtre}.': 'لا شيء يطابق «{recherche}»{filtre}.',
+  ' dans le filtre « {nom} »': ' في مرشّح «{nom}»',
+  'Aucune commande avec le statut « {statut} ».': 'لا طلب بحالة «{statut}».',
+  '{n} commande': {
+    zero: 'لا طلبات',
+    one: 'طلب واحد',
+    two: 'طلبان',
+    few: '{n} طلبات',
+    many: '{n} طلبًا',
+    other: '{n} طلب',
+  },
 };

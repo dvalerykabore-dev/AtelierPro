@@ -3,6 +3,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 export interface ModalProps {
   ouvert: boolean;
@@ -34,6 +35,7 @@ export default function Modal({
   pied,
   taille = 'md',
 }: ModalProps) {
+  const t = useT();
   const carte = useRef<HTMLDivElement>(null);
 
   // `onFermer` est presque toujours une fonction fléchée écrite sur place par
@@ -94,7 +96,7 @@ export default function Modal({
           <button
             type="button"
             onClick={onFermer}
-            aria-label="Fermer"
+            aria-label={t('Fermer')}
             className="text-muted-foreground hover:text-foreground flex-shrink-0"
           >
             <X size={18} aria-hidden />

@@ -1,4 +1,7 @@
+'use client';
+
 import { BoutonAtelierPro, NomAtelierPro } from '@/components/marque/LogoAtelierPro';
+import { useT } from '@/contexts/LangueContext';
 
 /**
  * Carte de couverture du premier écran.
@@ -62,6 +65,7 @@ const MONTANTES = [-TUILE, -C, 0, C, TUILE];
 const DESCENDANTES = [0, C, TUILE, TUILE + C, 2 * TUILE];
 
 export default function VisuelHero() {
+  const t = useT();
   return (
     <div className="border-marque-filet overflow-hidden rounded-2xl border">
       {/* Le verrou de marque */}
@@ -82,7 +86,7 @@ export default function VisuelHero() {
           className="text-marque-brume mt-3 font-mono text-xs uppercase sm:mt-4"
           style={{ letterSpacing: '0.26em' }}
         >
-          Du fil à la livraison
+          {t('Du fil à la livraison')}
         </p>
       </div>
 

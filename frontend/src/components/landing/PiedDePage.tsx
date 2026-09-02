@@ -1,6 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 import { LogoAtelierPro } from '@/components/marque/LogoAtelierPro';
 import { ANCRES } from '@/lib/landing-contenu';
+import { useT } from '@/contexts/LangueContext';
 
 const LIENS = [
   { href: '/legal/confidentialite', label: 'Confidentialité', interne: true },
@@ -24,6 +27,7 @@ const LIENS = [
  * deux fois dans le même bloc se lit comme une coquille.
  */
 export default function PiedDePage() {
+  const t = useT();
   const annee = new Date().getFullYear();
 
   return (
@@ -31,9 +35,9 @@ export default function PiedDePage() {
       <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col items-center gap-4 text-xs sm:flex-row sm:items-end sm:justify-between sm:gap-6 sm:text-sm">
         <div className="flex flex-col items-center gap-2 sm:items-start">
           <LogoAtelierPro taille={26} />
-          <p>Fait pour l’Afrique de l’Ouest. © {annee}</p>
+          <p>{t('Fait pour l’Afrique de l’Ouest. © {annee}', { annee })}</p>
         </div>
-        <nav aria-label="Liens de bas de page">
+        <nav aria-label={t('Liens de bas de page')}>
           <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 sm:gap-x-6">
             {LIENS.map((l, i) => (
               <li key={l.href} className="flex items-center gap-x-3 sm:gap-x-6">
@@ -49,14 +53,14 @@ export default function PiedDePage() {
                     href={l.href}
                     className="hover:text-foreground flex min-h-11 items-center transition-colors sm:min-h-0"
                   >
-                    {l.label}
+                    {t(l.label)}
                   </Link>
                 ) : (
                   <a
                     href={l.href}
                     className="hover:text-foreground flex min-h-11 items-center transition-colors sm:min-h-0"
                   >
-                    {l.label}
+                    {t(l.label)}
                   </a>
                 )}
               </li>

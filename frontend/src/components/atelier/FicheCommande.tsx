@@ -34,8 +34,10 @@ import {
 import { messageErreur } from '@/lib/message-erreur';
 import { paletteDe, type StatutCommande } from '@/lib/mock/atelier';
 import { cn, formatPrice } from '@/lib/utils';
+import { useT } from '@/contexts/LangueContext';
 
 export default function FicheCommande({ id }: { id: string }) {
+  const t = useT();
   const { commandes, chargement, source, changerStatut } = useCommandes();
   const [envoiStatut, setEnvoiStatut] = useState(false);
   const [erreurStatut, setErreurStatut] = useState<string | null>(null);
@@ -54,15 +56,17 @@ export default function FicheCommande({ id }: { id: string }) {
       <AppShell titre={chargement ? 'Chargement…' : 'Commande introuvable'}>
         <div className="flex flex-col items-center gap-3 p-12 text-center">
           {chargement ? (
-            <p className="text-muted-foreground text-sm">Chargement de la commande…</p>
+            <p className="text-muted-foreground text-sm">{t('Chargement de la commande…')}</p>
           ) : (
             <>
-              <p className="text-foreground text-sm font-medium">Cette commande n'existe pas</p>
+              <p className="text-foreground text-sm font-medium">
+                {t('Cette commande n’existe pas')}
+              </p>
               <p className="text-muted-foreground max-w-sm text-xs">
-                Elle a peut-être été supprimée, ou appartient à un autre atelier.
+                {t('Elle a peut-être été supprimée, ou appartient à un autre atelier.')}
               </p>
               <Link href="/commandes">
-                <Button>Retour aux commandes</Button>
+                <Button>{t('Retour aux commandes')}</Button>
               </Link>
             </>
           )}
@@ -102,7 +106,7 @@ export default function FicheCommande({ id }: { id: string }) {
             className="border-border text-foreground hover:bg-muted flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm transition-colors"
           >
             <Printer size={14} aria-hidden />
-            Imprimer
+            {t('Imprimer')}
           </button>
 
           {/* Sans numéro joignable, le lien wa.me ouvrirait une conversation
@@ -121,11 +125,11 @@ export default function FicheCommande({ id }: { id: string }) {
             <button
               type="button"
               disabled
-              title="Aucun numéro enregistré pour ce client."
+              title={t('Aucun numéro enregistré pour ce client.')}
               className="border-border text-muted-foreground flex cursor-not-allowed items-center gap-1.5 rounded-md border px-3 py-2 text-sm opacity-50"
             >
               <MessageCircle size={14} aria-hidden />
-              Pas de numéro
+              {t('Pas de numéro')}
             </button>
           )}
 
@@ -149,7 +153,7 @@ export default function FicheCommande({ id }: { id: string }) {
       {/* Fil d'Ariane */}
       <div className="border-border bg-surface text-muted-foreground hidden items-center gap-2 border-b px-8 py-2.5 text-sm lg:flex">
         <Link href="/commandes" className="hover:text-foreground">
-          Commandes
+          {t('Commandes')}
         </Link>
         <ChevronRight size={13} aria-hidden />
         <span className="text-foreground font-medium">
@@ -191,7 +195,7 @@ export default function FicheCommande({ id }: { id: string }) {
                         </h2>
                         {client?.fidele && (
                           <span className="bg-primary text-primary-foreground rounded-sm px-2 py-0.5 text-xs font-medium">
-                            Fidèle
+                            {t('Fidèle')}
                           </span>
                         )}
                       </div>
@@ -211,7 +215,7 @@ export default function FicheCommande({ id }: { id: string }) {
 
                   <div className="flex flex-col gap-1.5 sm:items-end">
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground text-xs">Réf.</span>
+                      <span className="text-muted-foreground text-xs">{t('Réf.')}</span>
                       <span className="text-foreground font-mono text-sm font-medium">
                         {commande.reference}
                       </span>
@@ -229,7 +233,7 @@ export default function FicheCommande({ id }: { id: string }) {
                         )}
                         aria-hidden
                       />
-                      {commande.statut}
+                      {t(commande.statut)}
                     </div>
                     <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
                       <Calendar size={11} aria-hidden />
@@ -260,7 +264,9 @@ export default function FicheCommande({ id }: { id: string }) {
 
               {/* Avancement */}
               <section className="border-border border-b px-4 py-5 lg:px-8">
-                <h2 className="font-headings text-foreground mb-4 text-sm font-bold">Avancement</h2>
+                <h2 className="font-headings text-foreground mb-4 text-sm font-bold">
+                  {t('Avancement')}
+                </h2>
 
                 {/* Mobile : liste verticale — 7 étapes ne tiennent pas en ligne sur 375px */}
                 <ol className="flex flex-col gap-3 lg:hidden">
@@ -288,7 +294,7 @@ export default function FicheCommande({ id }: { id: string }) {
                               : 'text-muted-foreground',
                         )}
                       >
-                        {e.label}
+                        {t(e.label)}
                       </span>
                       <span
                         className={cn(
@@ -338,7 +344,7 @@ export default function FicheCommande({ id }: { id: string }) {
                                 : 'text-muted-foreground',
                           )}
                         >
-                          {e.label}
+                          {t(e.label)}
                         </span>
                         <span
                           className={cn(
@@ -362,12 +368,14 @@ export default function FicheCommande({ id }: { id: string }) {
               {/* Mesures */}
               <section className="border-border border-b px-4 py-5 lg:px-6">
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <h2 className="font-headings text-foreground text-sm font-bold">Mesures</h2>
+                  <h2 className="font-headings text-foreground text-sm font-bold">
+                    {t('Mesures')}
+                  </h2>
                   <Link
                     href="/mesures"
                     className="text-primary text-xs font-medium hover:underline"
                   >
-                    Voir tout
+                    {t('Voir tout')}
                   </Link>
                 </div>
                 {mesures.length > 0 ? (
@@ -383,7 +391,7 @@ export default function FicheCommande({ id }: { id: string }) {
                           i % 2 === 1 ? 'bg-muted' : 'bg-surface',
                         )}
                       >
-                        <span className="text-muted-foreground text-xs">{m.label}</span>
+                        <span className="text-muted-foreground text-xs">{t(m.label)}</span>
                         <span className="text-foreground text-xs font-medium">
                           {m.valeur} {m.unite}
                         </span>

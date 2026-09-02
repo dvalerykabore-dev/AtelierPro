@@ -11,6 +11,7 @@ import { useClients } from '@/lib/useClients';
 import { useReleveMesures } from '@/lib/useReleveMesures';
 import { nombreDeChamps, paletteDe, type Client, type Genre } from '@/lib/mock/atelier';
 import { cn } from '@/lib/utils';
+import { useLangue } from '@/contexts/LangueContext';
 
 /** Clé d'une mesure : la section lève l'ambiguïté des libellés répétés. */
 function cle(section: string, numero: string): string {
@@ -34,6 +35,7 @@ function cle(section: string, numero: string): string {
  * indiscernables.
  */
 export default function PriseDeMesures() {
+  const { t, tp } = useLangue();
   const { clients, source } = useClients();
   const surServeur = source === 'serveur';
 
@@ -140,12 +142,14 @@ export default function PriseDeMesures() {
   if (!client) {
     return (
       <div className="flex flex-col items-center gap-3 p-12 text-center">
-        <p className="text-foreground text-sm font-medium">Aucun client enregistré</p>
+        <p className="text-foreground text-sm font-medium">{t('Aucun client enregistré')}</p>
         <p className="text-muted-foreground max-w-sm text-xs">
-          Les mesures se rattachent à un client. Créez-en un depuis le carnet, puis revenez ici.
+          {t(
+            'Les mesures se rattachent à un client. Créez-en un depuis le carnet, puis revenez ici.',
+          )}
         </p>
         <Link href="/clients">
-          <Button>Ouvrir le carnet clients</Button>
+          <Button>{t('Ouvrir le carnet clients')}</Button>
         </Link>
       </div>
     );
@@ -155,7 +159,9 @@ export default function PriseDeMesures() {
     <div className="flex flex-col gap-6 px-4 py-6 lg:px-8">
       {/* ---------- Client + palette ---------- */}
       <section className="bg-surface border-border rounded-lg border p-5">
-        <h2 className="font-headings text-foreground mb-4 text-sm font-bold">Client concerné</h2>
+        <h2 className="font-headings text-foreground mb-4 text-sm font-bold">
+          {t('Client concerné')}
+        </h2>
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
           <div className="relative flex-1">
@@ -169,7 +175,7 @@ export default function PriseDeMesures() {
               <div className="min-w-0 flex-1">
                 <div className="text-foreground truncate text-sm font-medium">{client.nom}</div>
                 <div className="text-muted-foreground text-xs">
-                  {client.telephone} · {client.genre}
+                  {client.telephone} · {t(client.genre)}
                 </div>
               </div>
               <ChevronDown
@@ -190,12 +196,16 @@ export default function PriseDeMesures() {
                     autoFocus
                     value={recherche}
                     onChange={(e) => setRecherche(e.target.value)}
-                    placeholder="Rechercher…"
-                    aria-label="Rechercher un client"
+                    placeholder={t('Rechercher…')}
+                    aria-label={t('Rechercher un client')}
                     className="text-foreground placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm focus:outline-none"
                   />
                   {recherche && (
-                    <button type="button" onClick={() => setRecherche('')} aria-label="Effacer">
+                    <button
+                      type="button"
+                      onClick={() => setRecherche('')}
+                      aria-label={t('Effacer')}
+                    >
                       <X size={13} className="text-muted-foreground" aria-hidden />
                     </button>
                   )}
@@ -205,7 +215,7 @@ export default function PriseDeMesures() {
                   <p className="text-muted-foreground px-3 py-4 text-center text-xs">
                     Aucun client trouvé.{' '}
                     <Link href="/clients" className="text-primary">
-                      En créer un
+                      {t('En créer un')}
                     </Link>
                   </p>
                 ) : (
@@ -223,7 +233,9 @@ export default function PriseDeMesures() {
                       <span className="text-foreground min-w-0 flex-1 truncate text-sm">
                         {c.nom}
                       </span>
-                      <span className="text-muted-foreground flex-shrink-0 text-xs">{c.genre}</span>
+                      <span className="text-muted-foreground flex-shrink-0 text-xs">
+                        {t(c.genre)}
+                      </span>
                       {c.id === client.id && (
                         <Check size={14} className="text-primary flex-shrink-0" aria-hidden />
                       )}
@@ -236,17 +248,19 @@ export default function PriseDeMesures() {
 
           {/* Sélecteur de palette */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-muted-foreground text-xs">Palette de mesures</span>
+            <span className="text-muted-foreground text-xs">{t('Palette de mesures')}</span>
             <GenreToggle
               valeur={genre}
               onChange={changerGenre}
               taille="md"
-              label="Palette de mesures"
+              label={t('Palette de mesures')}
             />
             {genre !== client.genre && (
               <p className="text-warning text-xs">
-                Palette {genre.toLowerCase()} sur un client enregistré comme{' '}
-                {client.genre.toLowerCase()}.
+                {t('Palette {palette} sur un client enregistré comme {client}.', {
+                  palette: t(genre).toLowerCase(),
+                  client: t(client.genre).toLowerCase(),
+                })}
               </p>
             )}
           </div>
@@ -259,10 +273,10 @@ export default function PriseDeMesures() {
           <div className="border-border flex flex-wrap items-center justify-between gap-2 border-b px-5 py-3">
             <h2 className="font-headings text-foreground flex items-center gap-2 text-sm font-bold">
               <Ruler size={14} className="text-primary" aria-hidden />
-              Mesures {genre.toLowerCase()}
+              {t('Mesures {palette}', { palette: t(genre).toLowerCase() })}
             </h2>
             <span className="text-muted-foreground text-xs">
-              {remplies}/{total} renseignées
+              {t('{remplies}/{total} renseignées', { remplies, total })}
             </span>
           </div>
 
@@ -270,11 +284,11 @@ export default function PriseDeMesures() {
             <div key={section.titre}>
               <div className="bg-muted border-border flex flex-wrap items-baseline gap-2 border-b px-5 py-2">
                 <span className="text-primary text-xs font-bold tracking-wide uppercase">
-                  {section.titre}
+                  {t(section.titre)}
                 </span>
-                <span className="text-muted-foreground text-xs">{section.precision}</span>
+                <span className="text-muted-foreground text-xs">{t(section.precision)}</span>
                 <span className="text-muted-foreground ml-auto text-xs">
-                  {section.champs.length} mesures
+                  {tp('{n} mesure', '{n} mesures', section.champs.length)}
                 </span>
               </div>
 
@@ -291,12 +305,18 @@ export default function PriseDeMesures() {
                     >
                       <span className="flex min-w-0 items-baseline gap-2">
                         {/* Le repère numérique reproduit l'ordre du carnet papier :
-                            l'artisan dicte « le 9B », pas « longueur habit B ». */}
-                        <span className="text-muted-foreground/60 w-6 flex-shrink-0 font-mono text-xs">
+                            l'artisan dicte « le 9B », pas « longueur habit B ».
+                            `dir="ltr"` parce que l'algorithme bidirectionnel
+                            retourne « 9B » en « B9 » dans une page arabe — le
+                            repère cesserait de correspondre au carnet. */}
+                        <span
+                          dir="ltr"
+                          className="text-muted-foreground/60 w-6 flex-shrink-0 font-mono text-xs"
+                        >
                           {champ.numero}
                         </span>
                         <span className="text-muted-foreground truncate text-sm">
-                          {champ.label}
+                          {t(champ.label)}
                         </span>
                       </span>
                       <span className="flex flex-shrink-0 items-center gap-1.5">
@@ -305,7 +325,7 @@ export default function PriseDeMesures() {
                           value={valeurs[k] ?? ''}
                           onChange={(e) => majValeur(k, e.target.value)}
                           placeholder="—"
-                          aria-label={`${champ.numero} ${champ.label}`}
+                          aria-label={`${champ.numero} ${t(champ.label)}`}
                           className="bg-input border-border text-foreground placeholder:text-muted-foreground/40 focus:border-primary w-16 rounded-md border px-2 py-1 text-right text-sm transition-colors focus:outline-none"
                         />
                         <span className="text-muted-foreground w-5 text-xs">{champ.unite}</span>
@@ -319,7 +339,7 @@ export default function PriseDeMesures() {
 
           <div className="px-5 py-4">
             <label className="text-muted-foreground mb-1.5 block text-xs">
-              Remarques sur la morphologie
+              {t('Remarques sur la morphologie')}
             </label>
             <textarea
               value={notes}
@@ -328,7 +348,7 @@ export default function PriseDeMesures() {
                 setEtat('saisie');
               }}
               rows={3}
-              placeholder="Ex : épaule droite légèrement plus basse, prévoir 1 cm de reprise."
+              placeholder={t('Ex : épaule droite légèrement plus basse, prévoir 1 cm de reprise.')}
               className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary w-full resize-y rounded-md border px-3 py-2.5 text-sm transition-colors focus:outline-none"
             />
           </div>
@@ -338,8 +358,8 @@ export default function PriseDeMesures() {
         <div className="flex flex-col gap-6 xl:w-96">
           <section className="bg-surface border-border rounded-lg border p-5">
             <PhotoUpload
-              label="Tissus apportés"
-              description="Photographiez chaque coupon : motif, métrage, couleur réelle."
+              label={t('Tissus apportés')}
+              description={t('Photographiez chaque coupon : motif, métrage, couleur réelle.')}
               photos={tissus}
               onChange={(p) => {
                 setTissus(p);
@@ -351,8 +371,8 @@ export default function PriseDeMesures() {
 
           <section className="bg-surface border-border rounded-lg border p-5">
             <PhotoUpload
-              label="Modèle choisi"
-              description="La référence visuelle que le client souhaite reproduire."
+              label={t('Modèle choisi')}
+              description={t('La référence visuelle que le client souhaite reproduire.')}
               photos={modele}
               onChange={(p) => {
                 setModele(p);
@@ -369,8 +389,9 @@ export default function PriseDeMesures() {
         <div className="flex items-center gap-3">
           <Scissors size={16} className="text-primary flex-shrink-0" aria-hidden />
           <p className="text-muted-foreground text-xs">
-            {remplies}/{total} mesures · {tissus.length} photo{tissus.length > 1 ? 's' : ''} de
-            tissu · {modele.length > 0 ? 'modèle photographié' : 'aucun modèle'}
+            {t('{remplies}/{total} mesures', { remplies, total })} ·{' '}
+            {tp('{n} photo de tissu', '{n} photos de tissu', tissus.length)} ·{' '}
+            {modele.length > 0 ? t('modèle photographié') : t('aucun modèle')}
           </p>
         </div>
 
@@ -378,14 +399,14 @@ export default function PriseDeMesures() {
           {etat === 'enregistre' && (
             <span className="text-success flex items-center gap-1.5 text-xs font-medium">
               <Check size={13} aria-hidden />
-              Relevé enregistré
+              {t('Relevé enregistré')}
             </span>
           )}
           {/* En démonstration, aucun client n'existe en base : on le dit plutôt
               que d'afficher un succès qui n'a pas eu lieu. */}
           {etat === 'local' && (
             <span className="text-warning text-xs font-medium">
-              Conservé à l’écran seulement — connectez-vous pour enregistrer.
+              {t('Conservé à l’écran seulement — connectez-vous pour enregistrer.')}
             </span>
           )}
           {erreur && <span className="text-danger text-xs font-medium">{erreur}</span>}
@@ -393,12 +414,12 @@ export default function PriseDeMesures() {
           <Link href="/commandes/nouvelle">
             <Button variante="contour" taille="md">
               <Shirt size={14} aria-hidden />
-              Créer la commande
+              {t('Créer la commande')}
             </Button>
           </Link>
           <Button onClick={enregistrer} disabled={remplies === 0 || etat === 'envoi'}>
             <Save size={14} aria-hidden />
-            {etat === 'envoi' ? 'Enregistrement…' : 'Enregistrer le relevé'}
+            {etat === 'envoi' ? t('Enregistrement…') : t('Enregistrer le relevé')}
           </Button>
         </div>
       </div>
