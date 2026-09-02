@@ -104,7 +104,9 @@ export default function PaiementsCommande({
     <section className="border-border border-b px-4 py-5 lg:px-6">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="font-headings text-foreground text-sm font-bold">{t('Paiements')}</h2>
-        <span className="text-muted-foreground text-xs">{formatPrice(montant, 'F')} dû</span>
+        <span className="text-muted-foreground text-xs">
+          {t('{montant} dû', { montant: formatPrice(montant, 'F') })}
+        </span>
       </div>
 
       <div className="mb-3">
@@ -113,7 +115,10 @@ export default function PaiementsCommande({
           <span className="text-success text-xs font-medium">
             {formatPrice(total, 'F')}
             {restant > 0 && (
-              <span className="text-muted-foreground"> · reste {formatPrice(restant, 'F')}</span>
+              <span className="text-muted-foreground">
+                {' '}
+                {t('· reste {montant}', { montant: formatPrice(restant, 'F') })}
+              </span>
             )}
           </span>
         </div>
@@ -170,7 +175,9 @@ export default function PaiementsCommande({
               <button
                 type="button"
                 onClick={() => void supprimer(p.id)}
-                aria-label={`Annuler le versement de ${formatPrice(p.amount, 'F')}`}
+                aria-label={t('Annuler le versement de {montant}', {
+                  montant: formatPrice(p.amount, 'F'),
+                })}
                 className={cn(
                   'text-muted-foreground hover:text-danger flex h-8 w-8 flex-shrink-0',
                   'items-center justify-center rounded-md transition-colors',
@@ -195,14 +202,19 @@ export default function PaiementsCommande({
         }}
       >
         <Plus size={12} aria-hidden />
-        {restant === 0 ? t('Commande soldée') : 'Enregistrer un versement'}
+        {t(restant === 0 ? 'Commande soldée' : 'Enregistrer un versement')}
       </Button>
 
       <Modal
         ouvert={ouvert}
         onFermer={() => setOuvert(false)}
         titre={t('Enregistrer un versement')}
-        description={`Reste à encaisser : ${formatPrice(restant, 'F CFA')}. Le versement entre aussitôt en trésorerie.`}
+        description={t(
+          'Reste à encaisser : {montant}. Le versement entre aussitôt en trésorerie.',
+          {
+            montant: formatPrice(restant, 'F CFA'),
+          },
+        )}
       >
         <form onSubmit={enregistrer} className="flex flex-col gap-4">
           <Field
@@ -238,7 +250,7 @@ export default function PaiementsCommande({
           {erreurForm && (
             <p role="alert" className="text-danger flex items-start gap-2 text-sm">
               <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-              {erreurForm}
+              {t(erreurForm)}
             </p>
           )}
 

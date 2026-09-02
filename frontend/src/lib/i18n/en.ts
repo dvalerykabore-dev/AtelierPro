@@ -28,7 +28,6 @@ export const en: Dictionnaire = {
   Confirmer: 'Confirm',
   Rechercher: 'Search',
   Filtrer: 'Filter',
-  Aujourd: 'Today',
   'aujourd’hui': 'today',
   demain: 'tomorrow',
   'Chargement…': 'Loading…',
@@ -572,8 +571,8 @@ export const en: Dictionnaire = {
   'Votre atelier, enfin tenu au clair': 'Your workshop, finally in the clear',
   'Commandes, mesures, acomptes, planning de l’équipe. AtelierPro rassemble ce qui vit aujourd’hui dans des carnets, des SMS et de la mémoire.':
     'Orders, measurements, deposits, team schedule. AtelierPro gathers what today lives in notebooks, text messages and memory.',
-  'Trente jours d’essai gratuit. Sans carte bancaire. En français, en anglais ou en arabe, dans le navigateur — rien à installer.':
-    'Thirty days free. No bank card. In French, English or Arabic, in the browser — nothing to install.',
+  'Trente jours d’essai gratuit. Sans carte bancaire. En français, en anglais, en espagnol, en portugais ou en arabe, dans le navigateur — rien à installer.':
+    'Thirty days free. No bank card. In French, English, Spanish, Portuguese or Arabic, in the browser — nothing to install.',
   'Créer mon atelier': 'Create my workshop',
   '30 jours': '30 days',
   'D’essai gratuit, sans carte bancaire': 'Free trial, no bank card',
@@ -678,8 +677,8 @@ export const en: Dictionnaire = {
   'Le carnet s’alimente au fil des commandes : le premier client se saisit en moins d’une minute, mesures comprises. Un import de fichier est à l’étude.':
     'The book fills up as orders come in: the first client takes under a minute to enter, measurements included. A file import is under consideration.',
   'C’est pour quel pays ?': 'Which country is it for?',
-  'Conçu pour l’Afrique de l’Ouest : interface en français, en anglais ou en arabe, montants en francs CFA sans décimales.':
-    'Built for West Africa: interface in French, English or Arabic, amounts in CFA francs with no decimals.',
+  'Conçu pour l’Afrique de l’Ouest : interface en français, en anglais, en espagnol, en portugais ou en arabe, montants en francs CFA sans décimales.':
+    'Built for West Africa: interface in French, English, Spanish, Portuguese or Arabic, amounts in CFA francs with no decimals.',
 
   // ---------------------------------- landing · témoignages et appel final
   'Ce que disent les tailleurs': 'What tailors say',
@@ -863,7 +862,7 @@ export const en: Dictionnaire = {
   'Rien ne correspond à « {recherche} »{filtre}.': 'Nothing matches “{recherche}”{filtre}.',
   ' dans le filtre « {nom} »': ' in the “{nom}” filter',
   'Aucune commande avec le statut « {statut} ».': 'No order with status “{statut}”.',
-  '{n} commande': { one: '{n} order', other: '{n} orders' },
+  '{n} commandes': { one: '{n} order', other: '{n} orders' },
 
   // ----------------------------- tableau de bord · indicateurs et capacité
   'Commandes actives': 'Active orders',
@@ -1034,4 +1033,103 @@ export const en: Dictionnaire = {
     'A password is already set. Use “change the password”.',
   'Champs invalides.': 'Invalid fields.',
   'Erreur réseau. Réessaie.': 'Network error. Try again.',
+
+  // -------------------- phrases interpolées, longtemps restées en français
+  '{n} mesures — buste, robe et bas.': '{n} measurements — bust, dress and bottom.',
+  '{n} mesures — buste, manches et pantalon.': '{n} measurements — bust, sleeves and trousers.',
+  '{n} clients': {
+    one: '{n} client',
+    other: '{n} clients',
+  },
+  'sur {total}': 'of {total}',
+  '· palette {genre}': '· {genre}’s set',
+  'Relevé du {date}': 'Measured on {date}',
+  '{n} écritures': {
+    one: '{n} entry',
+    other: '{n} entries',
+  },
+  'Aucune mesure relevée pour {client}. Prenez le relevé avant de tailler.':
+    'No measurements taken for {client}. Take them before cutting.',
+  'Tarif de façon : {prix}': 'Tailoring price: {prix}',
+  '{utilisees}/{total} h engagées aujourd’hui': '{utilisees}/{total} h committed today',
+  '{nom} — {utilisees}/{total} h engagées aujourd’hui':
+    '{nom} — {utilisees}/{total} h committed today',
+  'Annuler le versement de {montant}': 'Cancel the {montant} payment',
+  'Reste à encaisser : {montant}. Le versement entre aussitôt en trésorerie.':
+    'Left to collect: {montant}. The payment enters the cash ledger straight away.',
+  rapports: 'reports',
+  'Dépenses {montant}': 'Expenses {montant}',
+  'Charge de {nom}': '{nom}’s load',
+  'Ces montants comptent l’argent {encaisse}. Le chiffre d’affaires des {rapports} compte l’argent {facture} : une commande de 80 000 F réglée de 20 000 F y pèse 80 000 F. Les deux sont justes et vont différer.':
+    'These amounts count the money {encaisse}. The revenue in the {rapports} counts the money {facture}: an 80,000 F order paid 20,000 F weighs 80,000 F there. Both are right, and they will differ.',
+  '{n} écritures ont été reconstituées depuis un acompte antérieur au journal. Leur date est celle de la commande, faute de mieux : le solde du mois concerné est approximatif.':
+    {
+      one: '{n} entry was reconstructed from a deposit older than the ledger. Its date is the order’s, for want of better: the balance for that month is approximate.',
+      other:
+        '{n} entries were reconstructed from deposits older than the ledger. Their dates are the orders’, for want of better: the balance for those months is approximate.',
+    },
+
+  // ------------------------ messages d’erreur restés en français à l’écran
+  'Aucun artisan': 'No tailor',
+  'Impossible de joindre le serveur. Vérifiez votre connexion.':
+    'Cannot reach the server. Check your connection.',
+  'Trop de demandes. Patientez quelques minutes.': 'Too many requests. Wait a few minutes.',
+  'Trop de tentatives. Réessayez dans une heure.': 'Too many attempts. Try again in an hour.',
+  'Vérifiez l’adresse e-mail saisie.': 'Check the email address you entered.',
+  'Le numéro doit commencer par un indicatif, par exemple +226.':
+    'The number must start with a country code, for example +226.',
+
+  // --------------------------------------- connexion Google · page d’échec
+  "Votre adresse Google n'est pas vérifiée. Vérifiez-la sur votre compte Google, puis réessayez.":
+    'Your Google address is not verified. Verify it on your Google account, then try again.',
+  'La connexion a été interrompue (vérification de sécurité). Cela peut arriver si la page Google est restée ouverte trop longtemps — réessayez.':
+    'Sign-in was interrupted (security check). This can happen if the Google page stayed open too long — try again.',
+  'Google a refusé la connexion. Réessayez dans un instant.':
+    'Google refused the sign-in. Try again in a moment.',
+  'La connexion via Google n’est pas activée sur ce serveur. Contactez le support.':
+    'Sign-in with Google is not enabled on this server. Contact support.',
+  'Une erreur inattendue est survenue pendant la connexion. Réessayez.':
+    'An unexpected error occurred during sign-in. Try again.',
+  'Une erreur inconnue est survenue pendant la connexion. Réessayez.':
+    'An unknown error occurred during sign-in. Try again.',
+
+  // --------------------------------------- trésorerie · phrases de l’écran
+  recettes: 'income',
+  dépenses: 'expenses',
+  'solde {montant}': 'balance {montant}',
+  'Recettes {montant}': 'Income {montant}',
+  'Dépenses de {mois}': 'Expenses for {mois}',
+  'Aucune dépense enregistrée ce mois-ci.': 'No expense recorded this month.',
+  '+{entrees} attendus · −{sorties} de charges': '+{entrees} expected · −{sorties} of charges',
+  'attendus sur {n} commandes dont l’échéance est dépassée. C’est souvent ce qui explique un solde plus bas que prévu.':
+    {
+      one: 'expected on {n} order past its due date. That is often what explains a lower balance than forecast.',
+      other:
+        'expected on {n} orders past their due date. That is often what explains a lower balance than forecast.',
+    },
+  '{montant} restent à encaisser sur {n} commandes sans date de livraison — impossible de les placer sur le calendrier.':
+    {
+      one: '{montant} still to collect on {n} order with no delivery date — impossible to place on the calendar.',
+      other:
+        '{montant} still to collect on {n} orders with no delivery date — impossible to place them on the calendar.',
+    },
+  '· le {jour} du mois': '· on the {jour}th of the month',
+  'Supprimer « {libelle} »': 'Delete “{libelle}”',
+  '{montant} dû': '{montant} due',
+  '· reste {montant}': '· {montant} left',
+
+  // ----------------------------------------------------------- inscription
+  'Vous avez déjà un compte ?': 'Already have an account?',
+  'Plan retenu : {plan}. L’essai de 30 jours démarre sans moyen de paiement — vous pourrez encore en changer.':
+    'Chosen plan: {plan}. The 30-day trial starts with no payment method — you can still change it later.',
+
+  // ---------------------------- derniers textes d’écran restés en français
+  'Assigné : {artisan}': 'Assigned to: {artisan}',
+  'Livraison {date}': 'Delivery {date}',
+  'Aucun client ne correspond à « {recherche} ».': 'No client matches “{recherche}”.',
+  'Aucune dépense en {mois}': 'No expense in {mois}',
+  '{montant} au total': '{montant} in total',
+  '{nom} est déjà saturé aujourd’hui ({utilisees}/{total} h) — la livraison estimée en tiendra compte.':
+    '{nom} is already full today ({utilisees}/{total} h) — the estimated delivery accounts for it.',
+  'Modèle choisi par le client': 'Model chosen by the client',
 };

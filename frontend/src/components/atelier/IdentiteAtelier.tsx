@@ -2,6 +2,7 @@
 
 import Avatar from '@/components/ui/Avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/contexts/LangueContext';
 import { initialesAtelierDe, nomAtelierDe } from '@/lib/atelier-identite';
 
 /**
@@ -39,11 +40,14 @@ export function PastilleAtelier({
   className?: string;
 }) {
   const { user } = useAuth();
+  const t = useT();
   return (
     <Avatar
       initiales={initialesAtelierDe(user)}
       image={user?.workshopLogoUrl ?? null}
-      imageAlt={user?.workshopLogoUrl ? `Logo de ${nomAtelierDe(user)}` : ''}
+      imageAlt={
+        user?.workshopLogoUrl ? t('Logo de {atelier}', { atelier: nomAtelierDe(user) }) : ''
+      }
       taille={taille}
       accentue={accentue}
       {...(className === undefined ? {} : { className })}

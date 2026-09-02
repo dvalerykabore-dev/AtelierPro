@@ -53,7 +53,7 @@ export default function FicheCommande({ id }: { id: string }) {
   // s'afficherait le temps du chargement, à tort.
   if (!commande) {
     return (
-      <AppShell titre={chargement ? 'Chargement…' : t('Commande introuvable')}>
+      <AppShell titre={t(chargement ? 'Chargement…' : 'Commande introuvable')}>
         <div className="flex flex-col items-center gap-3 p-12 text-center">
           {chargement ? (
             <p className="text-muted-foreground text-sm">{t('Chargement de la commande…')}</p>
@@ -144,7 +144,7 @@ export default function FicheCommande({ id }: { id: string }) {
               className="bg-primary text-primary-foreground hover:bg-accent flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
             >
               <CheckCircle2 size={14} aria-hidden />
-              {envoiStatut ? 'Enregistrement…' : suivante.libelle}
+              {envoiStatut ? t('Enregistrement…') : t(suivante.libelle)}
             </button>
           )}
         </>
@@ -167,7 +167,7 @@ export default function FicheCommande({ id }: { id: string }) {
           className="text-danger border-border flex items-start gap-2 border-b px-4 py-3 text-sm lg:px-8"
         >
           <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-          {erreurStatut}
+          {t(erreurStatut)}
         </p>
       )}
 
@@ -237,7 +237,7 @@ export default function FicheCommande({ id }: { id: string }) {
                     </div>
                     <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
                       <Calendar size={11} aria-hidden />
-                      Livraison {commande.livraison}
+                      {t('Livraison {date}', { date: commande.livraison })}
                     </div>
                   </div>
                 </div>
@@ -256,7 +256,7 @@ export default function FicheCommande({ id }: { id: string }) {
                       {formatPrice(commande.montant, 'F')}
                     </span>
                     <span className="text-muted-foreground text-xs">
-                      Assigné : {commande.assignee}
+                      {t('Assigné : {artisan}', { artisan: commande.assignee })}
                     </span>
                   </div>
                 </div>
@@ -402,7 +402,12 @@ export default function FicheCommande({ id }: { id: string }) {
                   <div className="border-border rounded-lg border border-dashed px-3 py-4">
                     <p className="text-muted-foreground text-xs">
                       {source === 'serveur'
-                        ? `Aucune mesure relevée pour ${commande.client}. Prenez le relevé avant de tailler.`
+                        ? t(
+                            'Aucune mesure relevée pour {client}. Prenez le relevé avant de tailler.',
+                            {
+                              client: commande.client,
+                            },
+                          )
                         : t('Les mesures ne sont pas consultables en mode démonstration.')}
                     </p>
                   </div>

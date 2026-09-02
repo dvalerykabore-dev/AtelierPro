@@ -1,6 +1,8 @@
 import type { Dictionnaire } from '@/lib/i18n/traduire';
 import type { Langue } from '@/lib/langue';
 import { en } from '@/lib/i18n/en';
+import { es } from '@/lib/i18n/es';
+import { pt } from '@/lib/i18n/pt';
 import { ar } from '@/lib/i18n/ar';
 
 /**
@@ -19,5 +21,7 @@ import { ar } from '@/lib/i18n/ar';
 export const DICTIONNAIRES: Record<Langue, Dictionnaire | null> = {
   fr: null,
   en,
+  es,
+  pt,
   ar,
 };

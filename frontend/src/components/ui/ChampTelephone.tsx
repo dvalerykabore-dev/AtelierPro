@@ -137,7 +137,9 @@ export default function ChampTelephone({
         qu'on hésite entre deux drapeaux voisins.
       */}
       <p id={idAide} className={cn('text-xs', aAfficher ? 'text-danger' : 'text-muted-foreground')}>
-        {aAfficher ?? (
+        {/* `valider` compose en français, comme le serveur : la phrase reste la
+            clé, et c'est ici — au moment de l'afficher — qu'on la traduit. */}
+        {(aAfficher !== null ? t(aAfficher) : null) ?? (
           <>
             {pays && (
               <span className="text-foreground font-medium">{nomPays(pays.code, langue)}</span>

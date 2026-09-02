@@ -131,9 +131,10 @@ function FormulaireVerification() {
 }
 
 export default function VerificationPage() {
+  const { t } = useLangue();
   // `useSearchParams` impose une frontière Suspense côté App Router.
   return (
-    <Suspense fallback={<AuthCard titre="Vérifiez votre e-mail">Chargement…</AuthCard>}>
+    <Suspense fallback={<AuthCard titre={t('Vérifiez votre e-mail')}>{t('Chargement…')}</AuthCard>}>
       <FormulaireVerification />
     </Suspense>
   );

@@ -45,7 +45,7 @@ function jourLisible(iso: string, langue: Langue): string {
  * trésorerie : un chiffre d'argent est exact ou absent.
  */
 export default function Depenses() {
-  const { t, langue } = useLangue();
+  const { t, tp, langue } = useLangue();
   const [mois, setMois] = useState(() => moisIso(new Date()));
   const [poste, setPoste] = useState('');
 
@@ -175,7 +175,7 @@ export default function Depenses() {
         {erreurForm && (
           <p role="alert" className="text-danger flex items-start gap-2 text-sm">
             <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-            {erreurForm}
+            {t(erreurForm)}
           </p>
         )}
 
@@ -184,7 +184,7 @@ export default function Depenses() {
             {t('Annuler')}
           </Button>
           <Button type="submit" disabled={envoi}>
-            {envoi ? 'Enregistrement…' : 'Enregistrer'}
+            {envoi ? t('Enregistrement…') : t('Enregistrer')}
           </Button>
         </div>
       </form>
@@ -202,7 +202,7 @@ export default function Depenses() {
           )}
         </p>
         <Link href="/connexion" className="text-primary mt-4 text-sm font-medium">
-          Se connecter
+          {t('Se connecter')}
         </Link>
       </div>
     );
@@ -240,9 +240,7 @@ export default function Depenses() {
             {chargement ? '—' : formatPrice(total, 'F')}
           </div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {chargement
-              ? 'Chargement…'
-              : `${mouvements.length} écriture${mouvements.length > 1 ? 's' : ''}`}
+            {chargement ? t('Chargement…') : tp('{n} écriture', '{n} écritures', mouvements.length)}
           </div>
         </div>
       </section>
@@ -312,7 +310,7 @@ export default function Depenses() {
         <div className="border-border flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-12 text-center">
           <Wallet size={24} className="text-muted-foreground mb-3" aria-hidden />
           <p className="text-foreground mb-1 text-sm font-bold">
-            Aucune dépense en {libelleMois(mois, langue)}
+            {t('Aucune dépense en {mois}', { mois: libelleMois(mois, langue) })}
           </p>
           <p className="text-muted-foreground mb-4 max-w-sm text-xs">
             {t(
@@ -348,7 +346,7 @@ export default function Depenses() {
               <button
                 type="button"
                 onClick={() => void supprimer(m.id)}
-                aria-label={`Supprimer « ${m.label} »`}
+                aria-label={t('Supprimer « {libelle} »', { libelle: m.label })}
                 className={cn(
                   'text-muted-foreground hover:text-danger flex h-9 w-9 flex-shrink-0',
                   'items-center justify-center rounded-md transition-colors',

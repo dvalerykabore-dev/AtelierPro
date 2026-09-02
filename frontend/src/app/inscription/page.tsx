@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import FormulaireInscription from '@/components/auth/FormulaireInscription';
+import TexteChargement from '@/components/ui/TexteChargement';
 
 /**
  * Le formulaire lit `?plan=` — le plan choisi sur la page d'accueil — via
@@ -14,7 +15,7 @@ export default function InscriptionPage() {
     <Suspense
       fallback={
         <div className="bg-background flex min-h-screen items-center justify-center">
-          <span className="text-muted-foreground text-sm">Chargement…</span>
+          <TexteChargement />
         </div>
       }
     >

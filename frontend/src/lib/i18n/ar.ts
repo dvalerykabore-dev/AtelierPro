@@ -599,8 +599,8 @@ export const ar: Dictionnaire = {
   'Votre atelier, enfin tenu au clair': 'ورشتك، أخيرًا تحت السيطرة',
   'Commandes, mesures, acomptes, planning de l’équipe. AtelierPro rassemble ce qui vit aujourd’hui dans des carnets, des SMS et de la mémoire.':
     'الطلبات والمقاسات والعرابين وجدول الفريق. يجمع أتولييه برو ما يعيش اليوم في الدفاتر والرسائل والذاكرة.',
-  'Trente jours d’essai gratuit. Sans carte bancaire. En français, en anglais ou en arabe, dans le navigateur — rien à installer.':
-    'ثلاثون يومًا مجانًا. دون بطاقة بنكية. بالفرنسية أو الإنجليزية أو العربية، في المتصفح — دون أي تثبيت.',
+  'Trente jours d’essai gratuit. Sans carte bancaire. En français, en anglais, en espagnol, en portugais ou en arabe, dans le navigateur — rien à installer.':
+    'ثلاثون يومًا مجانًا. دون بطاقة بنكية. بالفرنسية أو الإنجليزية أو الإسبانية أو البرتغالية أو العربية، في المتصفح — دون أي تثبيت.',
   'Créer mon atelier': 'إنشاء ورشتي',
   '30 jours': '30 يومًا',
   'D’essai gratuit, sans carte bancaire': 'تجربة مجانية دون بطاقة بنكية',
@@ -705,8 +705,8 @@ export const ar: Dictionnaire = {
   'Le carnet s’alimente au fil des commandes : le premier client se saisit en moins d’une minute, mesures comprises. Un import de fichier est à l’étude.':
     'يمتلئ الدفتر مع تدفّق الطلبات: يُدخَل العميل الأول في أقل من دقيقة، بمقاساته. استيراد ملف قيد الدراسة.',
   'C’est pour quel pays ?': 'لأي بلد هو؟',
-  'Conçu pour l’Afrique de l’Ouest : interface en français, en anglais ou en arabe, montants en francs CFA sans décimales.':
-    'مصمَّم لغرب أفريقيا: واجهة بالفرنسية أو الإنجليزية أو العربية، ومبالغ بالفرنك الأفريقي دون كسور.',
+  'Conçu pour l’Afrique de l’Ouest : interface en français, en anglais, en espagnol, en portugais ou en arabe, montants en francs CFA sans décimales.':
+    'مصمَّم لغرب أفريقيا: واجهة بالفرنسية أو الإنجليزية أو الإسبانية أو البرتغالية أو العربية، ومبالغ بالفرنك الأفريقي دون كسور.',
 
   // ---------------------------------- landing · témoignages et appel final
   'Ce que disent les tailleurs': 'ما يقوله الخياطون',
@@ -888,7 +888,7 @@ export const ar: Dictionnaire = {
   'Rien ne correspond à « {recherche} »{filtre}.': 'لا شيء يطابق «{recherche}»{filtre}.',
   ' dans le filtre « {nom} »': ' في مرشّح «{nom}»',
   'Aucune commande avec le statut « {statut} ».': 'لا طلب بحالة «{statut}».',
-  '{n} commande': {
+  '{n} commandes': {
     zero: 'لا طلبات',
     one: 'طلب واحد',
     two: 'طلبان',
@@ -1070,4 +1070,118 @@ export const ar: Dictionnaire = {
     'توجد كلمة مرور بالفعل. استخدم «تغيير كلمة المرور».',
   'Champs invalides.': 'حقول غير صالحة.',
   'Erreur réseau. Réessaie.': 'خطأ في الشبكة. أعد المحاولة.',
+
+  // -------------------- phrases interpolées, longtemps restées en français
+  '{n} mesures — buste, robe et bas.': '{n} مقاسًا — الصدر والفستان والجزء السفلي.',
+  '{n} mesures — buste, manches et pantalon.': '{n} مقاسًا — الصدر والأكمام والسروال.',
+  '{n} clients': {
+    zero: 'لا عملاء',
+    one: 'عميل واحد',
+    two: 'عميلان',
+    few: '{n} عملاء',
+    many: '{n} عميلًا',
+    other: '{n} عميل',
+  },
+  'sur {total}': 'من {total}',
+  '· palette {genre}': '· مجموعة {genre}',
+  'Relevé du {date}': 'مقاسات بتاريخ {date}',
+  '{n} écritures': {
+    zero: 'لا قيود',
+    one: 'قيد واحد',
+    two: 'قيدان',
+    few: '{n} قيود',
+    many: '{n} قيدًا',
+    other: '{n} قيد',
+  },
+  'Aucune mesure relevée pour {client}. Prenez le relevé avant de tailler.':
+    'لا توجد مقاسات مسجَّلة لـ{client}. خذ المقاسات قبل القص.',
+  'Tarif de façon : {prix}': 'سعر الخياطة: {prix}',
+  '{utilisees}/{total} h engagées aujourd’hui': '{utilisees}/{total} س مشغولة اليوم',
+  '{nom} — {utilisees}/{total} h engagées aujourd’hui':
+    '{nom} — {utilisees}/{total} س مشغولة اليوم',
+  'Annuler le versement de {montant}': 'إلغاء الدفعة البالغة {montant}',
+  'Reste à encaisser : {montant}. Le versement entre aussitôt en trésorerie.':
+    'المتبقّي للتحصيل: {montant}. تدخل الدفعة الخزينة فورًا.',
+  rapports: 'التقارير',
+  'Dépenses {montant}': 'مصروفات {montant}',
+  'Charge de {nom}': 'حِمل {nom}',
+  'Ces montants comptent l’argent {encaisse}. Le chiffre d’affaires des {rapports} compte l’argent {facture} : une commande de 80 000 F réglée de 20 000 F y pèse 80 000 F. Les deux sont justes et vont différer.':
+    'هذه المبالغ تحسب المال {encaisse}. أمّا رقم الأعمال في {rapports} فيحسب المال {facture}: طلب بقيمة 80 000 ف دُفع منه 20 000 ف يزن فيها 80 000 ف. كلاهما صحيح، وسيختلفان.',
+  '{n} écritures ont été reconstituées depuis un acompte antérieur au journal. Leur date est celle de la commande, faute de mieux : le solde du mois concerné est approximatif.':
+    {
+      one: 'أُعيد بناء قيد واحد انطلاقًا من عربون سابق للدفتر. تاريخه هو تاريخ الطلب، لعدم توفّر أفضل: رصيد ذلك الشهر تقريبي.',
+      two: 'أُعيد بناء قيدين انطلاقًا من عربونين سابقين للدفتر. تاريخهما هو تاريخ الطلب، لعدم توفّر أفضل: رصيد الشهر المعني تقريبي.',
+      few: 'أُعيد بناء {n} قيود انطلاقًا من عرابين سابقة للدفتر. تواريخها هي تواريخ الطلبات، لعدم توفّر أفضل: رصيد الأشهر المعنية تقريبي.',
+      many: 'أُعيد بناء {n} قيدًا انطلاقًا من عرابين سابقة للدفتر. تواريخها هي تواريخ الطلبات، لعدم توفّر أفضل: رصيد الأشهر المعنية تقريبي.',
+      other:
+        'أُعيد بناء {n} قيد انطلاقًا من عرابين سابقة للدفتر. تواريخها هي تواريخ الطلبات، لعدم توفّر أفضل: رصيد الأشهر المعنية تقريبي.',
+    },
+
+  // ------------------------ messages d’erreur restés en français à l’écran
+  'Aucun artisan': 'لا يوجد حِرفي',
+  'Impossible de joindre le serveur. Vérifiez votre connexion.':
+    'تعذّر الاتصال بالخادم. تحقّق من اتصالك.',
+  'Trop de demandes. Patientez quelques minutes.': 'طلبات كثيرة جدًا. انتظر بضع دقائق.',
+  'Trop de tentatives. Réessayez dans une heure.': 'محاولات كثيرة جدًا. أعد المحاولة بعد ساعة.',
+  'Vérifiez l’adresse e-mail saisie.': 'تحقّق من عنوان البريد الإلكتروني المُدخَل.',
+  'Le numéro doit commencer par un indicatif, par exemple +226.':
+    'يجب أن يبدأ الرقم بمفتاح دولي، مثل +226.',
+
+  // --------------------------------------- connexion Google · page d’échec
+  "Votre adresse Google n'est pas vérifiée. Vérifiez-la sur votre compte Google, puis réessayez.":
+    'عنوان جوجل الخاص بك غير مُوثَّق. وثّقه في حسابك على جوجل ثم أعد المحاولة.',
+  'La connexion a été interrompue (vérification de sécurité). Cela peut arriver si la page Google est restée ouverte trop longtemps — réessayez.':
+    'انقطع تسجيل الدخول (تحقّق أمني). قد يحدث هذا إذا بقيت صفحة جوجل مفتوحة مدة طويلة — أعد المحاولة.',
+  'Google a refusé la connexion. Réessayez dans un instant.':
+    'رفض جوجل تسجيل الدخول. أعد المحاولة بعد لحظات.',
+  'La connexion via Google n’est pas activée sur ce serveur. Contactez le support.':
+    'تسجيل الدخول عبر جوجل غير مُفعَّل على هذا الخادم. تواصل مع الدعم.',
+  'Une erreur inattendue est survenue pendant la connexion. Réessayez.':
+    'حدث خطأ غير متوقّع أثناء تسجيل الدخول. أعد المحاولة.',
+  'Une erreur inconnue est survenue pendant la connexion. Réessayez.':
+    'حدث خطأ غير معروف أثناء تسجيل الدخول. أعد المحاولة.',
+
+  // --------------------------------------- trésorerie · phrases de l’écran
+  recettes: 'مداخيل',
+  dépenses: 'مصروفات',
+  'solde {montant}': 'الرصيد {montant}',
+  'Recettes {montant}': 'مداخيل {montant}',
+  'Dépenses de {mois}': 'مصروفات {mois}',
+  'Aucune dépense enregistrée ce mois-ci.': 'لا مصروفات مسجَّلة هذا الشهر.',
+  '+{entrees} attendus · −{sorties} de charges': '+{entrees} متوقَّعة · −{sorties} أعباء',
+  'attendus sur {n} commandes dont l’échéance est dépassée. C’est souvent ce qui explique un solde plus bas que prévu.':
+    {
+      one: 'متوقَّعة على طلب واحد تجاوز أجله. هذا ما يفسّر غالبًا رصيدًا أدنى من المتوقَّع.',
+      two: 'متوقَّعة على طلبين تجاوزا أجلهما. هذا ما يفسّر غالبًا رصيدًا أدنى من المتوقَّع.',
+      few: 'متوقَّعة على {n} طلبات تجاوزت آجالها. هذا ما يفسّر غالبًا رصيدًا أدنى من المتوقَّع.',
+      many: 'متوقَّعة على {n} طلبًا تجاوزت آجالها. هذا ما يفسّر غالبًا رصيدًا أدنى من المتوقَّع.',
+      other: 'متوقَّعة على {n} طلب تجاوزت آجالها. هذا ما يفسّر غالبًا رصيدًا أدنى من المتوقَّع.',
+    },
+  '{montant} restent à encaisser sur {n} commandes sans date de livraison — impossible de les placer sur le calendrier.':
+    {
+      one: 'يتبقّى تحصيل {montant} على طلب واحد بلا تاريخ تسليم — يتعذّر وضعه في الرزنامة.',
+      two: 'يتبقّى تحصيل {montant} على طلبين بلا تاريخ تسليم — يتعذّر وضعهما في الرزنامة.',
+      few: 'يتبقّى تحصيل {montant} على {n} طلبات بلا تاريخ تسليم — يتعذّر وضعها في الرزنامة.',
+      many: 'يتبقّى تحصيل {montant} على {n} طلبًا بلا تاريخ تسليم — يتعذّر وضعها في الرزنامة.',
+      other: 'يتبقّى تحصيل {montant} على {n} طلب بلا تاريخ تسليم — يتعذّر وضعها في الرزنامة.',
+    },
+  '· le {jour} du mois': '· في اليوم {jour} من الشهر',
+  'Supprimer « {libelle} »': 'حذف «{libelle}»',
+  '{montant} dû': '{montant} مستحقّة',
+  '· reste {montant}': '· يتبقّى {montant}',
+
+  // ----------------------------------------------------------- inscription
+  'Vous avez déjà un compte ?': 'لديك حساب بالفعل؟',
+  'Plan retenu : {plan}. L’essai de 30 jours démarre sans moyen de paiement — vous pourrez encore en changer.':
+    'الخطة المختارة: {plan}. تبدأ تجربة الثلاثين يومًا دون وسيلة دفع — ويمكنك تغييرها لاحقًا.',
+
+  // ---------------------------- derniers textes d’écran restés en français
+  'Assigné : {artisan}': 'مُسنَد إلى: {artisan}',
+  'Livraison {date}': 'التسليم {date}',
+  'Aucun client ne correspond à « {recherche} ».': 'لا يوجد عميل يطابق «{recherche}».',
+  'Aucune dépense en {mois}': 'لا مصروفات في {mois}',
+  '{montant} au total': '{montant} في المجموع',
+  '{nom} est déjà saturé aujourd’hui ({utilisees}/{total} h) — la livraison estimée en tiendra compte.':
+    '{nom} مشغول بالكامل اليوم ({utilisees}/{total} س) — سيأخذ التسليم المُقدَّر ذلك في الحسبان.',
+  'Modèle choisi par le client': 'الموديل الذي اختاره العميل',
 };

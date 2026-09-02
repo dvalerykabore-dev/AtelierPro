@@ -18,11 +18,6 @@ function ouTiret(valeur: number | null, suffixe = ''): string {
   return valeur === null ? '—' : `${valeur}${suffixe}`;
 }
 
-/** « 1 commande » / « 4 commandes » — le pluriel automatique de « 1 commandes ». */
-function pluriel(nombre: number, mot: string): string {
-  return `${nombre} ${mot}${nombre > 1 ? 's' : ''}`;
-}
-
 export default function Rapports() {
   const { t, tp } = useLangue();
   const { rapports, source, chargement, erreur } = useRapports();
@@ -75,13 +70,13 @@ export default function Rapports() {
           label={t('Chiffre d’affaires du mois')}
           valeur={formatPrice(indicateurs.chiffreAffairesMois, 'F')}
           icone={Banknote}
-          tendance={pluriel(indicateurs.totalCommandes, 'commande')}
+          tendance={tp('{n} commande', '{n} commandes', indicateurs.totalCommandes)}
         />
         <StatTile
           label={t('Commandes livrées')}
           valeur={String(indicateurs.commandesLivrees)}
           icone={Package}
-          tendance={`sur ${indicateurs.totalCommandes}`}
+          tendance={t('sur {total}', { total: indicateurs.totalCommandes })}
         />
         <StatTile
           label={t('Livraison à temps')}

@@ -22,12 +22,15 @@ function stockage(valeur: string | null) {
 }
 
 describe('estLangue', () => {
-  it('reconnaît les trois langues', () => {
+  it('reconnaît chaque langue déclarée', () => {
     expect(LANGUES.every(estLangue)).toBe(true);
   });
 
   it('refuse le reste', () => {
-    expect(estLangue('es')).toBe(false);
+    // « de » plutôt que « es » : l'espagnol servait ici d'exemple de code non
+    // pris en charge, et l'ajouter a fait échouer ce cas — ce qui est le
+    // comportement voulu, mais il faut alors un code réellement absent.
+    expect(estLangue('de')).toBe(false);
     expect(estLangue('FR')).toBe(false);
     expect(estLangue(null)).toBe(false);
     expect(estLangue(undefined)).toBe(false);
@@ -105,6 +108,8 @@ describe('sens d’écriture', () => {
     expect(SENS.ar).toBe('rtl');
     expect(SENS.fr).toBe('ltr');
     expect(SENS.en).toBe('ltr');
+    expect(SENS.es).toBe('ltr');
+    expect(SENS.pt).toBe('ltr');
   });
 });
 
@@ -115,6 +120,8 @@ describe('noms des langues', () => {
     expect(NOMS_LANGUES.ar).toBe('العربية');
     expect(NOMS_LANGUES.en).toBe('English');
     expect(NOMS_LANGUES.fr).toBe('Français');
+    expect(NOMS_LANGUES.pt).toBe('Português');
+    expect(NOMS_LANGUES.es).toBe('Español');
   });
 });
 
@@ -144,6 +151,8 @@ describe('SCRIPT_ANTI_FLASH_LANGUE', () => {
     // gauche à droite puis se retourner entièrement à l'hydratation.
     expect(executer('en', [])).toEqual({ lang: 'en', dir: 'ltr' });
     expect(executer('fr', [])).toEqual({ lang: 'fr', dir: 'ltr' });
+    expect(executer('pt', [])).toEqual({ lang: 'pt', dir: 'ltr' });
+    expect(executer('es', [])).toEqual({ lang: 'es', dir: 'ltr' });
   });
 
   it('rend le français à la première visite, sans consulter le navigateur', () => {

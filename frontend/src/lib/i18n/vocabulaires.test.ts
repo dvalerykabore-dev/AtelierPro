@@ -29,7 +29,7 @@ import {
   QUESTIONS,
 } from '@/lib/landing-contenu';
 
-const CIBLES = ['en', 'ar'] as const;
+const CIBLES = ['en', 'es', 'pt', 'ar'] as const;
 
 function champsDe(palettes: SectionMesures[]): string[] {
   return palettes.flatMap((s) => [s.titre, s.precision, ...s.champs.map((c) => c.label)]);

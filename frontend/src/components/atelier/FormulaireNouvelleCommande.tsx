@@ -278,7 +278,7 @@ export default function FormulaireNouvelleCommande() {
                 label={t('Type de tenue')}
                 value={typeTenue}
                 onChange={(e) => modifier(setTypeTenue)(e.target.value)}
-                aide={`Tarif de façon : ${formatPrice(prixTenue, 'F')}`}
+                aide={t('Tarif de façon : {prix}', { prix: formatPrice(prixTenue, 'F') })}
               >
                 {tarifs.map((t) => (
                   <option key={t.tenue} value={t.tenue}>
@@ -323,7 +323,10 @@ export default function FormulaireNouvelleCommande() {
                 onChange={(e) => modifier(setAssigne)(e.target.value)}
                 aide={
                   artisan
-                    ? `${artisan.heuresAujourdhui}/${artisan.capacite} h engagées aujourd’hui`
+                    ? t('{utilisees}/{total} h engagées aujourd’hui', {
+                        utilisees: artisan.heuresAujourdhui,
+                        total: artisan.capacite,
+                      })
                     : t('Aucun artisan actif — composez l’équipe dans les paramètres')
                 }
               >
@@ -377,8 +380,14 @@ export default function FormulaireNouvelleCommande() {
             {surcharge && (
               <p className="text-warning mt-4 flex items-start gap-2 text-xs">
                 <TriangleAlert size={13} className="mt-0.5 flex-shrink-0" aria-hidden />
-                {artisan?.nom} est déjà saturé aujourd’hui ({artisan?.heuresAujourdhui}/
-                {artisan?.capacite} h) — la livraison estimée en tiendra compte.
+                {t(
+                  '{nom} est déjà saturé aujourd’hui ({utilisees}/{total} h) — la livraison estimée en tiendra compte.',
+                  {
+                    nom: artisan?.nom ?? '',
+                    utilisees: artisan?.heuresAujourdhui ?? 0,
+                    total: artisan?.capacite ?? 0,
+                  },
+                )}
               </p>
             )}
           </section>
@@ -483,7 +492,11 @@ export default function FormulaireNouvelleCommande() {
               {...(echeanceProbleme ? { erreur: echeanceProbleme } : {})}
               aide={
                 artisan
-                  ? `${artisan.nom} — ${artisan.heuresAujourdhui}/${artisan.capacite} h engagées aujourd’hui`
+                  ? t('{nom} — {utilisees}/{total} h engagées aujourd’hui', {
+                      nom: artisan.nom,
+                      utilisees: artisan.heuresAujourdhui,
+                      total: artisan.capacite,
+                    })
                   : t('Aucun artisan assigné.')
               }
             />

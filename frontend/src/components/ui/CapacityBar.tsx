@@ -57,7 +57,7 @@ export default function CapacityBar({
             aria-valuenow={pourcentage}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label={`Charge de ${nom}`}
+            aria-label={t('Charge de {nom}', { nom })}
           >
             {/* Largeur calculée à l'exécution : Tailwind ne peut pas générer une
                 classe par pourcentage possible. Seul style en ligne conservé. */}

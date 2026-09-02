@@ -39,7 +39,7 @@ export default function SettingsPage() {
   if (!user) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-2 px-4">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <p className="text-sm text-muted-foreground">{t('Chargement…')}</p>
       </main>
     );
   }

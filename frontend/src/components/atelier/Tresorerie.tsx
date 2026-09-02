@@ -16,6 +16,7 @@ import {
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { Field, SelectField } from '@/components/ui/Field';
+import Traduction from '@/components/ui/Traduction';
 import { POSTES, libelleMois, libelleMoisCourt, libellePoste } from '@/lib/tresorerie';
 import { useCharges, useTresorerie } from '@/lib/useTresorerie';
 import { cn, formatPrice } from '@/lib/utils';
@@ -50,7 +51,7 @@ function Signe({ valeur, gras = false }: { valeur: number; gras?: boolean }) {
  *   projection est une projection, et son bloc le dit.
  */
 export default function Tresorerie() {
-  const { t, langue } = useLangue();
+  const { t, tp, langue } = useLangue();
   const { donnees, chargement, revalidation, erreur, session, recharger } = useTresorerie();
   const { charges, ajouter: ajouterCharge, basculer, supprimer: supprimerCharge } = useCharges();
 
@@ -110,7 +111,7 @@ export default function Tresorerie() {
         <SelectField label={t('Poste')} value={poste} onChange={(e) => setPoste(e.target.value)}>
           {POSTES.map((p) => (
             <option key={p.cle} value={p.cle}>
-              {p.label}
+              {t(p.label)}
             </option>
           ))}
         </SelectField>
@@ -138,7 +139,7 @@ export default function Tresorerie() {
         {erreurForm && (
           <p role="alert" className="text-danger flex items-start gap-2 text-sm">
             <AlertCircle size={15} className="mt-0.5 flex-shrink-0" aria-hidden />
-            {erreurForm}
+            {t(erreurForm)}
           </p>
         )}
 
@@ -147,7 +148,7 @@ export default function Tresorerie() {
             {t('Annuler')}
           </Button>
           <Button type="submit" disabled={envoi}>
-            {envoi ? 'Enregistrement…' : t('Déclarer')}
+            {envoi ? t('Enregistrement…') : t('Déclarer')}
           </Button>
         </div>
       </form>
@@ -165,7 +166,7 @@ export default function Tresorerie() {
           )}
         </p>
         <Link href="/connexion" className="text-primary mt-4 text-sm font-medium">
-          Se connecter
+          {t('Se connecter')}
         </Link>
       </div>
     );
@@ -209,9 +210,7 @@ export default function Tresorerie() {
         </div>
         <p className="text-muted-foreground mt-2 text-xs">
           {t(
-            t(
-              'Argent réellement encaissé, moins les dépenses décaissées, depuis l’ouverture du journal.',
-            ),
+            'Argent réellement encaissé, moins les dépenses décaissées, depuis l’ouverture du journal.',
           )}
         </p>
         {/*
@@ -261,13 +260,18 @@ export default function Tresorerie() {
       <p className="border-border bg-muted text-muted-foreground flex items-start gap-2 rounded-lg border px-3 py-2 text-xs">
         <Info size={13} className="mt-0.5 flex-shrink-0" aria-hidden />
         <span>
-          Ces montants comptent l’argent{' '}
-          <strong className="text-foreground">{t('encaissé')}</strong>. Le chiffre d’affaires des{' '}
-          <Link href="/rapports" className="text-primary underline">
-            rapports
-          </Link>{' '}
-          compte l’argent <strong className="text-foreground">{t('facturé')}</strong> : une commande
-          de 80 000 F réglée de 20 000 F y pèse 80 000 F. Les deux sont justes et vont différer.
+          <Traduction
+            cle="Ces montants comptent l’argent {encaisse}. Le chiffre d’affaires des {rapports} compte l’argent {facture} : une commande de 80 000 F réglée de 20 000 F y pèse 80 000 F. Les deux sont justes et vont différer."
+            elements={{
+              encaisse: <strong className="text-foreground">{t('encaissé')}</strong>,
+              facture: <strong className="text-foreground">{t('facturé')}</strong>,
+              rapports: (
+                <Link href="/rapports" className="text-primary underline">
+                  {t('rapports')}
+                </Link>
+              ),
+            }}
+          />
         </span>
       </p>
 
@@ -275,9 +279,11 @@ export default function Tresorerie() {
         <p className="border-warning/40 bg-warning/10 text-muted-foreground flex items-start gap-2 rounded-lg border px-3 py-2 text-xs">
           <AlertTriangle size={13} className="text-warning mt-0.5 flex-shrink-0" aria-hidden />
           <span>
-            {reprises} écriture{reprises > 1 ? 's ont' : ' a'} été reconstituée
-            {reprises > 1 ? 's' : ''} depuis un acompte antérieur au journal. Leur date est celle de
-            la commande, faute de mieux : le solde du mois concerné est approximatif.
+            {tp(
+              '{n} écriture a été reconstituée depuis un acompte antérieur au journal. Sa date est celle de la commande, faute de mieux : le solde du mois concerné est approximatif.',
+              '{n} écritures ont été reconstituées depuis un acompte antérieur au journal. Leur date est celle de la commande, faute de mieux : le solde du mois concerné est approximatif.',
+              reprises,
+            )}
           </span>
         </p>
       )}
@@ -300,19 +306,19 @@ export default function Tresorerie() {
                   {libelleMoisCourt(m.cle, langue)}
                 </span>
                 <span className="text-muted-foreground text-xs whitespace-nowrap">
-                  solde {formatPrice(m.soldeFin, 'F')}
+                  {t('solde {montant}', { montant: formatPrice(m.soldeFin, 'F') })}
                 </span>
               </div>
               <div className="flex items-center gap-1">
                 <div
                   className="bg-success h-2 rounded-sm"
                   style={{ width: `${(m.recettes / maxBarre) * 50}%` }}
-                  title={`Recettes ${formatPrice(m.recettes, 'F')}`}
+                  title={t('Recettes {montant}', { montant: formatPrice(m.recettes, 'F') })}
                 />
                 <div
                   className="bg-danger h-2 rounded-sm"
                   style={{ width: `${(m.depenses / maxBarre) * 50}%` }}
-                  title={`Dépenses ${formatPrice(m.depenses, 'F')}`}
+                  title={t('Dépenses {montant}', { montant: formatPrice(m.depenses, 'F') })}
                 />
               </div>
             </li>
@@ -320,10 +326,10 @@ export default function Tresorerie() {
         </ul>
         <div className="text-muted-foreground mt-4 flex items-center gap-4 text-[10px]">
           <span className="flex items-center gap-1.5">
-            <span className="bg-success h-2 w-3 rounded-sm" aria-hidden /> recettes
+            <span className="bg-success h-2 w-3 rounded-sm" aria-hidden /> {t('recettes')}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="bg-danger h-2 w-3 rounded-sm" aria-hidden /> dépenses
+            <span className="bg-danger h-2 w-3 rounded-sm" aria-hidden /> {t('dépenses')}
           </span>
         </div>
       </section>
@@ -332,7 +338,7 @@ export default function Tresorerie() {
       <section className="border-border bg-surface rounded-xl border p-4 lg:p-5">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="font-headings text-foreground text-sm font-bold">
-            Dépenses de {libelleMois(moisCourant.cle, langue)}
+            {t('Dépenses de {mois}', { mois: libelleMois(moisCourant.cle, langue) })}
           </h2>
           <Link href="/depenses" className="text-primary text-xs font-medium">
             {t('Saisir')}
@@ -340,7 +346,7 @@ export default function Tresorerie() {
         </div>
         {repartition.length === 0 ? (
           <p className="text-muted-foreground text-xs">
-            Aucune dépense enregistrée ce mois-ci.{' '}
+            {t('Aucune dépense enregistrée ce mois-ci.')}{' '}
             <Link href="/depenses" className="text-primary underline">
               {t('En ajouter une')}
             </Link>
@@ -394,8 +400,10 @@ export default function Tresorerie() {
                   )}
                 </div>
                 <div className="text-muted-foreground mt-0.5 text-[10px]">
-                  +{formatPrice(m.encaissements, 'F')} attendus · −{formatPrice(m.charges, 'F')} de
-                  charges
+                  {t('+{entrees} attendus · −{sorties} de charges', {
+                    entrees: formatPrice(m.encaissements, 'F'),
+                    sorties: formatPrice(m.charges, 'F'),
+                  })}
                 </div>
               </div>
               <div className="text-right">
@@ -425,18 +433,22 @@ export default function Tresorerie() {
             <span className="text-warning font-bold">
               {formatPrice(prevision.enRetard.montant, 'F')}
             </span>{' '}
-            attendus sur {prevision.enRetard.nombre} commande
-            {prevision.enRetard.nombre > 1 ? 's' : ''} dont l’échéance est dépassée. C’est souvent
-            ce qui explique un solde plus bas que prévu.
+            {tp(
+              'attendus sur {n} commande dont l’échéance est dépassée. C’est souvent ce qui explique un solde plus bas que prévu.',
+              'attendus sur {n} commandes dont l’échéance est dépassée. C’est souvent ce qui explique un solde plus bas que prévu.',
+              prevision.enRetard.nombre,
+            )}
           </p>
         )}
 
         {prevision.sansEcheance.nombre > 0 && (
           <p className="text-muted-foreground text-xs">
-            {formatPrice(prevision.sansEcheance.montant, 'F')} restent à encaisser sur{' '}
-            {prevision.sansEcheance.nombre} commande
-            {prevision.sansEcheance.nombre > 1 ? 's' : ''} sans date de livraison — impossible de
-            les placer sur le calendrier.
+            {tp(
+              '{montant} restent à encaisser sur {n} commande sans date de livraison — impossible de la placer sur le calendrier.',
+              '{montant} restent à encaisser sur {n} commandes sans date de livraison — impossible de les placer sur le calendrier.',
+              prevision.sansEcheance.nombre,
+              { montant: formatPrice(prevision.sansEcheance.montant, 'F') },
+            )}
           </p>
         )}
       </section>
@@ -476,7 +488,7 @@ export default function Tresorerie() {
                     {c.label}
                   </div>
                   <div className="text-muted-foreground text-[10px]">
-                    {libellePoste(c.category)} · le {c.dayOfMonth} du mois
+                    {libellePoste(c.category)} {t('· le {jour} du mois', { jour: c.dayOfMonth })}
                   </div>
                 </div>
                 <span className="text-foreground text-xs font-bold whitespace-nowrap">
@@ -492,7 +504,7 @@ export default function Tresorerie() {
                 <button
                   type="button"
                   onClick={() => void supprimerCharge(c.id).then(recharger)}
-                  aria-label={`Supprimer « ${c.label} »`}
+                  aria-label={t('Supprimer « {libelle} »', { libelle: c.label })}
                   className="text-muted-foreground hover:text-danger flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md transition-colors"
                 >
                   <Trash2 size={14} aria-hidden />

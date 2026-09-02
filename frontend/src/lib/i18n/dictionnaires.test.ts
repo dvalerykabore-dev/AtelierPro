@@ -11,7 +11,7 @@ import { DICTIONNAIRES } from './dictionnaires';
 import { LANGUES, type Langue } from '@/lib/langue';
 import type { CategoriePluriel, Dictionnaire } from './traduire';
 
-const CIBLES: Langue[] = ['en', 'ar'];
+const CIBLES: Langue[] = ['en', 'es', 'pt', 'ar'];
 
 /** Tous les marqueurs `{nom}` d'une chaîne, en ensemble. */
 function marqueurs(s: string): Set<string> {
@@ -110,14 +110,20 @@ describe('dictionnaires', () => {
     });
   }
 
-  it('l’arabe décline autant ou plus que l’anglais', () => {
-    // L'arabe a six catégories là où l'anglais en a deux. Une entrée déclinée
-    // en anglais mais plate en arabe produirait « 2 طلب » au lieu de « طلبان ».
+  it('décline partout où l’anglais décline', () => {
+    // L'anglais est le plancher : il ne distingue que deux formes, là où le
+    // portugais en distingue deux aussi et l'arabe six. Une entrée déclinée en
+    // anglais mais plate ailleurs produirait « 2 طلب » au lieu de « طلبان », ou
+    // « 2 encomenda » au lieu de « 2 encomendas ».
     const en = DICTIONNAIRES.en as Dictionnaire;
-    const ar = DICTIONNAIRES.ar as Dictionnaire;
     const plates: string[] = [];
-    for (const [cle, valeur] of Object.entries(en)) {
-      if (typeof valeur === 'object' && typeof ar[cle] === 'string') plates.push(cle);
+    for (const langue of CIBLES.filter((l) => l !== 'en')) {
+      const cible = DICTIONNAIRES[langue] as Dictionnaire;
+      for (const [cle, valeur] of Object.entries(en)) {
+        if (typeof valeur === 'object' && typeof cible[cle] === 'string') {
+          plates.push(`${langue} : ${cle}`);
+        }
+      }
     }
     expect(plates).toEqual([]);
   });
@@ -137,9 +143,23 @@ const HORS_DICTIONNAIRE = new Set([
   'Secteur 15, rue 15.42',
   'Boubou bazin brodé',
   'Google',
-  // Exemple d'appel cité dans la doc de `LangueContext`, pas un texte d'écran.
-  '{n} commandes',
 ]);
+
+/**
+ * Retire commentaires de bloc et de ligne, en gardant les retours à la ligne.
+ *
+ * Sans ça, un `tp('{n} commande', '{n} commandes', 3)` cité en exemple dans une
+ * JSDoc compte comme un appel réel. C'est exactement ce qui est arrivé :
+ * `'{n} commandes'` a été rangé parmi les exclusions comme « exemple de doc »,
+ * alors que c'est la clé sous laquelle `traduirePluriel` cherche VRAIMENT, à
+ * chaque compteur de commandes de l'application. Le test se taisait pendant que
+ * tous ces compteurs restaient en français.
+ */
+function sansCommentaires(s: string): string {
+  return s
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+    .replace(/^\s*\/\/.*$/gm, '');
+}
 
 /** Tous les `.ts`/`.tsx` du projet, tests exclus. */
 function sources(racine: string, acc: string[] = []): string[] {
@@ -158,7 +178,7 @@ describe('couverture des dictionnaires', () => {
   // milieu d'une interface arabe, sans la moindre erreur pour le signaler.
   const utilisees = new Set<string>();
   for (const f of sources('src')) {
-    const s = fs.readFileSync(f, 'utf8');
+    const s = sansCommentaires(fs.readFileSync(f, 'utf8'));
     for (const m of s.matchAll(/\bt\(\s*'((?:[^'\\]|\\.)*)'/g)) utilisees.add(m[1] as string);
     for (const m of s.matchAll(/\btp\(\s*'(?:[^'\\]|\\.)*'\s*,\s*'((?:[^'\\]|\\.)*)'/g))
       utilisees.add(m[1] as string);
@@ -174,6 +194,10 @@ describe('couverture des dictionnaires', () => {
       utilisees.add(m[1] as string);
       utilisees.add(m[2] as string);
     }
+    // `<Traduction cle="…">` — la clé est un attribut JSX, pas un appel. Sans
+    // ce cas, une phrase à éléments pourrait n'exister dans aucun dictionnaire
+    // et rester française partout sans que rien ne le signale.
+    for (const m of s.matchAll(/\bcle="([^"]*)"/g)) utilisees.add(m[1] as string);
   }
 
   it('trouve bien les appels à traduire', () => {

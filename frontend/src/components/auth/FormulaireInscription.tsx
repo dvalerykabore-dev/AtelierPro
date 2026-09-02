@@ -8,6 +8,7 @@ import AuthCard from '@/components/auth/AuthCard';
 import BoutonGoogle from '@/components/auth/BoutonGoogle';
 import Button from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
+import Traduction from '@/components/ui/Traduction';
 import { api, ApiError } from '@/lib/api';
 import { PLANS_TARIFAIRES } from '@/lib/landing-contenu';
 import { useT } from '@/contexts/LangueContext';
@@ -60,12 +61,12 @@ export default function FormulaireInscription() {
   return (
     <AuthCard
       titre={t('Créer votre atelier')}
-      sousTitre="Quelques secondes pour commencer à suivre vos commandes."
+      sousTitre={t('Quelques secondes pour commencer à suivre vos commandes.')}
       pied={
         <>
-          Vous avez déjà un compte ?{' '}
+          {t('Vous avez déjà un compte ?')}{' '}
           <Link href="/connexion" className="text-primary font-medium">
-            Se connecter
+            {t('Se connecter')}
           </Link>
         </>
       }
@@ -73,8 +74,12 @@ export default function FormulaireInscription() {
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         {planChoisi && (
           <p className="border-border bg-muted text-muted-foreground rounded-md border px-3 py-2 text-xs">
-            Plan retenu : <span className="text-foreground font-bold">{planChoisi.nom}</span>.
-            L’essai de 30 jours démarre sans moyen de paiement — vous pourrez encore en changer.
+            <Traduction
+              cle="Plan retenu : {plan}. L’essai de 30 jours démarre sans moyen de paiement — vous pourrez encore en changer."
+              elements={{
+                plan: <span className="text-foreground font-bold">{t(planChoisi.nom)}</span>,
+              }}
+            />
           </p>
         )}
 
@@ -94,7 +99,7 @@ export default function FormulaireInscription() {
           minLength={10}
           autoComplete="new-password"
           placeholder="••••••••••"
-          aide="10 caractères minimum. Une phrase est plus sûre qu’un mot compliqué."
+          aide={t('10 caractères minimum. Une phrase est plus sûre qu’un mot compliqué.')}
           value={motDePasse}
           onChange={(e) => setMotDePasse(e.target.value)}
         />

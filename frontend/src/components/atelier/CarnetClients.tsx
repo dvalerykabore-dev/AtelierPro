@@ -33,7 +33,7 @@ import {
   type Genre,
 } from '@/lib/mock/atelier';
 import { cn, formatPrice } from '@/lib/utils';
-import { useT } from '@/contexts/LangueContext';
+import { useLangue } from '@/contexts/LangueContext';
 
 const ONGLETS = ['Infos', 'Mesures', 'Tissus', 'Commandes'] as const;
 type Onglet = (typeof ONGLETS)[number];
@@ -63,7 +63,7 @@ function bilan(commandes: Commande[]) {
  * découpage que suit déjà la maquette mobile.
  */
 export default function CarnetClients() {
-  const t = useT();
+  const { t, tp } = useLangue();
   const { clients, source, chargement, ajouter } = useClients();
   const { commandes } = useCommandes();
 
@@ -209,8 +209,10 @@ export default function CarnetClients() {
           <GenreToggle valeur={nouveauGenre} onChange={setNouveauGenre} />
           <p className="text-muted-foreground text-xs">
             {nouveauGenre === 'Femme'
-              ? `${nombreDeChamps(paletteDe('Femme'))} mesures — buste, robe et bas.`
-              : `${nombreDeChamps(paletteDe('Homme'))} mesures — buste, manches et pantalon.`}
+              ? t('{n} mesures — buste, robe et bas.', { n: nombreDeChamps(paletteDe('Femme')) })
+              : t('{n} mesures — buste, manches et pantalon.', {
+                  n: nombreDeChamps(paletteDe('Homme')),
+                })}
           </p>
         </div>
 
@@ -275,8 +277,8 @@ export default function CarnetClients() {
 
         <div className="border-border flex items-center justify-between border-b px-4 py-2.5">
           <span className="text-muted-foreground text-xs">
-            {visibles.length} client{visibles.length > 1 ? 's' : ''}
-            {recherche && ` sur ${clients.length}`}
+            {tp('{n} client', '{n} clients', visibles.length)}
+            {recherche && ` ${t('sur {total}', { total: clients.length })}`}
             {/* La provenance est annoncée : on ne doit jamais prendre des
                 données d'exemple pour le vrai carnet de l'atelier. */}
             {source === 'demonstration' && <span className="text-warning ml-1.5">· exemples</span>}
@@ -293,7 +295,7 @@ export default function CarnetClients() {
 
         {visibles.length === 0 && (
           <p className="text-muted-foreground px-4 py-8 text-center text-xs">
-            Aucun client ne correspond à « {recherche} ».
+            {t('Aucun client ne correspond à « {recherche} ».', { recherche })}
           </p>
         )}
 
@@ -378,12 +380,12 @@ export default function CarnetClients() {
                 <span aria-hidden>·</span>
                 <span className="flex items-center gap-1">
                   <Shirt size={11} aria-hidden />
-                  {bilanClient.nombre} commande{bilanClient.nombre > 1 ? 's' : ''}
+                  {tp('{n} commande', '{n} commandes', bilanClient.nombre)}
                 </span>
                 <span aria-hidden>·</span>
                 <span className="flex items-center gap-1">
                   <Banknote size={11} aria-hidden />
-                  {formatPrice(bilanClient.total, 'F CFA')} au total
+                  {t('{montant} au total', { montant: formatPrice(bilanClient.total, 'F CFA') })}
                 </span>
               </div>
             </div>
@@ -458,15 +460,17 @@ export default function CarnetClients() {
                 <h3 className="font-headings text-foreground text-sm font-bold">
                   {t('Mesures corporelles')}
                   <span className="text-muted-foreground ml-2 font-normal">
-                    · palette {selectionne.genre.toLowerCase()}
+                    {t('· palette {genre}', { genre: t(selectionne.genre).toLowerCase() })}
                   </span>
                 </h3>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground text-xs">
-                    {releve ? `Relevé du ${releve.dateReleve}` : t('Aucun relevé')}
+                    {releve
+                      ? t('Relevé du {date}', { date: releve.dateReleve })
+                      : t('Aucun relevé')}
                   </span>
                   <Link href="/mesures" className="text-primary text-xs font-medium">
-                    {releve ? 'Modifier' : t('Relever')}
+                    {t(releve ? 'Modifier' : 'Relever')}
                   </Link>
                 </div>
               </div>
@@ -544,9 +548,7 @@ export default function CarnetClients() {
               {tissusDuClient.length === 0 ? (
                 <p className="text-muted-foreground px-5 py-4 text-xs">
                   {t(
-                    t(
-                      'Aucun tissu photographié. Les tissus se prennent en photo pendant le relevé de mesures.',
-                    ),
+                    'Aucun tissu photographié. Les tissus se prennent en photo pendant le relevé de mesures.',
                   )}
                 </p>
               ) : (
@@ -584,7 +586,7 @@ export default function CarnetClients() {
                   <div className="border-border relative h-48 w-full overflow-hidden rounded-md border">
                     <Image
                       src={releve.modele}
-                      alt="Modèle choisi par le client"
+                      alt={t('Modèle choisi par le client')}
                       fill
                       unoptimized
                       className="object-cover"

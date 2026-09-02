@@ -10,7 +10,7 @@
  * ce moment-là aucune session n'existe pour porter la préférence.
  */
 
-export const LANGUES = ['fr', 'en', 'ar'] as const;
+export const LANGUES = ['fr', 'en', 'es', 'pt', 'ar'] as const;
 export type Langue = (typeof LANGUES)[number];
 
 /** Le français reste le défaut : c'est la langue dans laquelle l'atelier a été écrit. */
@@ -25,6 +25,8 @@ export const LANGUE_DEFAUT: Langue = 'fr';
 export const NOMS_LANGUES: Record<Langue, string> = {
   fr: 'Français',
   en: 'English',
+  es: 'Español',
+  pt: 'Português',
   ar: 'العربية',
 };
 
@@ -32,6 +34,8 @@ export const NOMS_LANGUES: Record<Langue, string> = {
 export const SENS: Record<Langue, 'ltr' | 'rtl'> = {
   fr: 'ltr',
   en: 'ltr',
+  es: 'ltr',
+  pt: 'ltr',
   ar: 'rtl',
 };
 
@@ -43,10 +47,18 @@ export const SENS: Record<Langue, 'ltr' | 'rtl'> = {
  * référence de commande ou un numéro de téléphone attend les chiffres qu'il a
  * saisis — le reste de la chaîne d'outils, factures comprises, est en chiffres
  * latins.
+ *
+ * `pt-PT` et non `pt-BR`, `es-ES` et non `es-419` : les pays lusophones et
+ * hispanophones voisins de la zone franc — Guinée-Bissau, Cap-Vert, Guinée
+ * équatoriale — suivent les normes européennes, et la Guinée-Bissau comme la
+ * Guinée équatoriale partagent le franc CFA. Le choix se voit surtout aux
+ * dates et aux noms de mois rendus par `Intl`.
  */
 export const ETIQUETTE_INTL: Record<Langue, string> = {
   fr: 'fr-FR',
   en: 'en-GB',
+  es: 'es-ES',
+  pt: 'pt-PT',
   ar: 'ar-u-nu-latn',
 };
 

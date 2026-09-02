@@ -112,8 +112,9 @@ function FormulaireReinitialisation() {
 }
 
 export default function ReinitialiserPage() {
+  const { t } = useLangue();
   return (
-    <Suspense fallback={<AuthCard titre="Nouveau mot de passe">Chargement…</AuthCard>}>
+    <Suspense fallback={<AuthCard titre={t('Nouveau mot de passe')}>{t('Chargement…')}</AuthCard>}>
       <FormulaireReinitialisation />
     </Suspense>
   );

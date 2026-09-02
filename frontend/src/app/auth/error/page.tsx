@@ -41,7 +41,9 @@ function AuthErrorBody() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-4">
       <h1 className="text-2xl font-bold">{t('Échec de connexion')}</h1>
-      <p className="text-sm text-foreground">{message}</p>
+      {/* Les messages ci-dessus sont composés en français : la phrase EST la
+          clé, on la traduit au moment de l'afficher. */}
+      <p className="text-sm text-foreground">{t(message)}</p>
       {code && <p className="font-mono text-xs text-muted-foreground/60">code: {code}</p>}
       <div className="flex flex-col gap-2">
         {/*
