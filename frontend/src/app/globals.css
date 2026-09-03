@@ -55,6 +55,20 @@
   --color-marque-brume: #7a8faa;
   --color-marque-succes: #3aaf7a;
 
+  /*
+   * Ombre des panneaux flottants (menus ancrés).
+   *
+   * Elle ne peut pas être la même dans les deux thèmes, et pas seulement par
+   * goût : en thème clair, le panneau est un blanc cassé posé sur du blanc, et
+   * la bordure seule ne le décolle pas de la page. C'est l'ombre qui dit qu'il
+   * flotte. En thème sombre, à l'inverse, une ombre marquée l'enfoncerait dans
+   * le bleu nuit — elle y est donc plus profonde mais plus diffuse.
+   *
+   * Même mécanisme que `--color-overlay` : la variable est redéfinie sous
+   * `[data-theme='light']`, et l'utilitaire `shadow-menu` suit tout seul.
+   */
+  --shadow-menu: 0 18px 40px -16px rgb(0 0 0 / 0.7), 0 2px 10px -4px rgb(0 0 0 / 0.5);
+
   /* Rayons */
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -75,6 +89,42 @@
   --text-2xl: 24px;
   --text-3xl: 30px;
   --text-4xl: 38px;
+
+  /*
+   * Ouverture d'un menu ancré — le panneau, puis ses lignes.
+   *
+   * `both` et non le remplissage par défaut : les lignes sont décalées de
+   * quelques dizaines de millisecondes chacune, et sans remplissage arrière
+   * elles s'afficheraient pleines avant de sauter à zéro au début de leur
+   * animation. Le décalage se verrait comme un clignotement.
+   *
+   * La courbe est franche au départ puis très amortie : le panneau paraît
+   * arriver d'un coup et se poser, plutôt que glisser.
+   */
+  --animate-menu-surgir: menu-surgir 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-menu-ligne: menu-ligne 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes menu-surgir {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes menu-ligne {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 /*
@@ -119,6 +169,7 @@
   --color-success: #15803d;
   --color-warning: #b45309;
   --color-overlay: rgb(15 23 42 / 0.45);
+  --shadow-menu: 0 16px 36px -14px rgb(15 23 42 / 0.24), 0 2px 8px -3px rgb(15 23 42 / 0.12);
 }
 
 /*
@@ -189,6 +240,17 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
+  }
+}
+
+/*
+ * Même règle pour les ouvertures de menu : le mouvement est un agrément, la
+ * lisibilité n'en dépend pas. Coupé, le panneau apparaît simplement d'un coup.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-menu-surgir,
+  .animate-menu-ligne {
+    animation: none;
   }
 }
 
