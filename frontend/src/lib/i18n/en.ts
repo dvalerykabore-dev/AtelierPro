@@ -1132,4 +1132,64 @@ export const en: Dictionnaire = {
   '{nom} est déjà saturé aujourd’hui ({utilisees}/{total} h) — la livraison estimée en tiendra compte.':
     '{nom} is already full today ({utilisees}/{total} h) — the estimated delivery accounts for it.',
   'Modèle choisi par le client': 'Model chosen by the client',
+  // ------------------------------------------------- paliers d’abonnement
+  '2 artisans': '2 tailors',
+  '5 artisans': '5 tailors',
+  '15 artisans': '15 tailors',
+  'Acomptes et soldes suivis': 'Deposits and balances tracked',
+  'Alertes de retard et de livraison': 'Late and delivery alerts',
+  'Choisir ce palier': 'Choose this tier',
+  'Cinq langues, dont l’arabe': 'Five languages, Arabic included',
+  'Clients et commandes illimités': 'Unlimited clients and orders',
+  Commencer: 'Get started',
+  'Dépenses et charges récurrentes': 'Expenses and recurring charges',
+  Essentiel: 'Essential',
+  'Faut-il payer d’avance ?': 'Do I have to pay upfront?',
+  'Formule de règlement': 'Payment option',
+  Freemium: 'Freemium',
+  Gratuit: 'Free',
+  'Grille tarifaire et notes d’atelier': 'Price list and workshop notes',
+  'Interlocuteur WhatsApp dédié': 'A dedicated WhatsApp contact',
+  'Je ne suis plus seul.': 'I am not working alone any more.',
+  'Je tiens une entreprise.': 'I am running a business.',
+  'Le carnet complet, sans limite de durée': 'The whole notebook, with no time limit',
+  'Le carnet papier, remplacé.': 'The paper notebook, replaced.',
+  'Logo de l’atelier': 'Workshop logo',
+  'Mannequin — 15 rendus par mois': 'Model — 15 renders a month',
+  'Par mois pour le planning et les photos': 'A month for the schedule and photos',
+  'Photos du tissu et du modèle': 'Photos of the fabric and the model',
+  'Planning avec capacité par artisan': 'Schedule with each tailor’s own capacity',
+  'Pour toujours': 'Forever',
+  Premium: 'Premium',
+  Pro: 'Pro',
+  'Que se passe-t-il si j’arrête de payer ?': 'What happens if I stop paying?',
+  'Rapports et export PDF': 'Reports and PDF export',
+  'Relevé de mesures, sans photo': 'Measurements, without photos',
+  'Reprise de votre carnet papier': 'We type up your paper notebook',
+  'Tout le Freemium, plus': 'Everything in Freemium, plus',
+  'Tout l’Essentiel, plus': 'Everything in Essential, plus',
+  'Tout le Pro, plus': 'Everything in Pro, plus',
+  'Trésorerie — journal de caisse daté': 'Cash — a dated cash book',
+  mois: 'months',
+  'par mois': 'a month',
+  'La vitrine — le seul palier qui aide à trouver des clientes.':
+    'The shop window — the only tier that helps you find new clients.',
+  'Le carnet est gratuit, sans limite de durée. Vous ne payez que le jour où l’atelier grandit.':
+    'The notebook is free, with no time limit. You only pay the day the workshop grows.',
+  'Le trimestre offre un demi-mois, l’année offre trois mois. Aucun prélèvement automatique : vous payez, la date recule.':
+    'The quarter gives you half a month, the year gives you three. No automatic debit: you pay, the date moves back.',
+  'Le paiement en ligne n’est pas encore ouvert. Créez votre atelier gratuitement : nous vous contactons avant tout encaissement.':
+    'Online payment is not open yet. Create your workshop for free — we will contact you before taking anything.',
+  'Palier retenu : {plan}. Votre atelier s’ouvre gratuitement — nous vous contactons avant tout encaissement.':
+    'Tier chosen: {plan}. Your workshop opens for free — we will contact you before taking anything.',
+  'Gratuit pour commencer, sans moyen de paiement. La première commande se saisit en deux minutes.':
+    'Free to start, no payment method needed. The first order takes two minutes to enter.',
+  'Gratuit pour tenir votre carnet, sans carte bancaire. En français, en anglais, en espagnol, en portugais ou en arabe, dans le navigateur — rien à installer.':
+    'Free to keep your notebook, no bank card. In French, English, Spanish, Portuguese or Arabic, in the browser — nothing to install.',
+  'Rien pour tenir votre carnet, vos clientes et vos commandes — sans limite de durée et sans carte bancaire. Le planning d’équipe et les photos commencent à 2 000 F CFA par mois, la trésorerie et les rapports à 5 000 F. Moins cher qu’une retouche.':
+    'Nothing to keep your notebook, your clients and your orders — with no time limit and no bank card. The team schedule and photos start at 2,000 F CFA a month, cash and reports at 5,000 F. Cheaper than one alteration.',
+  'Vous choisissez : au mois, au trimestre ou à l’année. Le trimestre offre un demi-mois, l’année offre trois mois — vous pouvez refaire le calcul vous-même. Il n’y a aucun prélèvement automatique : vous payez, la date recule, et rien ne se déclenche tout seul.':
+    'You choose: by the month, the quarter or the year. The quarter gives you half a month, the year gives you three — you can check the maths yourself. There is no automatic debit: you pay, the date moves back, and nothing starts on its own.',
+  'Vous revenez au gratuit, et rien n’est effacé. Vos clientes, vos commandes, vos mesures et vos photos restent lisibles. Ce sont les écrans payants et les nouveaux envois de photos qui se ferment, pas vos données.':
+    'You go back to the free tier, and nothing is deleted. Your clients, orders, measurements and photos stay readable. It is the paid screens and new photo uploads that close, not your data.',
 };

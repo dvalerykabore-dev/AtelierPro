@@ -11,6 +11,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
+import type { Plan } from '@/lib/plans';
+
 /* ═══════════════════════════════════════════════════════════════════════════
  * TEXTE COMMERCIAL DE LA PAGE D'ACCUEIL
  *
@@ -62,9 +64,9 @@ export interface ChiffreCle {
  * L'original est conservé plus bas dans `CHIFFRES_MAQUETTE`.
  */
 export const CHIFFRES_CLES: ChiffreCle[] = [
-  { valeur: '30 jours', label: 'D’essai gratuit, sans carte bancaire', icone: Clock },
+  { valeur: 'Gratuit', label: 'Le carnet complet, sans limite de durée', icone: Clock },
   { valeur: '0 F', label: 'À installer — tout passe par le navigateur', icone: Smartphone },
-  { valeur: '8', label: 'Écrans de gestion, du planning à la trésorerie', icone: LayoutGrid },
+  { valeur: '2 000 F', label: 'Par mois pour le planning et les photos', icone: Banknote },
 ];
 
 /**
@@ -246,7 +248,17 @@ export const QUESTIONS: Question[] = [
   {
     question: 'Combien ça coûte ?',
     reponse:
-      'Trente jours d’essai gratuit, puis de 2 000 à 5 000 F CFA par mois selon le plan. Moins cher qu’une retouche.',
+      'Rien pour tenir votre carnet, vos clientes et vos commandes — sans limite de durée et sans carte bancaire. Le planning d’équipe et les photos commencent à 2 000 F CFA par mois, la trésorerie et les rapports à 5 000 F. Moins cher qu’une retouche.',
+  },
+  {
+    question: 'Faut-il payer d’avance ?',
+    reponse:
+      'Vous choisissez : au mois, au trimestre ou à l’année. Le trimestre offre un demi-mois, l’année offre trois mois — vous pouvez refaire le calcul vous-même. Il n’y a aucun prélèvement automatique : vous payez, la date recule, et rien ne se déclenche tout seul.',
+  },
+  {
+    question: 'Que se passe-t-il si j’arrête de payer ?',
+    reponse:
+      'Vous revenez au gratuit, et rien n’est effacé. Vos clientes, vos commandes, vos mesures et vos photos restent lisibles. Ce sont les écrans payants et les nouveaux envois de photos qui se ferment, pas vos données.',
   },
   {
     question: 'Et si internet est coupé ?',
@@ -266,62 +278,71 @@ export const QUESTIONS: Question[] = [
 ];
 
 export interface PlanTarifaire {
-  nom: string;
-  /** Identifiant transmis à l'inscription via `?plan=`. */
-  cle: string;
-  prix: string;
-  periode: string;
-  description: string;
-  populaire?: boolean;
+  /** Clé du palier — la même que côté serveur, transmise à l'inscription via `?plan=`. */
+  cle: Plan;
+  /** Ce que CE palier ajoute. L'hérité est annoncé par `herite`, jamais recopié. */
   inclus: string[];
-  /** `true` pour Enterprise : mène au contact plutôt qu'à l'inscription. */
-  surDevis?: boolean;
+  /** « Tout le Freemium, plus » — absent sur le premier palier. */
+  herite?: string;
+  /** Mis en avant sur la grille. Un seul, sinon plus personne n'est mis en avant. */
+  populaire?: boolean;
 }
 
-/** ⚠️ Aucun paiement n'est branché : ces prix ne sont encore prélevés nulle part. */
+/**
+ * Le texte de la grille tarifaire.
+ *
+ * Les prix, les plafonds et ce que chaque palier débloque N'Y SONT PAS : ils
+ * viennent de `lib/plans.ts`, qui est aussi ce que le serveur applique. Une
+ * grille qui annonce autre chose que ce que les gardes de route autorisent est
+ * la pire panne d'un produit payant — elle ne se voit qu'au moment où un client
+ * réclame, et elle lui donne raison.
+ *
+ * Ne reste donc ici que ce qui est du ressort de la vitrine : la formulation.
+ */
 export const PLANS_TARIFAIRES: PlanTarifaire[] = [
   {
-    nom: 'Découverte',
-    cle: 'decouverte',
-    prix: '2 000 F',
-    periode: '/mois',
-    description: 'Pour un atelier qui démarre',
+    cle: 'freemium',
     inclus: [
-      'Jusqu’à 50 commandes par mois',
-      'Jusqu’à 5 artisans',
-      'Mesures et paiements',
-      'Notes d’atelier',
-      'Assistance par e-mail',
+      'Clients et commandes illimités',
+      'Acomptes et soldes suivis',
+      'Relevé de mesures, sans photo',
+      '2 artisans',
+      'Grille tarifaire et notes d’atelier',
+      'Cinq langues, dont l’arabe',
     ],
   },
   {
-    nom: 'Atelier',
-    cle: 'atelier',
-    prix: '4 000 F',
-    periode: '/mois',
-    description: 'Pour une équipe qui grandit',
+    cle: 'essentiel',
+    herite: 'Tout le Freemium, plus',
+    inclus: [
+      '5 artisans',
+      'Planning avec capacité par artisan',
+      'Photos du tissu et du modèle',
+      'Alertes de retard et de livraison',
+      'Logo de l’atelier',
+    ],
+  },
+  {
+    cle: 'pro',
+    herite: 'Tout l’Essentiel, plus',
     populaire: true,
     inclus: [
-      'Commandes illimitées',
-      'Jusqu’à 10 artisans',
-      'Planning et capacité par artisan',
-      'Rapports complets',
+      '15 artisans',
+      'Trésorerie — journal de caisse daté',
+      'Dépenses et charges récurrentes',
+      'Rapports et export PDF',
       'Assistance prioritaire',
     ],
   },
   {
-    nom: 'Maison',
-    cle: 'maison',
-    prix: 'Sur devis',
-    periode: '',
-    description: 'Pour les grands ateliers',
-    surDevis: true,
+    cle: 'premium',
+    herite: 'Tout le Pro, plus',
     inclus: [
+      'Mannequin — 15 rendus par mois',
       'Artisans illimités',
-      'Accès à l’API',
-      'Mise en route accompagnée',
+      'Reprise de votre carnet papier',
       'Formation de l’équipe',
-      'Interlocuteur dédié',
+      'Interlocuteur WhatsApp dédié',
     ],
   },
 ];

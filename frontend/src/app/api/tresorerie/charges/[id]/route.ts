@@ -14,6 +14,7 @@ import { z } from 'zod';
 
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
+import { exigerCapacite } from '@/lib/server/plans';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { log } from '@/lib/server/observability/log';
 import { prisma } from '@/lib/server/prisma';
@@ -51,6 +52,9 @@ export async function PATCH(
 
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
+
+    const refus = await exigerCapacite(auth.user.sub, 'tresorerie');
+    if (refus) return refus;
 
     const { id } = await params;
 
@@ -122,6 +126,9 @@ export async function DELETE(
 
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
+
+    const refus = await exigerCapacite(auth.user.sub, 'tresorerie');
+    if (refus) return refus;
 
     const { id } = await params;
 

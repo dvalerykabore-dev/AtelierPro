@@ -1184,4 +1184,64 @@ export const ar: Dictionnaire = {
   '{nom} est déjà saturé aujourd’hui ({utilisees}/{total} h) — la livraison estimée en tiendra compte.':
     '{nom} مشغول بالكامل اليوم ({utilisees}/{total} س) — سيأخذ التسليم المُقدَّر ذلك في الحسبان.',
   'Modèle choisi par le client': 'الموديل الذي اختاره العميل',
+  // ------------------------------------------------- paliers d’abonnement
+  '2 artisans': '2 خيّاطين',
+  '5 artisans': '5 خيّاطين',
+  '15 artisans': '15 خيّاطًا',
+  'Acomptes et soldes suivis': 'متابعة العرابين والأرصدة',
+  'Alertes de retard et de livraison': 'تنبيهات التأخّر والتسليم',
+  'Choisir ce palier': 'اختيار هذه الباقة',
+  'Cinq langues, dont l’arabe': 'خمس لغات، منها العربية',
+  'Clients et commandes illimités': 'عملاء وطلبات بلا حدّ',
+  Commencer: 'ابدأ',
+  'Dépenses et charges récurrentes': 'المصروفات والأعباء المتكرّرة',
+  Essentiel: 'الأساسية',
+  'Faut-il payer d’avance ?': 'هل يجب الدفع مسبقًا؟',
+  'Formule de règlement': 'صيغة الدفع',
+  Freemium: 'المجانية',
+  Gratuit: 'مجاني',
+  'Grille tarifaire et notes d’atelier': 'قائمة الأسعار وملاحظات الورشة',
+  'Interlocuteur WhatsApp dédié': 'مسؤول تواصل مخصّص على واتساب',
+  'Je ne suis plus seul.': 'لم أعد أعمل وحدي.',
+  'Je tiens une entreprise.': 'أنا أدير مشروعًا.',
+  'Le carnet complet, sans limite de durée': 'الدفتر كاملًا، بلا حدّ زمني',
+  'Le carnet papier, remplacé.': 'الدفتر الورقي، وقد استُبدل.',
+  'Logo de l’atelier': 'شعار الورشة',
+  'Mannequin — 15 rendus par mois': 'عارض — 15 صورة شهريًا',
+  'Par mois pour le planning et les photos': 'شهريًا للجدولة والصور',
+  'Photos du tissu et du modèle': 'صور القماش والموديل',
+  'Planning avec capacité par artisan': 'جدولة بطاقة كلّ خيّاط',
+  'Pour toujours': 'إلى الأبد',
+  Premium: 'المتميّزة',
+  Pro: 'الاحترافية',
+  'Que se passe-t-il si j’arrête de payer ?': 'ماذا يحدث إن توقّفت عن الدفع؟',
+  'Rapports et export PDF': 'التقارير والتصدير إلى PDF',
+  'Relevé de mesures, sans photo': 'المقاسات، بدون صور',
+  'Reprise de votre carnet papier': 'ندخل لك دفترك الورقي',
+  'Tout le Freemium, plus': 'كلّ ما في المجانية، إضافةً إلى',
+  'Tout l’Essentiel, plus': 'كلّ ما في الأساسية، إضافةً إلى',
+  'Tout le Pro, plus': 'كلّ ما في الاحترافية، إضافةً إلى',
+  'Trésorerie — journal de caisse daté': 'الخزينة — دفتر صندوق مؤرَّخ',
+  mois: 'أشهر',
+  'par mois': 'شهريًا',
+  'La vitrine — le seul palier qui aide à trouver des clientes.':
+    'الواجهة — الباقة الوحيدة التي تساعدك على جلب زبونات جديدات.',
+  'Le carnet est gratuit, sans limite de durée. Vous ne payez que le jour où l’atelier grandit.':
+    'الدفتر مجاني بلا حدّ زمني. لا تدفع إلّا يوم تكبر فيه الورشة.',
+  'Le trimestre offre un demi-mois, l’année offre trois mois. Aucun prélèvement automatique : vous payez, la date recule.':
+    'الفصل يمنحك نصف شهر، والسنة تمنحك ثلاثة أشهر. لا خصم تلقائي: تدفع، فيتأخّر التاريخ.',
+  'Le paiement en ligne n’est pas encore ouvert. Créez votre atelier gratuitement : nous vous contactons avant tout encaissement.':
+    'الدفع عبر الإنترنت لم يُفتح بعد. أنشئ ورشتك مجانًا: سنتواصل معك قبل أيّ تحصيل.',
+  'Palier retenu : {plan}. Votre atelier s’ouvre gratuitement — nous vous contactons avant tout encaissement.':
+    'الباقة المختارة: {plan}. تُفتح ورشتك مجانًا — سنتواصل معك قبل أيّ تحصيل.',
+  'Gratuit pour commencer, sans moyen de paiement. La première commande se saisit en deux minutes.':
+    'مجاني للبدء، دون وسيلة دفع. أوّل طلب يُسجَّل في دقيقتين.',
+  'Gratuit pour tenir votre carnet, sans carte bancaire. En français, en anglais, en espagnol, en portugais ou en arabe, dans le navigateur — rien à installer.':
+    'مجاني لمسك دفترك، دون بطاقة بنكية. بالفرنسية أو الإنجليزية أو الإسبانية أو البرتغالية أو العربية، في المتصفّح — لا شيء يُثبَّت.',
+  'Rien pour tenir votre carnet, vos clientes et vos commandes — sans limite de durée et sans carte bancaire. Le planning d’équipe et les photos commencent à 2 000 F CFA par mois, la trésorerie et les rapports à 5 000 F. Moins cher qu’une retouche.':
+    'لا شيء لمسك دفترك وزبوناتك وطلباتك — بلا حدّ زمني ودون بطاقة بنكية. جدولة الفريق والصور تبدأ من 2 000 فرنك إفريقي شهريًا، والخزينة والتقارير من 5 000 فرنك. أرخص من تعديل واحد.',
+  'Vous choisissez : au mois, au trimestre ou à l’année. Le trimestre offre un demi-mois, l’année offre trois mois — vous pouvez refaire le calcul vous-même. Il n’y a aucun prélèvement automatique : vous payez, la date recule, et rien ne se déclenche tout seul.':
+    'أنت تختار: شهريًا أو فصليًا أو سنويًا. الفصل يمنحك نصف شهر والسنة تمنحك ثلاثة أشهر — ويمكنك إعادة الحساب بنفسك. لا خصم تلقائي: تدفع، فيتأخّر التاريخ، ولا شيء ينطلق من تلقاء نفسه.',
+  'Vous revenez au gratuit, et rien n’est effacé. Vos clientes, vos commandes, vos mesures et vos photos restent lisibles. Ce sont les écrans payants et les nouveaux envois de photos qui se ferment, pas vos données.':
+    'تعود إلى المجانية، ولا يُمحى شيء. زبوناتك وطلباتك ومقاساتك وصورك تبقى مقروءة. ما يُغلق هو الشاشات المدفوعة وإرسال صور جديدة، لا بياناتك.',
 };

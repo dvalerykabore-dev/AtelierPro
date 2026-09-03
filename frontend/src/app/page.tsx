@@ -12,11 +12,11 @@ import SectionTemoignages from '@/components/landing/SectionTemoignages';
 export const metadata: Metadata = {
   title: 'AtelierPro — la gestion d’atelier de couture',
   description:
-    'Commandes, mesures, acomptes et planning d’équipe pour les ateliers de couture d’Afrique de l’Ouest. Essai gratuit de 30 jours, sans carte bancaire.',
+    'Commandes, mesures, acomptes et planning d’équipe pour les ateliers de couture d’Afrique de l’Ouest. Gratuit pour tenir votre carnet, sans carte bancaire.',
   openGraph: {
     title: 'AtelierPro — la gestion d’atelier de couture',
     description:
-      'Commandes, mesures, acomptes et planning d’équipe, depuis le téléphone. Essai gratuit de 30 jours.',
+      'Commandes, mesures, acomptes et planning d’équipe, depuis le téléphone. Gratuit pour commencer.',
     locale: 'fr_FR',
     type: 'website',
   },

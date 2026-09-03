@@ -1139,4 +1139,64 @@ export const es: Dictionnaire = {
   '{nom} est déjà saturé aujourd’hui ({utilisees}/{total} h) — la livraison estimée en tiendra compte.':
     '{nom} ya está completo hoy ({utilisees}/{total} h) — la entrega estimada lo tendrá en cuenta.',
   'Modèle choisi par le client': 'Modelo elegido por el cliente',
+  // ------------------------------------------------- paliers d’abonnement
+  '2 artisans': '2 sastres',
+  '5 artisans': '5 sastres',
+  '15 artisans': '15 sastres',
+  'Acomptes et soldes suivis': 'Anticipos y saldos controlados',
+  'Alertes de retard et de livraison': 'Avisos de retraso y de entrega',
+  'Choisir ce palier': 'Elegir este nivel',
+  'Cinq langues, dont l’arabe': 'Cinco idiomas, árabe incluido',
+  'Clients et commandes illimités': 'Clientes y pedidos ilimitados',
+  Commencer: 'Empezar',
+  'Dépenses et charges récurrentes': 'Gastos y cargas periódicas',
+  Essentiel: 'Esencial',
+  'Faut-il payer d’avance ?': '¿Hay que pagar por adelantado?',
+  'Formule de règlement': 'Modalidad de pago',
+  Freemium: 'Freemium',
+  Gratuit: 'Gratis',
+  'Grille tarifaire et notes d’atelier': 'Tarifas y notas del taller',
+  'Interlocuteur WhatsApp dédié': 'Un contacto de WhatsApp dedicado',
+  'Je ne suis plus seul.': 'Ya no trabajo solo.',
+  'Je tiens une entreprise.': 'Llevo una empresa.',
+  'Le carnet complet, sans limite de durée': 'El cuaderno entero, sin límite de tiempo',
+  'Le carnet papier, remplacé.': 'El cuaderno de papel, sustituido.',
+  'Logo de l’atelier': 'Logotipo del taller',
+  'Mannequin — 15 rendus par mois': 'Maniquí — 15 imágenes al mes',
+  'Par mois pour le planning et les photos': 'Al mes para la agenda y las fotos',
+  'Photos du tissu et du modèle': 'Fotos de la tela y del modelo',
+  'Planning avec capacité par artisan': 'Agenda con la capacidad de cada sastre',
+  'Pour toujours': 'Para siempre',
+  Premium: 'Premium',
+  Pro: 'Pro',
+  'Que se passe-t-il si j’arrête de payer ?': '¿Qué pasa si dejo de pagar?',
+  'Rapports et export PDF': 'Informes y exportación en PDF',
+  'Relevé de mesures, sans photo': 'Medidas, sin fotos',
+  'Reprise de votre carnet papier': 'Pasamos su cuaderno de papel',
+  'Tout le Freemium, plus': 'Todo lo de Freemium, más',
+  'Tout l’Essentiel, plus': 'Todo lo de Esencial, más',
+  'Tout le Pro, plus': 'Todo lo de Pro, más',
+  'Trésorerie — journal de caisse daté': 'Caja — libro de caja con fechas',
+  mois: 'meses',
+  'par mois': 'al mes',
+  'La vitrine — le seul palier qui aide à trouver des clientes.':
+    'El escaparate — el único nivel que ayuda a encontrar clientas.',
+  'Le carnet est gratuit, sans limite de durée. Vous ne payez que le jour où l’atelier grandit.':
+    'El cuaderno es gratis, sin límite de tiempo. Solo paga el día en que el taller crece.',
+  'Le trimestre offre un demi-mois, l’année offre trois mois. Aucun prélèvement automatique : vous payez, la date recule.':
+    'El trimestre regala medio mes, el año regala tres. Sin domiciliación: usted paga y la fecha se aplaza.',
+  'Le paiement en ligne n’est pas encore ouvert. Créez votre atelier gratuitement : nous vous contactons avant tout encaissement.':
+    'El pago en línea aún no está abierto. Cree su taller gratis: le avisamos antes de cobrar nada.',
+  'Palier retenu : {plan}. Votre atelier s’ouvre gratuitement — nous vous contactons avant tout encaissement.':
+    'Nivel elegido: {plan}. Su taller se abre gratis: le avisamos antes de cobrar nada.',
+  'Gratuit pour commencer, sans moyen de paiement. La première commande se saisit en deux minutes.':
+    'Gratis para empezar, sin medio de pago. El primer pedido se anota en dos minutos.',
+  'Gratuit pour tenir votre carnet, sans carte bancaire. En français, en anglais, en espagnol, en portugais ou en arabe, dans le navigateur — rien à installer.':
+    'Gratis para llevar su cuaderno, sin tarjeta bancaria. En francés, inglés, español, portugués o árabe, en el navegador: nada que instalar.',
+  'Rien pour tenir votre carnet, vos clientes et vos commandes — sans limite de durée et sans carte bancaire. Le planning d’équipe et les photos commencent à 2 000 F CFA par mois, la trésorerie et les rapports à 5 000 F. Moins cher qu’une retouche.':
+    'Nada por llevar su cuaderno, sus clientas y sus pedidos, sin límite de tiempo y sin tarjeta bancaria. La agenda del equipo y las fotos empiezan en 2 000 F CFA al mes; la caja y los informes, en 5 000 F. Más barato que un arreglo.',
+  'Vous choisissez : au mois, au trimestre ou à l’année. Le trimestre offre un demi-mois, l’année offre trois mois — vous pouvez refaire le calcul vous-même. Il n’y a aucun prélèvement automatique : vous payez, la date recule, et rien ne se déclenche tout seul.':
+    'Usted elige: al mes, al trimestre o al año. El trimestre regala medio mes y el año regala tres; puede rehacer la cuenta usted mismo. No hay domiciliación: usted paga, la fecha se aplaza y nada se activa solo.',
+  'Vous revenez au gratuit, et rien n’est effacé. Vos clientes, vos commandes, vos mesures et vos photos restent lisibles. Ce sont les écrans payants et les nouveaux envois de photos qui se ferment, pas vos données.':
+    'Vuelve al plan gratis y no se borra nada. Sus clientas, sus pedidos, sus medidas y sus fotos siguen legibles. Lo que se cierra son las pantallas de pago y los nuevos envíos de fotos, no sus datos.',
 };

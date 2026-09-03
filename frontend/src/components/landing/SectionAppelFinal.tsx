@@ -33,7 +33,7 @@ export default function SectionAppelFinal() {
         </h2>
         <p className="text-background/70 mb-4 text-xs sm:text-base lg:mb-8 lg:text-lg">
           {t(
-            'Trente jours gratuits, sans moyen de paiement. La première commande se saisit en deux minutes.',
+            'Gratuit pour commencer, sans moyen de paiement. La première commande se saisit en deux minutes.',
           )}
         </p>
 

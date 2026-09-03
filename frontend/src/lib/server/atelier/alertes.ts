@@ -9,6 +9,8 @@ import type { PrismaClient } from '@prisma/client';
 import { createNotification } from '@/lib/server/notifications';
 import { commandeEnRetard, livraisonDemain } from '@/lib/server/notifications/templates';
 import { isChannelEnabled, type NotificationPrefs } from '@/lib/server/notifications/prefs-merge';
+import { lirePlansActifs } from '@/lib/server/plans';
+import { aAcces } from '@/lib/plans';
 
 export interface AlertesOptions {
   prisma: PrismaClient;
@@ -76,6 +78,11 @@ export async function signalerEcheances(opts: AlertesOptions): Promise<ResultatA
     opts.prisma,
     enRetard.map((c) => c.userId),
   );
+  const plans = await lirePlansActifs(
+    opts.prisma,
+    enRetard.map((c) => c.userId),
+    opts.maintenant,
+  );
 
   let retards = 0;
   let marqueesEnRetard = 0;
@@ -94,6 +101,13 @@ export async function signalerEcheances(opts: AlertesOptions): Promise<ResultatA
     // Le réglage ne porte que sur l'avertissement. La commande reste en retard
     // qu'on veuille l'entendre ou non : couper l'alerte ne doit pas fausser le
     // planning ni les rapports.
+    // L'avertissement est inclus à partir d'Essentiel. Le passage en LATE
+    // ci-dessus, lui, vaut pour tout le monde : un atelier au gratuit doit voir
+    // sa commande marquée en retard sur son planning et dans ses rapports —
+    // c'est l'état de la commande, pas un service vendu. Seul le fait d'être
+    // prévenu sans avoir à regarder est payant.
+    if (!aAcces(plans.get(c.userId) ?? 'freemium', 'alertes')) continue;
+
     if (!isChannelEnabled(prefsParAtelier.get(c.userId), 'COMMANDE_EN_RETARD', 'inApp')) {
       continue;
     }
@@ -131,9 +145,16 @@ export async function signalerEcheances(opts: AlertesOptions): Promise<ResultatA
     opts.prisma,
     demainDues.map((c) => c.userId),
   );
+  const plansLivraison = await lirePlansActifs(
+    opts.prisma,
+    demainDues.map((c) => c.userId),
+    opts.maintenant,
+  );
 
   let livraisons = 0;
   for (const c of demainDues) {
+    if (!aAcces(plansLivraison.get(c.userId) ?? 'freemium', 'alertes')) continue;
+
     if (!isChannelEnabled(prefsLivraison.get(c.userId), 'LIVRAISON_DEMAIN', 'inApp')) {
       continue;
     }

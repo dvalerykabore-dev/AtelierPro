@@ -41,6 +41,20 @@ model User {
   // À défaut, l'interface retombe sur les initiales du nom.
   workshopLogoUrl   String?
 
+  // Palier d'abonnement — freemium | essentiel | pro | premium.
+  // Ce que chacun débloque est décrit dans lib/plans.ts, source unique ; cette
+  // colonne ne porte que la clé. Chaîne et non enum : ajouter un palier ne doit
+  // pas demander une migration de type sur une table qui grandit.
+  plan              String    @default("freemium")
+  // Échéance du prépayé. null = aucun encaissement, donc freemium.
+  //
+  // Passée cette date le compte redescend en freemium SANS QUE RIEN NE SOIT
+  // EFFACÉ : les écrans payants se ferment, les données restent lisibles.
+  // La bascule est CALCULÉE à la lecture par planActifDe (lib/server/plans.ts)
+  // plutôt que réécrite par un cron : une valeur dérivée ne peut pas se
+  // désynchroniser, une colonne recopiée si.
+  planExpiresAt     DateTime?
+
   // Optional display name — populated from OAuth profile on first sign-in.
   // Email/password users can fill it later via /api/auth/me PATCH (future).
   name      String?

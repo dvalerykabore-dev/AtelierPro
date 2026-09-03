@@ -37,7 +37,7 @@ export default function SectionHero() {
           </p>
           <p className="text-muted-foreground mb-4 text-xs sm:text-sm lg:mb-0 lg:text-base">
             {t(
-              'Trente jours d’essai gratuit. Sans carte bancaire. En français, en anglais, en espagnol, en portugais ou en arabe, dans le navigateur — rien à installer.',
+              'Gratuit pour tenir votre carnet, sans carte bancaire. En français, en anglais, en espagnol, en portugais ou en arabe, dans le navigateur — rien à installer.',
             )}
           </p>
         </div>

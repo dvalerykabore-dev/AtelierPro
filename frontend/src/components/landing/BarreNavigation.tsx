@@ -30,7 +30,7 @@ const LIENS = [
  * Composant client pour trois raisons, toutes fonctionnelles : le tiroir a un
  * état, la touche Échap le referme, et les boutons de droite dépendent de la
  * session. Ce dernier point est le seul lien entre cette page et le backend —
- * un atelier déjà connecté n'a que faire d'un bouton « Essai gratuit » ni d'un
+ * un atelier déjà connecté n'a que faire d'un bouton « Commencer » ni d'un
  * lien « Se connecter » : la barre ne lui montre plus que la navigation.
  *
  * ⚠️ Écart avec la maquette mobile, délibéré : elle ne montre que le logo et le
@@ -125,7 +125,7 @@ export default function BarreNavigation() {
               href="/inscription"
               className="bg-primary text-primary-foreground hover:bg-accent flex min-h-11 items-center rounded-md px-3 text-xs font-medium transition-colors md:px-4 md:text-sm"
             >
-              {t('Essai gratuit')}
+              {t('Commencer')}
             </Link>
           )}
 

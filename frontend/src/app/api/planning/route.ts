@@ -16,6 +16,7 @@ import { z } from 'zod';
 
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
+import { exigerCapacite } from '@/lib/server/plans';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { log } from '@/lib/server/observability/log';
 import { prisma } from '@/lib/server/prisma';
@@ -86,6 +87,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
 
+    const refus = await exigerCapacite(auth.user.sub, 'planning');
+    if (refus) return refus;
+
     // Un paramètre illisible ne mérite pas un 400 : la semaine courante est un
     // repli sûr et l'écran reste utilisable.
     const demande = req.nextUrl.searchParams.get('debut');
@@ -124,6 +128,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
+
+    const refus = await exigerCapacite(auth.user.sub, 'planning');
+    if (refus) return refus;
 
     let corps: unknown;
     try {

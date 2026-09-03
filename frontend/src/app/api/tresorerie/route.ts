@@ -25,6 +25,7 @@ export const runtime = 'nodejs';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { requireAuth } from '@/lib/server/middleware';
+import { exigerCapacite } from '@/lib/server/plans';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { prisma } from '@/lib/server/prisma';
 import {
@@ -51,6 +52,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   return withRequestContext(ctx, async () => {
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
+
+    const refus = await exigerCapacite(auth.user.sub, 'tresorerie');
+    if (refus) return refus;
 
     const userId = auth.user.sub;
     const maintenant = new Date();

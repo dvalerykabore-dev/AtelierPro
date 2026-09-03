@@ -25,25 +25,43 @@ function commande(partiel: Record<string, unknown> = {}) {
   };
 }
 
+/** Échéance largement devant nous — un abonnement qui court. */
+const ECHEANCE_LOIN = new Date('2027-01-01T00:00:00.000Z');
+
 /**
  * @param prefs Réglages de l'atelier « user-1 ». `null` = aucun réglage
  *              enregistré, ce qui vaut accord — on n'attend pas d'un artisan
  *              qu'il active ses alertes avant de les recevoir.
+ * @param plan  Palier de l'atelier « user-1 ». Par défaut « essentiel », le
+ *              premier qui inclut les alertes : les cas d'origine testent le
+ *              comportement d'un atelier abonné, le gratuit a ses propres cas.
  */
-function prismaFactice(retards: unknown[], livraisons: unknown[], prefs: unknown = null) {
+function prismaFactice(
+  retards: unknown[],
+  livraisons: unknown[],
+  prefs: unknown = null,
+  plan = 'essentiel',
+) {
   const findMany = vi.fn().mockResolvedValueOnce(retards).mockResolvedValueOnce(livraisons);
   const updateMany = vi.fn().mockResolvedValue({ count: 1 });
   const prefsFindMany = vi
     .fn()
     .mockResolvedValue(prefs === null ? [] : [{ userId: 'user-1', prefs }]);
+  const userFindMany = vi
+    .fn()
+    .mockResolvedValue([
+      { id: 'user-1', plan, planExpiresAt: plan === 'freemium' ? null : ECHEANCE_LOIN },
+    ]);
   return {
     prisma: {
       tailoringOrder: { findMany, updateMany },
       notificationPreferences: { findMany: prefsFindMany },
+      user: { findMany: userFindMany },
     } as never,
     findMany,
     updateMany,
     prefsFindMany,
+    userFindMany,
   };
 }
 
@@ -215,5 +233,60 @@ describe('signalerEcheances — respect des préférences', () => {
     await signalerEcheances({ prisma, maintenant: MAINTENANT });
     expect(prefsFindMany).toHaveBeenCalledTimes(1);
     expect(prefsFindMany.mock.calls[0]?.[0]?.where.userId.in).toEqual(['user-1']);
+  });
+});
+
+describe('signalerEcheances — le palier', () => {
+  it('n’avertit pas un atelier au gratuit', async () => {
+    const { prisma } = prismaFactice([commande()], [], null, 'freemium');
+
+    const r = await signalerEcheances({ prisma, maintenant: MAINTENANT });
+
+    expect(r.retards).toBe(0);
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it('marque quand même sa commande en retard', async () => {
+    // C'est l'état de la commande, pas un service vendu. Le planning et les
+    // rapports d'un atelier au gratuit doivent dire la vérité.
+    const { prisma, updateMany } = prismaFactice([commande()], [], null, 'freemium');
+
+    const r = await signalerEcheances({ prisma, maintenant: MAINTENANT });
+
+    expect(r.marqueesEnRetard).toBe(1);
+    expect(updateMany).toHaveBeenCalledTimes(1);
+  });
+
+  it('n’avertit pas non plus d’une livraison du lendemain au gratuit', async () => {
+    const demain = commande({ dueDate: new Date('2026-08-25T00:00:00.000Z') });
+    const { prisma } = prismaFactice([], [demain], null, 'freemium');
+
+    const r = await signalerEcheances({ prisma, maintenant: MAINTENANT });
+
+    expect(r.livraisons).toBe(0);
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it('retombe au gratuit quand l’abonnement a expiré', async () => {
+    const { prisma } = prismaFactice([commande()], []);
+    (
+      prisma as unknown as { user: { findMany: ReturnType<typeof vi.fn> } }
+    ).user.findMany.mockResolvedValue([
+      // Échéance dépassée depuis la veille du passage du cron.
+      { id: 'user-1', plan: 'pro', planExpiresAt: new Date('2026-08-23T06:00:00.000Z') },
+    ]);
+
+    const r = await signalerEcheances({ prisma, maintenant: MAINTENANT });
+
+    expect(r.retards).toBe(0);
+    expect(r.marqueesEnRetard).toBe(1);
+  });
+
+  it('avertit un atelier dont l’abonnement court encore', async () => {
+    const { prisma } = prismaFactice([commande()], [], null, 'pro');
+
+    const r = await signalerEcheances({ prisma, maintenant: MAINTENANT });
+
+    expect(r.retards).toBe(1);
   });
 });

@@ -11,6 +11,7 @@ import { Field } from '@/components/ui/Field';
 import Traduction from '@/components/ui/Traduction';
 import { api, ApiError } from '@/lib/api';
 import { PLANS_TARIFAIRES } from '@/lib/landing-contenu';
+import { definitionDe } from '@/lib/plans';
 import { useT } from '@/contexts/LangueContext';
 
 const MESSAGES: Record<string, string> = {
@@ -75,9 +76,13 @@ export default function FormulaireInscription() {
         {planChoisi && (
           <p className="border-border bg-muted text-muted-foreground rounded-md border px-3 py-2 text-xs">
             <Traduction
-              cle="Plan retenu : {plan}. L’essai de 30 jours démarre sans moyen de paiement — vous pourrez encore en changer."
+              cle="Palier retenu : {plan}. Votre atelier s’ouvre gratuitement — nous vous contactons avant tout encaissement."
               elements={{
-                plan: <span className="text-foreground font-bold">{t(planChoisi.nom)}</span>,
+                plan: (
+                  <span className="text-foreground font-bold">
+                    {t(definitionDe(planChoisi.cle).nom)}
+                  </span>
+                ),
               }}
             />
           </p>

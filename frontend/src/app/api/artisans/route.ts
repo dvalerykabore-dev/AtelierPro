@@ -14,6 +14,7 @@ import { z } from 'zod';
 
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
+import { exigerPlaceArtisan } from '@/lib/server/plans';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { log } from '@/lib/server/observability/log';
 import { prisma } from '@/lib/server/prisma';
@@ -117,6 +118,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
+
+    // Avant de lire le corps : refuser une fiche de plus coûte une requête de
+    // comptage, valider le formulaire pour rien en coûte davantage.
+    const plafond = await exigerPlaceArtisan(auth.user.sub);
+    if (plafond) return plafond;
 
     let corps: unknown;
     try {

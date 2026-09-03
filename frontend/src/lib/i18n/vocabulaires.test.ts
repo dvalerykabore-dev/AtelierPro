@@ -28,6 +28,7 @@ import {
   PLANS_TARIFAIRES,
   QUESTIONS,
 } from '@/lib/landing-contenu';
+import { DEFINITIONS } from '@/lib/plans';
 
 const CIBLES = ['en', 'es', 'pt', 'ar'] as const;
 
@@ -53,13 +54,12 @@ const VOCABULAIRES: Record<string, string[]> = {
   fonctionnalités: FONCTIONNALITES.flatMap((f) => [f.titre, f.description, f.lienLabel]),
   "cas d'usage": CAS_USAGE.flatMap((c) => [c.titre, c.description, c.resultat, c.mesure]),
   'questions fréquentes': QUESTIONS.flatMap((q) => [q.question, q.reponse]),
-  'plans tarifaires': PLANS_TARIFAIRES.flatMap((p) => [
-    p.nom,
-    p.description,
-    p.prix,
-    ...(p.periode ? [p.periode] : []),
-    ...p.inclus,
-  ]),
+  // Le nom et la thèse de chaque palier viennent de lib/plans.ts, la source
+  // unique ; la grille n'en garde que la formulation commerciale.
+  'plans tarifaires': [
+    ...DEFINITIONS.flatMap((d) => [d.nom, d.these]),
+    ...PLANS_TARIFAIRES.flatMap((p) => [...(p.herite ? [p.herite] : []), ...p.inclus]),
+  ],
 };
 
 /**
