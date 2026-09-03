@@ -1222,7 +1222,6 @@ export const ar: Dictionnaire = {
   'Tout l’Essentiel, plus': 'كلّ ما في الأساسية، إضافةً إلى',
   'Tout le Pro, plus': 'كلّ ما في الاحترافية، إضافةً إلى',
   'Trésorerie — journal de caisse daté': 'الخزينة — دفتر صندوق مؤرَّخ',
-  mois: 'أشهر',
   'par mois': 'شهريًا',
   'La vitrine — le seul palier qui aide à trouver des clientes.':
     'الواجهة — الباقة الوحيدة التي تساعدك على جلب زبونات جديدات.',
@@ -1244,4 +1243,15 @@ export const ar: Dictionnaire = {
     'أنت تختار: شهريًا أو فصليًا أو سنويًا. الفصل يمنحك نصف شهر والسنة تمنحك ثلاثة أشهر — ويمكنك إعادة الحساب بنفسك. لا خصم تلقائي: تدفع، فيتأخّر التاريخ، ولا شيء ينطلق من تلقاء نفسه.',
   'Vous revenez au gratuit, et rien n’est effacé. Vos clientes, vos commandes, vos mesures et vos photos restent lisibles. Ce sont les écrans payants et les nouveaux envois de photos qui se ferment, pas vos données.':
     'تعود إلى المجانية، ولا يُمحى شيء. زبوناتك وطلباتك ومقاساتك وصورك تبقى مقروءة. ما يُغلق هو الشاشات المدفوعة وإرسال صور جديدة، لا بياناتك.',
+  // Le singulier garde `{n}` au lieu du « شهر واحد » idiomatique : c'est la
+  // remise d'une demie qui passe par cette forme, et « un mois » y annoncerait
+  // le double de ce qui est offert.
+  '−{n} mois': {
+    zero: '−{n} شهر',
+    one: '−{n} شهر',
+    two: '−شهران',
+    few: '−{n} أشهر',
+    many: '−{n} شهرًا',
+    other: '−{n} شهر',
+  },
 };

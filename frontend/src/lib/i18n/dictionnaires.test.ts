@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DICTIONNAIRES } from './dictionnaires';
 import { LANGUES, type Langue } from '@/lib/langue';
-import type { CategoriePluriel, Dictionnaire } from './traduire';
+import { traduirePluriel, type CategoriePluriel, type Dictionnaire } from './traduire';
 
 const CIBLES: Langue[] = ['en', 'es', 'pt', 'ar'];
 
@@ -109,6 +109,47 @@ describe('dictionnaires', () => {
       });
     });
   }
+
+  describe('remise de la grille tarifaire — « −½ mois » / « −3 mois »', () => {
+    // Le français est invariable sur « mois », les quatre autres langues non.
+    // La grille affichait donc « ½ meses », « ½ mês »… au pluriel, ce qui est
+    // faux : une demie prend le singulier. Le composant passe pour cela deux
+    // valeurs distinctes — le nombre qui choisit la forme, et le texte affiché.
+    /** Ce que `SectionTarifs` demande pour une remise de `offert` mois. */
+    function badge(langue: Langue, offert: number): string {
+      return traduirePluriel(
+        DICTIONNAIRES[langue],
+        langue,
+        '−{n} mois',
+        '−{n} mois',
+        offert < 1 ? 1 : offert,
+        {
+          n: offert === 0.5 ? '½' : offert,
+        },
+      );
+    }
+
+    it('met la demie au singulier', () => {
+      expect(badge('en', 0.5)).toBe('−½ month');
+      expect(badge('es', 0.5)).toBe('−½ mes');
+      expect(badge('pt', 0.5)).toBe('−½ mês');
+      // L'arabe garde `{n}` jusque dans sa forme du singulier : « un mois »
+      // annoncerait le double de la remise réellement offerte.
+      expect(badge('ar', 0.5)).toBe('−½ شهر');
+    });
+
+    it('met les trois mois au pluriel', () => {
+      expect(badge('en', 3)).toBe('−3 months');
+      expect(badge('es', 3)).toBe('−3 meses');
+      expect(badge('pt', 3)).toBe('−3 meses');
+      expect(badge('ar', 3)).toBe('−3 أشهر');
+    });
+
+    it('rend le français invariable, sans dictionnaire', () => {
+      expect(badge('fr', 0.5)).toBe('−½ mois');
+      expect(badge('fr', 3)).toBe('−3 mois');
+    });
+  });
 
   it('décline partout où l’anglais décline', () => {
     // L'anglais est le plancher : il ne distingue que deux formes, là où le

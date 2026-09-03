@@ -1170,7 +1170,6 @@ export const en: Dictionnaire = {
   'Tout l’Essentiel, plus': 'Everything in Essential, plus',
   'Tout le Pro, plus': 'Everything in Pro, plus',
   'Trésorerie — journal de caisse daté': 'Cash — a dated cash book',
-  mois: 'months',
   'par mois': 'a month',
   'La vitrine — le seul palier qui aide à trouver des clientes.':
     'The shop window — the only tier that helps you find new clients.',
@@ -1192,4 +1191,8 @@ export const en: Dictionnaire = {
     'You choose: by the month, the quarter or the year. The quarter gives you half a month, the year gives you three — you can check the maths yourself. There is no automatic debit: you pay, the date moves back, and nothing starts on its own.',
   'Vous revenez au gratuit, et rien n’est effacé. Vos clientes, vos commandes, vos mesures et vos photos restent lisibles. Ce sont les écrans payants et les nouveaux envois de photos qui se ferment, pas vos données.':
     'You go back to the free tier, and nothing is deleted. Your clients, orders, measurements and photos stay readable. It is the paid screens and new photo uploads that close, not your data.',
+  '−{n} mois': {
+    one: '−{n} month',
+    other: '−{n} months',
+  },
 };

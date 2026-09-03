@@ -14,7 +14,7 @@ import {
   type Formule,
 } from '@/lib/plans';
 import { cn } from '@/lib/utils';
-import { useT } from '@/contexts/LangueContext';
+import { useLangue } from '@/contexts/LangueContext';
 
 /**
  * Grille tarifaire — quatre paliers, trois formules de règlement.
@@ -38,7 +38,7 @@ const ONGLETS: Readonly<Record<Formule, string>> = {
 };
 
 export default function SectionTarifs() {
-  const t = useT();
+  const { t, tp } = useLangue();
   const [formule, setFormule] = useState<Formule>(FORMULE_DEFAUT);
 
   return (
@@ -91,8 +91,22 @@ export default function SectionTarifs() {
                         actif ? 'bg-primary-foreground/15' : 'bg-primary/10 text-primary',
                       )}
                     >
-                      {/* « −½ mois » / « −3 mois » : la remise se vérifie de tête. */}
-                      {`−${offert === 0.5 ? '½' : offert} ${t('mois')}`}
+                      {/*
+                        « −½ mois » / « −3 mois » : la remise se vérifie de tête.
+
+                        Deux valeurs passées séparément, et ce n'est pas une
+                        coquetterie. « mois » est invariable en français, si
+                        bien qu'un simple `t('mois')` rendait « ½ meses » en
+                        espagnol et « ½ meses » en portugais — agrammatical :
+                        une demie prend le singulier. C'est donc `1` qui
+                        détermine la forme quand la remise est d'une demie,
+                        pendant que `{n}` affiche « ½ ». `Intl.PluralRules` ne
+                        peut pas trancher à notre place : il range 0,5 sous
+                        « other », soit le pluriel.
+                      */}
+                      {tp('−{n} mois', '−{n} mois', offert < 1 ? 1 : offert, {
+                        n: offert === 0.5 ? '½' : offert,
+                      })}
                     </span>
                   )}
                 </button>

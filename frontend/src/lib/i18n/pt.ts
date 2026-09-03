@@ -1182,7 +1182,6 @@ export const pt: Dictionnaire = {
   'Tout l’Essentiel, plus': 'Tudo o do Essencial, mais',
   'Tout le Pro, plus': 'Tudo o do Pro, mais',
   'Trésorerie — journal de caisse daté': 'Caixa — livro de caixa com datas',
-  mois: 'meses',
   'par mois': 'por mês',
   'La vitrine — le seul palier qui aide à trouver des clientes.':
     'A montra — o único nível que ajuda a encontrar clientes.',
@@ -1204,4 +1203,8 @@ export const pt: Dictionnaire = {
     'Escolhe: ao mês, ao trimestre ou ao ano. O trimestre oferece meio mês e o ano oferece três — pode refazer a conta você mesmo. Não há débito automático: paga, a data recua, e nada arranca sozinho.',
   'Vous revenez au gratuit, et rien n’est effacé. Vos clientes, vos commandes, vos mesures et vos photos restent lisibles. Ce sont les écrans payants et les nouveaux envois de photos qui se ferment, pas vos données.':
     'Volta ao grátis e nada é apagado. As suas clientes, encomendas, medidas e fotos continuam legíveis. O que fecha são os ecrãs pagos e os novos envios de fotos, não os seus dados.',
+  '−{n} mois': {
+    one: '−{n} mês',
+    other: '−{n} meses',
+  },
 };
