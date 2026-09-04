@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import AppShell from '@/components/atelier/AppShell';
+import ExigePalier from '@/components/atelier/ExigePalier';
 import Rapports from '@/components/atelier/Rapports';
 import BoutonImprimer from '@/components/atelier/BoutonImprimer';
 import { NomAtelier } from '@/components/atelier/IdentiteAtelier';
@@ -22,7 +23,9 @@ export default function RapportsPage() {
       // format PDF » donne exactement ce que le libellé promet.
       actions={<BoutonImprimer />}
     >
-      <Rapports />
+      <ExigePalier capacite="rapports">
+        <Rapports />
+      </ExigePalier>
     </AppShell>
   );
 }

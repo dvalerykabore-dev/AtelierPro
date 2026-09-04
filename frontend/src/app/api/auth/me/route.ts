@@ -22,6 +22,8 @@ import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
+import { planActifDe } from '@/lib/server/plans';
+import { PLAN_DEFAUT } from '@/lib/plans';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -52,6 +54,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         createdAt: true,
         updatedAt: true,
         passwordHash: true,
+        plan: true,
+        planExpiresAt: true,
         oauthAccounts: { select: { provider: true } },
       },
     });
@@ -77,6 +81,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           ? dbUser.updatedAt.toISOString()
           : dbUser.updatedAt
         : null,
+      // Le palier ACTIF, échéance déjà appliquée — pas la colonne brute.
+      // L'écran doit voir la même chose que les gardes de route, sinon il
+      // proposerait une fonction que le serveur refuse ensuite.
+      plan: dbUser ? planActifDe(dbUser) : PLAN_DEFAUT,
       workshopName: dbUser?.workshopName ?? null,
       phone: dbUser?.phone ?? null,
       workshopCity: dbUser?.workshopCity ?? null,

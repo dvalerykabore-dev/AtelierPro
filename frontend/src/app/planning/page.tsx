@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import PlanningEquipe from '@/components/atelier/PlanningEquipe';
+import ExigePalier from '@/components/atelier/ExigePalier';
 
 export const metadata: Metadata = {
   title: 'Planning équipe — AtelierPro',
@@ -11,5 +12,9 @@ export const metadata: Metadata = {
  * semaine réellement affichée.
  */
 export default function PlanningPage() {
-  return <PlanningEquipe />;
+  return (
+    <ExigePalier capacite="planning">
+      <PlanningEquipe />
+    </ExigePalier>
+  );
 }

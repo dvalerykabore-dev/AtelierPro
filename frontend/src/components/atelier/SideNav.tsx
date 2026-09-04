@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Settings } from 'lucide-react';
+import { Settings, Lock } from 'lucide-react';
 import { BoutonAtelierPro } from '@/components/marque/LogoAtelierPro';
 import { PastilleAtelier } from '@/components/atelier/IdentiteAtelier';
 import { entreesLaterales } from '@/components/atelier/nav-items';
 import { useT } from '@/contexts/LangueContext';
 import { cn } from '@/lib/utils';
+import { aAcces } from '@/lib/plans';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Rail de navigation vertical, icônes seules — desktop uniquement.
@@ -19,6 +21,7 @@ import { cn } from '@/lib/utils';
  * logo.
  */
 export default function SideNav() {
+  const { user } = useAuth();
   const pathname = usePathname();
   const t = useT();
 
@@ -36,8 +39,11 @@ export default function SideNav() {
 
       {/* Entrées */}
       <div className="flex flex-1 flex-col items-center gap-1 py-4">
-        {entreesLaterales.map(({ id, href, label, icone: Icone, disponible }) => {
+        {entreesLaterales.map(({ id, href, label, icone: Icone, disponible, capacite }) => {
           const actif = pathname === href;
+          // Tant que la session charge, on n'affiche aucun cadenas : un
+          // clignotement dirait à un abonné qu'il ne l'est pas.
+          const ferme = capacite !== undefined && user !== null && !aAcces(user.plan, capacite);
           const classes = cn(
             'flex h-10 w-10 items-center justify-center rounded-md transition-colors',
             actif ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
@@ -61,12 +67,24 @@ export default function SideNav() {
             <Link
               key={id}
               href={href}
-              title={t(label)}
+              title={
+                ferme
+                  ? t('{ecran} — inclus dans un palier supérieur', { ecran: t(label) })
+                  : t(label)
+              }
               aria-label={t(label)}
               aria-current={actif ? 'page' : undefined}
-              className={classes}
+              className={cn(classes, 'relative')}
             >
               <Icone size={18} aria-hidden />
+              {ferme && (
+                <span
+                  className="bg-surface text-muted-foreground absolute -right-0.5 -bottom-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full"
+                  aria-hidden
+                >
+                  <Lock size={9} />
+                </span>
+              )}
             </Link>
           );
         })}

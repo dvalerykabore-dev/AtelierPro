@@ -1254,4 +1254,8 @@ export const ar: Dictionnaire = {
     many: '−{n} شهرًا',
     other: '−{n} شهر',
   },
+  'Inclus à partir du palier {palier}': 'مُضمَّن ابتداءً من باقة {palier}',
+  'Voir les paliers': 'عرض الباقات',
+  'À partir de {prix} par mois': 'ابتداءً من {prix} شهريًا',
+  '{ecran} — inclus dans un palier supérieur': '{ecran} — مُضمَّن في باقة أعلى',
 };

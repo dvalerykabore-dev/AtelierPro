@@ -1202,4 +1202,8 @@ export const es: Dictionnaire = {
     one: '−{n} mes',
     other: '−{n} meses',
   },
+  'Inclus à partir du palier {palier}': 'Incluido a partir del nivel {palier}',
+  'Voir les paliers': 'Ver los niveles',
+  'À partir de {prix} par mois': 'Desde {prix} al mes',
+  '{ecran} — inclus dans un palier supérieur': '{ecran} — incluido en un nivel superior',
 };

@@ -10,6 +10,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
+import type { Capacite } from '@/lib/plans';
+
 export interface EntreeNav {
   /** Identifiant stable — deux entrées peuvent viser la même URL (voir « Mesures »). */
   id: string;
@@ -24,6 +26,15 @@ export interface EntreeNav {
    * identique à la maquette, mais ne navigue pas — mieux qu'un lien vers une 404.
    */
   disponible: boolean;
+  /**
+   * Capacité que l'écran demande, quand il est payant. `undefined` = ouvert à
+   * tous les paliers.
+   *
+   * L'entrée reste VISIBLE sans elle, avec un cadenas : masquer un écran ne
+   * dit rien à personne, alors qu'un cadenas montre ce que l'atelier gagnerait
+   * à monter de palier. Le clic mène à l'invitation, pas à une erreur.
+   */
+  capacite?: Capacite;
 }
 
 /**
@@ -50,6 +61,7 @@ export const entreesLaterales: EntreeNav[] = [
   },
   {
     id: 'planning',
+    capacite: 'planning',
     href: '/planning',
     label: 'Planning',
     labelCourt: 'Planning',
@@ -82,6 +94,7 @@ export const entreesLaterales: EntreeNav[] = [
   },
   {
     id: 'tresorerie',
+    capacite: 'tresorerie',
     href: '/tresorerie',
     label: 'Trésorerie',
     labelCourt: 'Caisse',
@@ -90,6 +103,7 @@ export const entreesLaterales: EntreeNav[] = [
   },
   {
     id: 'depenses',
+    capacite: 'tresorerie',
     href: '/depenses',
     label: 'Dépenses',
     labelCourt: 'Dépenses',
@@ -98,6 +112,7 @@ export const entreesLaterales: EntreeNav[] = [
   },
   {
     id: 'rapports',
+    capacite: 'rapports',
     href: '/rapports',
     label: 'Rapports',
     labelCourt: 'Rapports',

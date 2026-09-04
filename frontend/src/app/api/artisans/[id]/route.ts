@@ -17,6 +17,7 @@ import { z } from 'zod';
 
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
+import { exigerPlaceArtisan } from '@/lib/server/plans';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { log } from '@/lib/server/observability/log';
 import { prisma } from '@/lib/server/prisma';
@@ -85,7 +86,7 @@ export async function PATCH(
     // son existence.
     const cible = await prisma.artisan.findFirst({
       where: { id, userId: auth.user.sub },
-      select: { id: true },
+      select: { id: true, active: true },
     });
     if (!cible) {
       return NextResponse.json(
@@ -99,6 +100,20 @@ export async function PATCH(
     // valant `undefined` n'est pas la même chose qu'une clé absente, et Prisma
     // n'accepte que la seconde.
     const { role, dailyHours, active, phone } = parsed.data;
+
+    // Réactiver, c'est reprendre une place. Sans ce contrôle le plafond du
+    // palier ne tenait qu'à la création : il suffisait de désactiver puis de
+    // réactiver pour le contourner, et un atelier redescendu au gratuit
+    // gardait ses quinze fiches en les faisant passer par ce chemin.
+    //
+    // Seule la transition inactive → active est comptée. Un PATCH qui renvoie
+    // `active: true` sur une fiche déjà active ne consomme rien : il doit
+    // rester idempotent, sinon un simple renvoi de formulaire échouerait au
+    // bord du plafond.
+    if (active === true && !cible.active) {
+      const plafond = await exigerPlaceArtisan(auth.user.sub);
+      if (plafond) return plafond;
+    }
     const artisan = await prisma.artisan.update({
       where: { id: cible.id },
       data: {

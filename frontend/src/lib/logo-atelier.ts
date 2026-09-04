@@ -13,25 +13,16 @@
  * la route d'envoi a effectivement écrit le fichier.
  */
 
-/** Hôte de livraison Cloudinary — celui que renvoie `secure_url`. */
-export const HOTE_LOGO = 'res.cloudinary.com';
+import { HOTE_STOCKAGE, estUrlStockage } from '@/lib/stockage';
 
 /**
- * `true` si l'URL désigne bien une image de notre stockage.
- *
- * Volontairement strict : HTTPS et cet hôte exactement. Un sous-domaine
- * ressemblant (`res.cloudinary.com.exemple.net`) doit être refusé, ce qu'une
- * comparaison de fin de chaîne laisserait passer.
+ * Le contrôle d'hôte lui-même vit dans `lib/stockage.ts` : il vaut pour toutes
+ * les images de l'application, pas seulement pour le logo — les photos de tissu
+ * et de modèle passaient à travers tant qu'il était écrit ici. Ces deux exports
+ * restent pour leurs appelants.
  */
-export function estUrlLogo(url: string): boolean {
-  let analysee: URL;
-  try {
-    analysee = new URL(url);
-  } catch {
-    return false;
-  }
-  return analysee.protocol === 'https:' && analysee.hostname === HOTE_LOGO;
-}
+export const HOTE_LOGO = HOTE_STOCKAGE;
+export const estUrlLogo = estUrlStockage;
 
 /**
  * Contrôle d'une valeur saisie. Rend le message à afficher, ou `null`.

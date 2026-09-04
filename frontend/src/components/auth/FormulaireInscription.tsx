@@ -43,7 +43,16 @@ export default function FormulaireInscription() {
     setEnvoi(true);
     setErreur(null);
     try {
-      await api('/api/auth/signup', { method: 'POST', body: { email, password: motDePasse } });
+      await api('/api/auth/signup', {
+        method: 'POST',
+        body: {
+          email,
+          password: motDePasse,
+          // Intention d’achat, pas un droit : le serveur l’enregistre à part et
+          // le compte s’ouvre au gratuit.
+          ...(planChoisi ? { plan: planChoisi.cle } : {}),
+        },
+      });
       // L'inscription ne pose aucun cookie et renvoie 201 même si l'adresse
       // existe déjà (résistance à l'énumération) : on redirige donc toujours
       // vers la saisie du code, sans révéler si le compte était nouveau.

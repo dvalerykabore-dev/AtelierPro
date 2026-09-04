@@ -16,6 +16,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
 
 import { verifyCsrf } from '@/lib/server/auth';
+import { estUrlStockage } from '@/lib/stockage';
 import { requireAuth } from '@/lib/server/middleware';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { log } from '@/lib/server/observability/log';
@@ -25,7 +26,9 @@ const GENRES = ['FEMALE', 'MALE'] as const;
 
 const photoSchema = z.object({
   id: z.string().max(200),
-  url: z.string().url().max(2000),
+  url: z.string().url().max(2000).refine(estUrlStockage, {
+    message: 'Cette photo ne provient pas d’un envoi de l’application.',
+  }),
   nomFichier: z.string().max(300).optional(),
 });
 
@@ -35,7 +38,12 @@ const releveSchema = z.object({
   values: z.record(z.string().max(60), z.string().max(20)),
   notes: z.string().trim().max(2000).optional(),
   fabricPhotos: z.array(photoSchema).max(12).optional(),
-  modelPhoto: z.string().url().max(2000).optional(),
+  modelPhoto: z
+    .string()
+    .url()
+    .max(2000)
+    .refine(estUrlStockage, { message: 'Cette photo ne provient pas d’un envoi de l’application.' })
+    .optional(),
 });
 
 function formatIssues(err: z.ZodError) {

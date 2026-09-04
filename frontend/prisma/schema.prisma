@@ -54,6 +54,11 @@ model User {
   // plutôt que réécrite par un cron : une valeur dérivée ne peut pas se
   // désynchroniser, une colonne recopiée si.
   planExpiresAt     DateTime?
+  // Le palier choisi sur la grille AVANT l'inscription. Une intention d'achat,
+  // pas un droit : `planActifDe` ne lit jamais cette colonne. Elle existe
+  // parce que l'encaissement n'est pas branché — sans elle on perd le seul
+  // signal d'achat qu'on ait, au moment précis où il est le plus fort.
+  planIntent        String?
 
   // Optional display name — populated from OAuth profile on first sign-in.
   // Email/password users can fill it later via /api/auth/me PATCH (future).

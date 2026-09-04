@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import AppShell from '@/components/atelier/AppShell';
+import ExigePalier from '@/components/atelier/ExigePalier';
 import Depenses from '@/components/atelier/Depenses';
 import { NomAtelier } from '@/components/atelier/IdentiteAtelier';
 
@@ -14,7 +15,9 @@ export const metadata: Metadata = {
 export default function DepensesPage() {
   return (
     <AppShell titre="Dépenses" sousTitre={<NomAtelier />}>
-      <Depenses />
+      <ExigePalier capacite="tresorerie">
+        <Depenses />
+      </ExigePalier>
     </AppShell>
   );
 }
