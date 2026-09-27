@@ -1,5 +1,6 @@
 import 'server-only';
 import { z } from 'zod';
+import { anomaliesProduction } from './config-production';
 
 // Boot-time env validation. Module-level — throws at import time if
 // REQUIRED env vars are missing or malformed. Each route handler that
@@ -80,3 +81,21 @@ function loadEnv(): Env {
 }
 
 export const env = loadEnv();
+
+// Réglages qui n'ont d'importance qu'en production et qui échouent en silence
+// — expéditeur de bac à sable, APP_URL sur localhost, mode démonstration resté
+// posé. On journalise sans interrompre : une prod qui refuse de monter pour un
+// lien d'e-mail mal formé est un incident plus grave que le lien.
+//
+// L'appel vit ici plutôt que dans `instrumentation.ts` (fichier protégé) et
+// s'exécute une seule fois, au premier import de `env`.
+if (env.NODE_ENV === 'production') {
+  const anomalies = anomaliesProduction(process.env);
+  for (const a of anomalies) {
+    // `createLogger` importerait `env` : la boucle de dépendance se paie d'un
+    // console.error, suffisant pour un message de démarrage.
+    console.error(
+      `[config-production] ${a.variable} — ${a.probleme}\n                   → ${a.correctif}`,
+    );
+  }
+}

@@ -21,8 +21,10 @@ import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { useAuth, useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useT } from '@/contexts/LangueContext';
 
 export default function SettingsPage() {
+  const t = useT();
   const user = useUser();
   const { refresh } = useAuth();
   const { toast } = useToast();
@@ -37,7 +39,7 @@ export default function SettingsPage() {
   if (!user) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-2 px-4">
-        <p className="text-sm text-gray-600">Chargement…</p>
+        <p className="text-sm text-muted-foreground">{t('Chargement…')}</p>
       </main>
     );
   }
@@ -50,11 +52,11 @@ export default function SettingsPage() {
     setError(null);
 
     if (newPassword.length === 0) {
-      setError('Saisis un nouveau mot de passe.');
+      setError(t('Saisis un nouveau mot de passe.'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('La confirmation ne correspond pas au nouveau mot de passe.');
+      setError(t('La confirmation ne correspond pas au nouveau mot de passe.'));
       return;
     }
 
@@ -65,13 +67,13 @@ export default function SettingsPage() {
           method: 'PUT',
           body: { currentPassword, newPassword },
         });
-        toast('Mot de passe mis à jour.', 'success');
+        toast(t('Mot de passe mis à jour.'), 'success');
       } else {
         await api('/api/auth/set-password', {
           method: 'POST',
           body: { newPassword },
         });
-        toast('Mot de passe défini. Tu peux maintenant te connecter par email.', 'success');
+        toast(t('Mot de passe défini. Tu peux maintenant te connecter par email.'), 'success');
       }
       setCurrentPassword('');
       setNewPassword('');
@@ -80,17 +82,18 @@ export default function SettingsPage() {
     } catch (err) {
       if (err instanceof ApiError) {
         const map: Record<string, string> = {
-          INVALID_CREDENTIALS: 'Mot de passe actuel incorrect.',
-          PASSWORD_BANNED: 'Ce mot de passe est trop courant.',
-          PASSWORD_TOO_SHORT: err.message || 'Mot de passe trop court.',
-          PASSWORD_PWNED: 'Ce mot de passe a fuité — choisis-en un autre.',
-          PASSWORD_ALREADY_SET:
+          INVALID_CREDENTIALS: t('Mot de passe actuel incorrect.'),
+          PASSWORD_BANNED: t('Ce mot de passe est trop courant.'),
+          PASSWORD_TOO_SHORT: err.message || t('Mot de passe trop court.'),
+          PASSWORD_PWNED: t('Ce mot de passe a fuité — choisis-en un autre.'),
+          PASSWORD_ALREADY_SET: t(
             'Un mot de passe est déjà défini. Utilise « changer le mot de passe ».',
-          VALIDATION_FAILED: 'Champs invalides.',
+          ),
+          VALIDATION_FAILED: t('Champs invalides.'),
         };
         setError(map[err.code] ?? err.message);
       } else {
-        setError('Erreur réseau. Réessaie.');
+        setError(t('Erreur réseau. Réessaie.'));
       }
     } finally {
       setSubmitting(false);
@@ -100,104 +103,108 @@ export default function SettingsPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col gap-8 px-4 py-12">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold">Paramètres</h1>
-        <p className="text-sm text-gray-600">Connecté en tant que {user.email}</p>
+        <h1 className="text-2xl font-bold">{t('Paramètres')}</h1>
+        <p className="text-sm text-muted-foreground">
+          {t('Connecté en tant que {email}', { email: user.email })}
+        </p>
       </header>
 
       {/* ── Password section ─────────────────────────────────────────── */}
-      <section className="flex flex-col gap-3 rounded-lg border border-gray-200 p-5">
+      <section className="flex flex-col gap-3 rounded-lg border border-border p-5">
         <h2 className="text-lg font-semibold">
-          {hasPassword ? 'Changer le mot de passe' : 'Définir un mot de passe'}
+          {t(hasPassword ? 'Changer le mot de passe' : 'Définir un mot de passe')}
         </h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           {hasPassword
-            ? 'Tu peux modifier ton mot de passe ici. Les autres sessions seront déconnectées.'
-            : 'Tu t’es connecté via Google. Définis un mot de passe pour pouvoir aussi te connecter par email.'}
+            ? t('Tu peux modifier ton mot de passe ici. Les autres sessions seront déconnectées.')
+            : t(
+                'Tu t’es connecté via Google. Définis un mot de passe pour pouvoir aussi te connecter par email.',
+              )}
         </p>
         <form onSubmit={onSubmitPassword} className="mt-2 flex flex-col gap-4">
           {hasPassword && (
             <label className="flex flex-col gap-1 text-sm">
-              Mot de passe actuel
+              {t('Mot de passe actuel')}
               <input
                 type="password"
                 required
                 autoComplete="current-password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="rounded-md border border-gray-300 px-3 py-2"
+                className="rounded-md border border-border px-3 py-2"
               />
             </label>
           )}
           <label className="flex flex-col gap-1 text-sm">
-            Nouveau mot de passe
+            {t('Nouveau mot de passe')}
             <input
               type="password"
               required
               autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="rounded-md border border-gray-300 px-3 py-2"
+              className="rounded-md border border-border px-3 py-2"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            Confirmer le nouveau mot de passe
+            {t('Confirmer le nouveau mot de passe')}
             <input
               type="password"
               required
               autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="rounded-md border border-gray-300 px-3 py-2"
+              className="rounded-md border border-border px-3 py-2"
             />
           </label>
           {error && (
-            <p role="alert" className="text-sm text-red-600">
+            <p role="alert" className="text-sm text-danger">
               {error}
             </p>
           )}
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-md bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-accent disabled:opacity-50"
           >
             {submitting
-              ? 'Enregistrement…'
-              : hasPassword
-                ? 'Changer le mot de passe'
-                : 'Définir le mot de passe'}
+              ? t('Enregistrement…')
+              : t(hasPassword ? 'Changer le mot de passe' : 'Définir le mot de passe')}
           </button>
         </form>
       </section>
 
       {/* ── Linked providers section ────────────────────────────────── */}
-      <section className="flex flex-col gap-3 rounded-lg border border-gray-200 p-5">
-        <h2 className="text-lg font-semibold">Comptes liés</h2>
+      <section className="flex flex-col gap-3 rounded-lg border border-border p-5">
+        <h2 className="text-lg font-semibold">{t('Comptes liés')}</h2>
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-col">
-            <span className="text-sm font-medium">Google</span>
-            <span className="text-xs text-gray-500">
-              {googleLinked
-                ? 'Tu peux te connecter via Google.'
-                : 'Lie ton compte Google pour te connecter en un clic.'}
+            <span className="text-sm font-medium">{t('Google')}</span>
+            <span className="text-xs text-muted-foreground">
+              {t(
+                googleLinked
+                  ? 'Tu peux te connecter via Google.'
+                  : 'Lie ton compte Google pour te connecter en un clic.',
+              )}
             </span>
           </div>
           {googleLinked ? (
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-              Lié
+            <span className="rounded-full border border-success/40 bg-success/10 px-3 py-1 text-xs font-medium text-success">
+              {t('Lié')}
             </span>
           ) : (
             <a
               href="/api/auth/oauth/google/start?next=/settings"
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50"
+              className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
             >
-              Lier Google
+              {t('Lier Google')}
             </a>
           )}
         </div>
       </section>
 
-      <Link href="/dashboard" className="text-center text-sm text-gray-600 underline">
-        Retour au dashboard
+      <Link href="/dashboard" className="text-center text-sm text-muted-foreground underline">
+        {t('Retour au dashboard')}
       </Link>
     </main>
   );

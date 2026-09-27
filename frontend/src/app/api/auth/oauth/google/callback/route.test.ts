@@ -187,13 +187,18 @@ describe('GET /api/auth/oauth/google/callback', () => {
     expect(mockCreateNotification).not.toHaveBeenCalled();
   });
 
-  it('D-01 link path: existing email user gets OAuthAccount row; User.update NOT called for name/avatar; 3 cookies issued; no welcome notif', async () => {
+  it('D-01 link path (already-verified account): OAuthAccount row only; User.update NOT called — name/avatar and the original verification date both survive', async () => {
     await seedCookie('app-oauth-state', STATE);
     await seedCookie('app-oauth-pkce', PKCE);
     // Provider lookup misses, email lookup hits.
     prismaMock.oAuthAccount.findUnique.mockResolvedValue(null);
     prismaMock.user.findUnique
-      .mockResolvedValueOnce({ id: 'u-existing' } as never) // by email
+      .mockResolvedValueOnce({
+        id: 'u-existing',
+        // Déjà vérifié : la date d'origine doit être préservée, elle dit quand
+        // l'adresse a été prouvée la première fois.
+        emailVerifiedAt: new Date('2026-01-05T10:00:00Z'),
+      } as never) // by email
       .mockResolvedValueOnce({
         id: 'u-existing',
         email: 'a@b.com',
@@ -231,6 +236,56 @@ describe('GET /api/auth/oauth/google/callback', () => {
     expect(mockCreateNotification).not.toHaveBeenCalled();
   });
 
+  it('link path on an unverified account: emailVerifiedAt is set, name/avatar still untouched', async () => {
+    // Un compte ouvert par e-mail puis abandonné avant la saisie du code.
+    // Sans cette écriture il resterait joignable par Google mais refuserait
+    // le mot de passe avec EMAIL_NOT_VERIFIED, sans rien qui l'explique.
+    await seedCookie('app-oauth-state', STATE);
+    await seedCookie('app-oauth-pkce', PKCE);
+    prismaMock.oAuthAccount.findUnique.mockResolvedValue(null);
+    prismaMock.user.findUnique
+      .mockResolvedValueOnce({ id: 'u-pending', emailVerifiedAt: null } as never)
+      .mockResolvedValueOnce({ id: 'u-pending', email: 'a@b.com', tokenVersion: 0 } as never);
+    prismaMock.oAuthAccount.create.mockResolvedValue({ id: 'oa-2' } as never);
+    prismaMock.user.update.mockResolvedValue({ id: 'u-pending' } as never);
+
+    const res = await GET(makeReq({ code: 'c', state: STATE }));
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).not.toContain('/auth/error');
+
+    expect(prismaMock.user.update).toHaveBeenCalledTimes(1);
+    const arg = prismaMock.user.update.mock.calls[0]?.[0];
+    expect(arg?.where).toEqual({ id: 'u-pending' });
+    expect(arg?.data.emailVerifiedAt).toBeInstanceOf(Date);
+    // D-01 tient toujours : seule la vérification est écrite.
+    expect(Object.keys(arg?.data ?? {})).toEqual(['emailVerifiedAt']);
+
+    // Le rattachement et le marquage forment un seul fait : à moitié écrit,
+    // on retrouve exactement l'état que ce correctif ferme.
+    expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
+    expect(prismaMock.oAuthAccount.create).toHaveBeenCalledTimes(1);
+    // Rattachement, pas création : pas de notification de bienvenue.
+    expect(mockCreateNotification).not.toHaveBeenCalled();
+    expect(prismaMock.user.create).not.toHaveBeenCalled();
+  });
+
+  it('returning OAuth user is never re-verified: provider lookup hits, no User write at all', async () => {
+    // Le rattachement n'a lieu qu'une fois ; les connexions suivantes passent
+    // par le lookup provider et ne doivent rien réécrire.
+    await seedCookie('app-oauth-state', STATE);
+    await seedCookie('app-oauth-pkce', PKCE);
+    prismaMock.oAuthAccount.findUnique.mockResolvedValue({ userId: 'u-known' } as never);
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u-known',
+      email: 'a@b.com',
+      tokenVersion: 0,
+    } as never);
+
+    const res = await GET(makeReq({ code: 'c', state: STATE }));
+    expect(res.status).toBe(302);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+    expect(prismaMock.oAuthAccount.create).not.toHaveBeenCalled();
+  });
   it('D-02 create path: brand-new user → $transaction creates User + OAuthAccount; createNotification dispatched with welcomeNotification', async () => {
     await seedCookie('app-oauth-state', STATE);
     await seedCookie('app-oauth-pkce', PKCE);

@@ -35,7 +35,26 @@ export function clearCsrfToken(): void {
 // Refresh token lock — prevent multiple simultaneous refresh calls.
 let refreshPromise: Promise<boolean> | null = null;
 
-const REFRESH_TIMEOUT_MS = 10_000;
+// Deadline for the single-flight token refresh. Default unchanged (10s); the
+// env var only lets a deployment raise it.
+//
+// Why it is configurable: on a slow database the refresh round-trip can exceed
+// the deadline, the initial 401 surfaces, and screens that fall back to sample
+// data latch that fallback while the session is in fact valid — measured at
+// 5-8s per query on Neon's free tier, i.e. within a factor of two of this
+// timeout. Raising it costs nothing: the lock still collapses concurrent
+// callers into one request, and a genuinely dead session still fails, just
+// later.
+//
+// NEXT_PUBLIC_ prefix is required — this runs in the browser. Falls back to the
+// default when unset, empty, or not a positive number, so a typo cannot produce
+// a zero-millisecond timeout that aborts every refresh instantly.
+const REFRESH_TIMEOUT_DEFAULT_MS = 10_000;
+const refreshTimeoutFromEnv = Number(process.env.NEXT_PUBLIC_REFRESH_TIMEOUT_MS);
+const REFRESH_TIMEOUT_MS =
+  Number.isFinite(refreshTimeoutFromEnv) && refreshTimeoutFromEnv > 0
+    ? refreshTimeoutFromEnv
+    : REFRESH_TIMEOUT_DEFAULT_MS;
 
 async function refreshAccessToken(): Promise<boolean> {
   if (refreshPromise) return refreshPromise;

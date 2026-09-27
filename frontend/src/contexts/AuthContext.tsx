@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
+import type { Plan } from '@/lib/plans';
 import { useRouter } from 'next/navigation';
 import { api, ApiError, clearCsrfToken, storeCsrfToken } from '@/lib/api';
 import { invalidateCachePrefix } from '@/lib/useApi';
@@ -12,6 +13,26 @@ export interface User {
   emailVerifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Palier d'abonnement ACTIF, échéance déjà appliquée par le serveur.
+   *
+   * Sert à ne montrer que ce qui est ouvert et à proposer la bonne montée.
+   * Il ne protège rien : les gardes de route restent la seule autorité, et un
+   * client bricolé qui se déclarerait « premium » se ferait refuser pareil.
+   */
+  plan: Plan;
+  /** Nom commercial de l'atelier. `null` tant que le compte ne l'a pas renseigné. */
+  workshopName: string | null;
+  /** Numero de l atelier, au format international. */
+  phone: string | null;
+  /** Ville et adresse de l'atelier. `null` tant que rien n'est renseigné. */
+  workshopCity: string | null;
+  workshopAddress: string | null;
+  /** Heures d'ouverture et de fermeture, au format « HH:MM ». Toujours les deux, ou aucune. */
+  workshopOpensAt: string | null;
+  workshopClosesAt: string | null;
+  /** Logo de l'atelier — URL de livraison du stockage. `null` = pastille d'initiales. */
+  workshopLogoUrl: string | null;
   /** false when the account was created via OAuth and never set a password. */
   hasPassword: boolean;
   /** Provider names already linked, e.g. ['google']. Empty for pure email/password accounts. */

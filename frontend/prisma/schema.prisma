@@ -18,21 +18,63 @@ model User {
   emailVerifiedAt   DateTime?
   tokenVersion      Int       @default(0)
   withdrawalPinHash String? // bcrypt hash of withdrawal PIN; null = no PIN set
+  // Nom commercial de l'atelier, affiché en sous-titre des écrans métier.
+  // Nullable : un compte fraîchement créé n'en a pas encore, et l'écran doit
+  // dire « Mon atelier » plutôt que d'inventer une raison sociale.
+  workshopName      String?
+  // Numero de l'atelier, au format international (+22670123456).
+  phone             String?
+  // Ville et adresse de l'atelier — affichées sur l'écran de réglages et
+  // destinées aux documents remis au client. Nullable : un compte qui vient
+  // d'ouvrir ne les a pas encore renseignées.
+  workshopCity      String?
+  workshopAddress   String?
+  // Heures d'ouverture et de fermeture, au format « HH:MM » sur 24 h.
+  //
+  // Deux colonnes et non une chaîne « 08h00 — 18h00 » : le planning devra
+  // savoir comparer une échéance à une heure de fermeture, et un libellé libre
+  // ne se compare pas. Les deux vont ensemble — la route refuse d'en écrire
+  // une seule, un atelier qui ouvre sans fermer ne veut rien dire.
+  workshopOpensAt   String?
+  workshopClosesAt  String?
+  // Logo de l'atelier — URL de livraison Cloudinary produite par /api/upload.
+  // À défaut, l'interface retombe sur les initiales du nom.
+  workshopLogoUrl   String?
+
+  // Palier d'abonnement — freemium | essentiel | pro | premium.
+  // Ce que chacun débloque est décrit dans lib/plans.ts, source unique ; cette
+  // colonne ne porte que la clé. Chaîne et non enum : ajouter un palier ne doit
+  // pas demander une migration de type sur une table qui grandit.
+  plan              String    @default("freemium")
+  // Échéance du prépayé. null = aucun encaissement, donc freemium.
+  //
+  // Passée cette date le compte redescend en freemium SANS QUE RIEN NE SOIT
+  // EFFACÉ : les écrans payants se ferment, les données restent lisibles.
+  // La bascule est CALCULÉE à la lecture par planActifDe (lib/server/plans.ts)
+  // plutôt que réécrite par un cron : une valeur dérivée ne peut pas se
+  // désynchroniser, une colonne recopiée si.
+  planExpiresAt     DateTime?
+  // Le palier choisi sur la grille AVANT l'inscription. Une intention d'achat,
+  // pas un droit : `planActifDe` ne lit jamais cette colonne. Elle existe
+  // parce que l'encaissement n'est pas branché — sans elle on perd le seul
+  // signal d'achat qu'on ait, au moment précis où il est le plus fort.
+  planIntent        String?
+
   // Optional display name — populated from OAuth profile on first sign-in.
   // Email/password users can fill it later via /api/auth/me PATCH (future).
-  name              String?
+  name      String?
   // Optional avatar URL — populated from OAuth profile on first sign-in.
-  avatarUrl         String?
+  avatarUrl String?
   // App-wide role. USER is the default; ADMIN unlocks /admin back-office;
   // SUPERADMIN can promote/demote other admins. Bootstrap an initial
   // SUPERADMIN via `pnpm db:make-superadmin <email>` (see scripts).
-  role              String    @default("USER") // USER | ADMIN | SUPERADMIN
+  role      String   @default("USER") // USER | ADMIN | SUPERADMIN
   // Account status. ACTIVE = login + refresh allowed; SUSPENDED = both
   // refused with 403 ACCOUNT_SUSPENDED. Mutated via /api/admin/users/[id]/status
   // (ADMIN can suspend; only SUPERADMIN can restore).
-  status            String    @default("ACTIVE") // ACTIVE | SUSPENDED
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  status    String   @default("ACTIVE") // ACTIVE | SUSPENDED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   verificationCodes VerificationCode[]
   uploads           FileUpload[]
@@ -42,12 +84,20 @@ model User {
   withdrawals       Withdrawal[]
   oauthAccounts     OAuthAccount[]
   adminActions      AdminAction[]
+  customers         Customer[]
+  tailoringOrders   TailoringOrder[]
+  workshopTasks     WorkshopTask[]
+  artisans          Artisan[]
+  cashMovements     CashMovement[]
+  recurringCharges  RecurringCharge[]
 
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
   // on their domain models.
-  ownedOrganizations Organization[]      @relation("OrgOwner")
+  ownedOrganizations Organization[]       @relation("OrgOwner")
   memberships        OrganizationMember[] @relation("OrgMembership")
+  priceItems         PriceItem[]
+  orderNotes         OrderNote[]
 
   @@index([email])
   @@index([role])
@@ -95,14 +145,14 @@ model AdminAction {
 // used as a stable URL segment.
 // ───────────────────────────────────────────────────────────────────────
 model Organization {
-  id        String   @id @default(cuid())
-  slug      String   @unique
+  id        String               @id @default(cuid())
+  slug      String               @unique
   name      String
   ownerId   String
-  owner     User     @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  owner     User                 @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   members   OrganizationMember[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
 
   @@index([ownerId])
 }
@@ -273,21 +323,21 @@ model WebhookLog {
 // at the call site — the schema is currency-agnostic.
 // ───────────────────────────────────────────────────────────────────────
 model Order {
-  id              String    @id @default(cuid())
-  userId          String? // nullable — guest checkout supported
-  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  amount          Int // gross amount, smallest unit
-  currency        String    @default("XOF") // ISO 4217
-  status          String    @default("PENDING") // PENDING | PAID | EXPIRED | FAILED | REFUNDED
-  customerEmail   String?
-  customerPhone   String?
-  customerName    String?
-  metadata        Json? // app-specific fields
+  id            String  @id @default(cuid())
+  userId        String? // nullable — guest checkout supported
+  user          User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  amount        Int // gross amount, smallest unit
+  currency      String  @default("XOF") // ISO 4217
+  status        String  @default("PENDING") // PENDING | PAID | EXPIRED | FAILED | REFUNDED
+  customerEmail String?
+  customerPhone String?
+  customerName  String?
+  metadata      Json? // app-specific fields
 
   // Stripe-grade idempotency. Required header on POST /api/orders; replay
   // with same value returns the original Order row instead of double-charging.
   // Nullable so existing rows pre-migration don't break the @unique constraint.
-  idempotencyKey  String?   @unique
+  idempotencyKey String? @unique
 
   // Provider reference
   provider         String // e.g. "bictorys"
@@ -311,12 +361,12 @@ model Order {
 }
 
 model Withdrawal {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user        User   @relation(fields: [userId], references: [id], onDelete: Restrict)
   amount      Int // requested amount, smallest unit
-  currency    String   @default("XOF")
-  status      String   @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED | CANCELLED
+  currency    String @default("XOF")
+  status      String @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED | CANCELLED
   destination Json // { method: "WAVE" | "ORANGE_MONEY" | ..., phone: "+221...", accountName?: "..." }
 
   // Provider reference
@@ -331,4 +381,316 @@ model Withdrawal {
   @@index([userId, requestedAt])
   @@index([status, requestedAt])
   @@index([provider, providerPayoutId])
+}
+
+// ---------------------------------------------------------------------------
+// Domaine atelier de couture
+// ---------------------------------------------------------------------------
+// Ajouté par le fork (le starter ne ship que des modèles génériques). `Order`
+// reste la commande de PAIEMENT ; `TailoringOrder` est la commande de couture.
+//
+// Tout est rattaché à `userId` : un compte = un atelier. Le multi-atelier
+// passerait par `organizationId`, comme le décrit le CLAUDE.md — non activé ici.
+
+model Customer {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name   String
+  phone  String?
+  // FEMALE | MALE — détermine la palette de mesures présentée (17 ou 23 champs).
+  gender String
+  loyal  Boolean @default(false)
+  notes  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  measurementSets MeasurementSet[]
+  tailoringOrders TailoringOrder[]
+
+  // Deux clients d'ateliers différents peuvent porter le même nom ; l'unicité
+  // n'a de sens que dans un atelier donné.
+  @@unique([userId, name])
+  @@index([userId, createdAt])
+}
+
+model MeasurementSet {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  // Palette employée au moment du relevé. Conservée avec le relevé : changer
+  // le genre du client plus tard ne doit pas réinterpréter d'anciennes mesures.
+  gender String
+  // Valeurs indexées par `section::numero` (« Haut::9A »). Un Json plutôt qu'une
+  // table par champ : les palettes évoluent avec les habitudes de l'atelier, et
+  // une migration à chaque ajout de mesure serait disproportionnée.
+  values Json
+  notes  String?
+
+  // URL Cloudinary des tissus apportés et du modèle choisi.
+  fabricPhotos Json?
+  modelPhoto   String?
+
+  takenAt   DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId, takenAt])
+}
+
+model TailoringOrder {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  // Numéro lisible affiché à l'atelier (« #087 »). Séquentiel PAR atelier :
+  // chaque couturier compte ses commandes depuis 1, pas depuis un compteur
+  // global partagé avec les autres comptes.
+  sequence Int
+
+  garment String // type de tenue
+  fabric  String?
+  color   String?
+
+  // IN_PROGRESS | FITTING | DELIVERY | LATE | DELIVERED
+  status String @default("IN_PROGRESS")
+
+  // Montants en francs CFA — entiers, la devise n'a pas de décimales
+  // (invariant du CLAUDE.md : jamais de décimales sur la monnaie).
+  priceAmount   Int
+  depositAmount Int @default(0)
+
+  // Artisan chargé de la confection. Chaîne libre pour l'instant : l'équipe
+  // vit dans les paramètres, pas encore en base.
+  assignee String?
+
+  dueDate DateTime?
+  notes   String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deliveredAt DateTime?
+
+  // Encaissements rattachés à cette commande. `depositAmount` ci-dessus est
+  // maintenu égal à leur somme, dans la même transaction que leur écriture :
+  // le journal fait foi, le champ n'est qu'un raccourci de lecture pour les
+  // écrans qui affichent une commande sans charger ses mouvements.
+  cashMovements CashMovement[]
+  /// Notes datées de l'atelier. Distinct de `notes` ci-dessus, qui est la
+  /// consigne unique saisie à la création de la commande.
+  atelierNotes  OrderNote[]
+
+  @@unique([userId, sequence])
+  @@index([userId, createdAt])
+  @@index([userId, status])
+  @@index([customerId, createdAt])
+}
+
+model Artisan {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name String
+  role String
+
+  // Numero de contact, au format international (+22670123456). Un artisan
+  // absent se joint : c'est la premiere chose qu'on cherche quand une tenue
+  // est promise pour le lendemain.
+  phone String?
+
+  // Initiales affichées dans les pastilles, et surtout clé de rapprochement :
+  // `TailoringOrder.assignee` et `WorkshopTask.assignee` les stockent. D'où
+  // l'unicité par atelier — deux « MK » rendraient les deux ambigus. Le jour où
+  // ces colonnes deviendront de vraies clés étrangères, cette contrainte pourra
+  // tomber ; jusque-là elle est ce qui garantit la jointure.
+  initials String
+
+  // Capacité quotidienne en heures. Un apprenti ne tient pas les 8 h d'un
+  // tailleur senior, et le planning doit refléter la vraie disponibilité.
+  dailyHours Int @default(8)
+
+  // Un artisan qui quitte l'atelier est désactivé, jamais supprimé : ses
+  // commandes et ses tâches passées doivent rester lisibles.
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, initials])
+  @@index([userId, active])
+}
+
+model WorkshopTask {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Initiales de l'artisan, comme sur `TailoringOrder.assignee` : l'équipe vit
+  // dans les paramètres, pas encore en base. Le jour où elle y sera, ce champ
+  // deviendra une relation — d'où l'index qui l'accompagne déjà.
+  assignee String
+
+  // Jour planifié, sans heure. `@db.Date` plutôt qu'un `DateTime` complet :
+  // une tâche appartient à une journée d'atelier, pas à un instant. Cela évite
+  // aussi qu'un décalage de fuseau ne la fasse glisser d'une case dans la grille.
+  day DateTime @db.Date
+
+  // Durée en heures pleines. La journée compte 8 blocs à l'atelier.
+  hours Int
+
+  label String
+
+  // DONE | IN_PROGRESS | FITTING | PLANNED | BLOCKED
+  status String @default("PLANNED")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, day])
+  @@index([userId, assignee, day])
+}
+
+// ---------------------------------------------------------------------------
+// Trésorerie de l'atelier
+// ---------------------------------------------------------------------------
+
+/// Journal de caisse — un seul registre pour les deux sens.
+///
+/// Deux tables (recettes d'un côté, dépenses de l'autre) auraient fini par
+/// diverger : la trésorerie est la somme signée des mouvements, elle doit se
+/// lire d'une seule requête.
+///
+/// `occurredAt` est le jour où l'argent a bougé, pas celui de la saisie. C'est
+/// toute la différence entre une comptabilité et un historique de frappe : un
+/// loyer payé le 5 et noté le 12 pèse sur le solde du 5.
+model CashMovement {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// IN = recette encaissée · OUT = dépense décaissée
+  direction String
+
+  /// Montant en francs CFA — entier, la devise n'a pas de décimales
+  /// (invariant du CLAUDE.md : jamais de décimales sur la monnaie).
+  amount Int
+
+  /// Jour du mouvement. `@db.Date` : une journée, pas un instant — sans quoi
+  /// un paiement du 31 à 23 h basculerait au mois suivant selon le fuseau.
+  occurredAt DateTime @db.Date
+
+  /// Poste de dépense. Renseigné sur les sorties, nul sur les entrées : une
+  /// recette d'atelier a une commande pour origine, pas une catégorie.
+  category String?
+
+  /// ESPECES | MOBILE_MONEY | VIREMENT | CARTE
+  method String
+
+  label String
+  notes String?
+
+  /// Commande encaissée, pour les entrées. `Cascade` : supprimer une commande
+  /// retire ses encaissements, sinon la caisse compterait l'argent d'une vente
+  /// qui n'existe plus.
+  tailoringOrderId String?
+  tailoringOrder   TailoringOrder? @relation(fields: [tailoringOrderId], references: [id], onDelete: Cascade)
+
+  /// Vrai quand la ligne a été reconstituée depuis un acompte antérieur au
+  /// journal : sa date est celle de la commande, pas celle de l'encaissement.
+  /// L'écran le signale plutôt que de faire passer une reprise pour une saisie.
+  backfilled Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, occurredAt])
+  @@index([userId, direction, occurredAt])
+  @@index([tailoringOrderId])
+}
+
+/// Charge fixe déclarée — loyer, salaires, abonnement.
+///
+/// Sert uniquement à la prévision : elle ne crée aucun mouvement toute seule.
+/// Une charge automatiquement écrite en caisse ferait apparaître un loyer payé
+/// alors qu'il ne l'est pas encore, et le solde deviendrait un mensonge.
+model RecurringCharge {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label    String
+  category String
+  amount   Int
+
+  /// Jour d'échéance dans le mois, 1 à 28 — au-delà, le mois de février
+  /// n'aurait pas d'échéance certaines années.
+  dayOfMonth Int @default(1)
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, active])
+}
+
+/// Grille tarifaire de l'atelier — le prix d'une façon, par type de tenue.
+///
+/// Était une constante partagée : tous les ateliers facturaient les mêmes prix,
+/// et toute modification disparaissait au rechargement.
+model PriceItem {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Type de tenue — « Boubou bazin brodé ». Unique par atelier : deux lignes
+  /// au même nom rendraient le choix ambigu dans le formulaire de commande.
+  garment String
+
+  /// Prix en francs CFA — entier, la devise n'a pas de décimales.
+  price Int
+
+  /// Ce que le prix couvre : « façon » quand le client apporte son tissu,
+  /// « tout compris » quand l'atelier le fournit. La distinction change le
+  /// montant du simple au double et doit rester lisible sur la grille.
+  unit String @default("façon")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, garment])
+  @@index([userId])
+}
+
+/// Note d'atelier attachée à une commande.
+///
+/// Les notes vivaient dans l'état du composant : un artisan écrivait
+/// « manches plus courtes », fermait l'onglet, et l'information n'existait
+/// plus — après que le formulaire eut confirmé l'enregistrement.
+model OrderNote {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Commande commentée. `Cascade` : supprimer une commande retire ses notes,
+  /// qui n'ont pas de sens séparées de leur objet.
+  tailoringOrderId String
+  tailoringOrder   TailoringOrder @relation(fields: [tailoringOrderId], references: [id], onDelete: Cascade)
+
+  /// Nom affiché de l'auteur au moment de l'écriture, figé.
+  /// Renommer un atelier ne doit pas réattribuer ses anciennes notes.
+  author String
+
+  body String
+
+  createdAt DateTime @default(now())
+
+  @@index([tailoringOrderId, createdAt])
 }

@@ -47,8 +47,20 @@ const prismaCreate = vi.fn(async (args: unknown) => ({
   sizeBytes: 4,
   createdAt: new Date(),
 }));
+// L'envoi de fichier est inclus à partir d'Essentiel : la route lit le palier
+// du compte avant d'accepter le moindre octet. Les cas ci-dessous portent sur
+// le contrôle des octets, pas sur l'abonnement — d'où un atelier abonné par
+// défaut. Le refus au gratuit a son propre cas, plus bas.
+const ECHEANCE_LOIN = new Date('2099-01-01T00:00:00.000Z');
+const userFindUnique = vi.fn(
+  async (): Promise<{ plan: string; planExpiresAt: Date | null }> => ({
+    plan: 'essentiel',
+    planExpiresAt: ECHEANCE_LOIN,
+  }),
+);
+
 vi.mock('@/lib/server/prisma', () => ({
-  prisma: { fileUpload: { create: prismaCreate } },
+  prisma: { fileUpload: { create: prismaCreate }, user: { findUnique: userFindUnique } },
 }));
 
 beforeEach(() => {
@@ -178,5 +190,42 @@ describe('POST /api/upload (Cloudinary)', () => {
     const f = new File([new Uint8Array([0xff, 0xd8, 0xff])], 'a.jpg', { type: 'image/jpeg' });
     const res = await POST(makeReq(f) as never);
     expect(res.status).toBe(401);
+  });
+});
+
+describe('POST /api/upload — le palier', () => {
+  /** Un JPEG minimal mais valide : ce n'est pas lui qu'on teste ici. */
+  function jpeg() {
+    return new File([new Uint8Array([0xff, 0xd8, 0xff, 0xe0])], 'photo.jpg', {
+      type: 'image/jpeg',
+    });
+  }
+
+  it('refuse tout envoi au gratuit, photos comme logo', async () => {
+    // Une seule porte pour les deux : la route d'envoi. Le gratuit n'y accède
+    // pas du tout, ce qui évite d'avoir à distinguer un logo d'une photo de
+    // tissu au moment de décider.
+    const { POST } = await import('./route');
+    userFindUnique.mockResolvedValueOnce({ plan: 'freemium', planExpiresAt: null });
+
+    const res = await POST(makeReq(jpeg()) as never);
+
+    expect(res.status).toBe(402);
+    const corps = (await res.json()) as { error: string; requiredPlan: string };
+    expect(corps.error).toBe('PLAN_REQUIRED');
+    expect(corps.requiredPlan).toBe('essentiel');
+    expect(prismaCreate).not.toHaveBeenCalled();
+  });
+
+  it('refuse aussi quand l’abonnement a expiré', async () => {
+    const { POST } = await import('./route');
+    userFindUnique.mockResolvedValueOnce({
+      plan: 'pro',
+      planExpiresAt: new Date('2020-01-01T00:00:00.000Z'),
+    });
+
+    const res = await POST(makeReq(jpeg()) as never);
+
+    expect(res.status).toBe(402);
   });
 });

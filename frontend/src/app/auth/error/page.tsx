@@ -16,6 +16,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useT } from '@/contexts/LangueContext';
 
 const ERROR_MESSAGES: Record<string, string> = {
   GOOGLE_EMAIL_NOT_VERIFIED:
@@ -29,6 +30,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 function AuthErrorBody() {
+  const t = useT();
   const params = useSearchParams();
   const code = params.get('code') ?? params.get('error') ?? '';
   const normalized = code.toUpperCase();
@@ -38,18 +40,26 @@ function AuthErrorBody() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-4">
-      <h1 className="text-2xl font-bold">Échec de connexion</h1>
-      <p className="text-sm text-gray-700">{message}</p>
-      {code && <p className="font-mono text-xs text-gray-400">code: {code}</p>}
+      <h1 className="text-2xl font-bold">{t('Échec de connexion')}</h1>
+      {/* Les messages ci-dessus sont composés en français : la phrase EST la
+          clé, on la traduit au moment de l'afficher. */}
+      <p className="text-sm text-foreground">{t(message)}</p>
+      {code && <p className="font-mono text-xs text-muted-foreground/60">code: {code}</p>}
       <div className="flex flex-col gap-2">
+        {/*
+          Le lien pointait sur /login, qui n'existe pas dans cette application —
+          la page de connexion est /connexion. Le bouton menait donc à un 404,
+          et précisément au moment où une connexion vient d'échouer : on arrive
+          ici pour réessayer, pas pour tomber sur une seconde erreur.
+        */}
         <Link
-          href="/login"
-          className="rounded-md bg-black px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-800"
+          href="/connexion"
+          className="rounded-md bg-primary px-5 py-2.5 text-center text-sm font-medium text-primary-foreground hover:bg-accent"
         >
-          Retour à la connexion
+          {t('Retour à la connexion')}
         </Link>
-        <Link href="/" className="text-center text-sm text-gray-600 underline">
-          Accueil
+        <Link href="/" className="text-center text-sm text-muted-foreground underline">
+          {t('Accueil')}
         </Link>
       </div>
     </main>

@@ -100,7 +100,15 @@ export async function uploadBuffer(
   };
   if (_preset) options.upload_preset = _preset;
   // Surface the validated MIME so transformations/CDN behave sensibly.
-  if (contentType) options.metadata = `mime=${contentType}`;
+  //
+  // `context`, NOT `metadata`. Cloudinary's `metadata` means *structured*
+  // metadata: every key must be pre-declared as a metadata field in the
+  // account, and an undeclared key fails the whole upload with
+  // `Metadata External IDs do not exist: ["mime"]` (HTTP 400) — so this route
+  // rejected every upload on a fresh Cloudinary account. `context` holds
+  // free-form key=value pairs, needs no declaration, and is returned as
+  // `context.custom.mime`.
+  if (contentType) options.context = `mime=${contentType}`;
 
   const res = await new Promise<UploadApiResponse>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(options, (err, response) => {

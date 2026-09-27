@@ -16,9 +16,11 @@
     "db:migrate:status": "prisma migrate status",
     "db:migrate:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
-    "db:make-superadmin": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/make-superadmin.ts",
-    "seed:dev": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-dev.ts",
-    "smoke:auth": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/smoke-auth.ts",
+    "db:make-superadmin": "tsx --import ./scripts/charger-env.mjs scripts/make-superadmin.ts",
+    "db:reprise-caisse": "tsx --import ./scripts/charger-env.mjs scripts/reprise-caisse.ts",
+    "seed:dev": "tsx --import ./scripts/charger-env.mjs scripts/seed-dev.ts",
+    "smoke:auth": "tsx --import ./scripts/charger-env.mjs scripts/smoke-auth.ts",
+    "code:verif": "tsx --import ./scripts/charger-env.mjs scripts/code-verification.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -32,6 +34,7 @@
     "clsx": "^2.1.1",
     "heic-convert": "^2.1.0",
     "jose": "^6.2.3",
+    "lucide-react": "^1.31.0",
     "next": "^16.2.6",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",

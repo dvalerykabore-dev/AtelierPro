@@ -21,3 +21,6 @@ next-env.d.ts
 amp
 node-compile-cache/
 
+
+# Sorties de session Playwright MCP (captures, snapshots, logs console)
+.playwright-mcp/

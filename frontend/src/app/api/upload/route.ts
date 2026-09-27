@@ -40,6 +40,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
+import { exigerCapacite } from '@/lib/server/plans';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { prisma } from '@/lib/server/prisma';
 import { StorageNotConfiguredError, uploadBuffer } from '@/lib/server/upload/cloudinary-client';
@@ -56,6 +57,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const auth = await requireAuth();
     if (auth instanceof NextResponse) return auth;
+
+    const refus = await exigerCapacite(auth.user.sub, 'envoiFichier');
+    if (refus) return refus;
 
     // Read env at handler-call time so vi.stubEnv works and operators can flip
     // limits without redeploy. Never hoist these to module top.

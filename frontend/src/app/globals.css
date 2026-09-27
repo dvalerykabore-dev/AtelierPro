@@ -1,1 +1,316 @@
 @import 'tailwindcss';
+
+/*
+ * Système de design « Atelier Couture Pro » — importé depuis Banani (flow BlTaeCglLjgB,
+ * fichier /style.css). Banani génère déjà du Tailwind v4, ce bloc est donc repris tel
+ * quel : les utilitaires bg-surface, text-primary, border-border… en découlent
+ * automatiquement.
+ *
+ * Les deux familles de police pointent vers la variable exposée par next/font dans
+ * layout.tsx (Space Grotesk), avec des polices système en repli.
+ */
+@theme {
+  /* Couleurs — thème sombre bleu nuit + or */
+  --color-background: #0b1628;
+  --color-foreground: #f0e8d5;
+  --color-border: #1e3255;
+  --color-input: #132040;
+  --color-primary: #c9993a;
+  --color-primary-foreground: #0b1628;
+  --color-secondary: #1a2e50;
+  --color-secondary-foreground: #c9993a;
+  --color-muted: #162340;
+  --color-muted-foreground: #7a8faa;
+  --color-surface: #0f1f3a;
+  --color-surface-foreground: #f0e8d5;
+  --color-accent: #e8b84b;
+  --color-danger: #e05a3a;
+  --color-success: #3aaf7a;
+  --color-warning: #e8b84b;
+
+  /*
+   * Voile des modales. Il doit rester SOMBRE dans les deux thèmes — un voile
+   * clair sur une page claire ne sépare plus rien. C'est pour ça que ce n'est
+   * pas `bg-foreground/40` : en thème sombre, foreground est le crème.
+   */
+  --color-overlay: rgb(0 0 0 / 0.6);
+
+  /*
+   * Couleurs de marque — VOLONTAIREMENT insensibles au thème.
+   *
+   * Le bloc `[data-theme='light']` plus bas redéfinit toute la palette. Ces
+   * sept valeurs-là n'y figurent pas, et c'est le but : le verrou de marque
+   * (carte de couverture, favicon, pied de page) doit sortir en bleu nuit et
+   * or partout, comme un logo imprimé. Une marque qui change de couleur avec
+   * le réglage d'affichage n'est plus une marque.
+   *
+   * Corollaire : le texte posé dessus se fige aussi. Contrastes mesurés sur
+   * marque-nuit — crème 15,8:1 · or 6,1:1 · brume 5,2:1 (WCAG AA partout).
+   */
+  --color-marque-nuit: #0b1628;
+  --color-marque-carte: #0f1f3a;
+  --color-marque-filet: #1e3255;
+  --color-marque-or: #c9993a;
+  --color-marque-creme: #f0e8d5;
+  --color-marque-brume: #7a8faa;
+  --color-marque-succes: #3aaf7a;
+
+  /*
+   * Ombre des panneaux flottants (menus ancrés).
+   *
+   * Elle ne peut pas être la même dans les deux thèmes, et pas seulement par
+   * goût : en thème clair, le panneau est un blanc cassé posé sur du blanc, et
+   * la bordure seule ne le décolle pas de la page. C'est l'ombre qui dit qu'il
+   * flotte. En thème sombre, à l'inverse, une ombre marquée l'enfoncerait dans
+   * le bleu nuit — elle y est donc plus profonde mais plus diffuse.
+   *
+   * Même mécanisme que `--color-overlay` : la variable est redéfinie sous
+   * `[data-theme='light']`, et l'utilitaire `shadow-menu` suit tout seul.
+   */
+  --shadow-menu: 0 18px 40px -16px rgb(0 0 0 / 0.7), 0 2px 10px -4px rgb(0 0 0 / 0.5);
+
+  /* Rayons */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius: var(--radius-sm);
+
+  /* Polices */
+  --font-body: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-headings: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+
+  /* Échelle typographique */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 38px;
+
+  /*
+   * Ouverture d'un menu ancré — le panneau, puis ses lignes.
+   *
+   * `both` et non le remplissage par défaut : les lignes sont décalées de
+   * quelques dizaines de millisecondes chacune, et sans remplissage arrière
+   * elles s'afficheraient pleines avant de sauter à zéro au début de leur
+   * animation. Le décalage se verrait comme un clignotement.
+   *
+   * La courbe est franche au départ puis très amortie : le panneau paraît
+   * arriver d'un coup et se poser, plutôt que glisser.
+   */
+  --animate-menu-surgir: menu-surgir 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-menu-ligne: menu-ligne 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes menu-surgir {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes menu-ligne {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/*
+ * Thème clair « Blanc atelier ».
+ *
+ * Tailwind v4 génère `.bg-surface { background-color: var(--color-surface) }` :
+ * il suffit donc de redéfinir les variables sous ce sélecteur pour que les
+ * ~1 400 utilitaires déjà en place basculent, modificateurs d'opacité compris
+ * (`bg-primary/10` passe par color-mix sur la même variable).
+ *
+ * L'attribut est posé sur <html> par SCRIPT_ANTI_FLASH (lib/theme.ts) AVANT le
+ * premier rendu, puis maintenu par ThemeContext.
+ *
+ * Contrastes vérifiés sur fond blanc (WCAG AA, seuil 4,5:1 pour du texte) :
+ * foreground 17:1 · muted-foreground 4,8:1 · primary 5,5:1 · danger 5,4:1 ·
+ * success 5,0:1 · warning 5,0:1.
+ */
+[data-theme='light'] {
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-border: #e2e8f0;
+  --color-input: #f1f5f9;
+  /* L'or du thème sombre (#c9993a) tombe à 3,8:1 sur blanc — illisible en
+     texte. On l'assombrit sans changer la teinte. */
+  --color-primary: #8a6218;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #8a6218;
+  /* `muted` doit rester d'un cran plus soutenu que `surface` : il sert de bloc
+     en relief À L'INTÉRIEUR des cartes (tuiles de capacité, survols). Les deux
+     à la même valeur et le relief disparaît — l'échelle est donc
+     background #fff → surface #f8fafc → muted #f1f5f9. */
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-surface: #f8fafc;
+  --color-surface-foreground: #0f172a;
+  /* `accent` sert de survol à `bg-primary`. En sombre il est plus CLAIR que
+     primary ; en clair il doit être plus FONCÉ, sinon le survol donne
+     l'impression que le bouton s'éteint. */
+  --color-accent: #6d4c12;
+  --color-danger: #c0392b;
+  --color-success: #15803d;
+  --color-warning: #b45309;
+  --color-overlay: rgb(15 23 42 / 0.45);
+  --shadow-menu: 0 16px 36px -14px rgb(15 23 42 / 0.24), 0 2px 8px -3px rgb(15 23 42 / 0.12);
+}
+
+/*
+ * Aligne les éléments natifs que le CSS ne touche pas — barres de défilement,
+ * sélecteurs de date, autocomplétion. Sans ça, un champ date reste sombre au
+ * milieu d'une fiche claire.
+ */
+:root {
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+}
+
+html,
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/*
+ * Arabe : police et sens de lecture.
+ *
+ * Space Grotesk ne dessine aucun caractère arabe. Sans cette règle, le
+ * navigateur se rabat sur la première police système capable de les rendre —
+ * souvent une police à empattements sans rapport avec le reste de l'écran, et
+ * dont la hauteur d'x casse tous les alignements. Noto Sans Arabic est
+ * chargée par `layout.tsx` et sert ici de première famille, Space Grotesk
+ * restant derrière pour les chiffres et les mots latins (« F CFA », les
+ * références de commande), qui cohabitent partout dans cette interface.
+ *
+ * `dir` est posé sur <html> par lib/langue.ts avant le premier pixel ; le
+ * reste de la mise en page suit par propriétés logiques (ms-/me-/ps-/pe-,
+ * start/end), que Tailwind v4 traduit selon `dir`.
+ */
+[lang='ar'] {
+  --font-body:
+    var(--font-noto-arabe), var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-headings:
+    var(--font-noto-arabe), var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+ * Les icônes directionnelles se retournent avec la page ; les autres non.
+ *
+ * Une flèche « retour » doit pointer vers la droite en arabe, sinon elle
+ * désigne l'avant. Une icône de ciseaux ou d'horloge, elle, deviendrait
+ * simplement fausse en miroir — d'où l'attribut explicite plutôt qu'une règle
+ * qui retournerait tous les `svg`.
+ */
+[dir='rtl'] [data-miroir] {
+  transform: scaleX(-1);
+}
+
+/* Anneau de focus visible au clavier uniquement, dans l'or du thème. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/*
+ * Défilement fluide pour les ancres de la page d'accueil (#tarifs, #faq…).
+ * Conditionné à la préférence système : un défilement animé déclenche des
+ * nausées chez les personnes sensibles au mouvement, et l'ancre reste
+ * parfaitement fonctionnelle sans lui.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/*
+ * Même règle pour les ouvertures de menu : le mouvement est un agrément, la
+ * lisibilité n'en dépend pas. Coupé, le panneau apparaît simplement d'un coup.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-menu-surgir,
+  .animate-menu-ligne {
+    animation: none;
+  }
+}
+
+/*
+ * Impression — et donc « Exporter PDF », la boîte de dialogue du navigateur
+ * offrant « Enregistrer au format PDF » comme destination.
+ *
+ * Deux choses la rendent nécessaire, l'une comme l'autre suffisant à rendre le
+ * document inutilisable :
+ *
+ * 1. Le thème par défaut est un bleu nuit. Imprimé tel quel, un rapport d'une
+ *    page sort en aplat sombre — illisible sur papier, et une cartouche d'encre
+ *    pour rien. On repasse donc sur la palette claire à l'impression, quel que
+ *    soit le thème affiché à l'écran : le PDF d'un atelier en thème sombre doit
+ *    ressembler à celui d'un atelier en thème clair.
+ * 2. Le rail de navigation, la barre haute et la barre basse suivraient sur
+ *    chaque page. Ils ne servent à rien sur un document qu'on classe ou qu'on
+ *    envoie à son comptable.
+ */
+@media print {
+  :root,
+  [data-theme='light'],
+  [data-theme='dark'] {
+    color-scheme: light;
+
+    --color-background: #ffffff;
+    --color-foreground: #0f172a;
+    --color-border: #cbd5e1;
+    --color-input: #ffffff;
+    --color-primary: #6d4c12;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #f1f5f9;
+    --color-secondary-foreground: #6d4c12;
+    --color-muted: #f1f5f9;
+    --color-muted-foreground: #475569;
+    --color-surface: #ffffff;
+    --color-surface-foreground: #0f172a;
+    --color-accent: #6d4c12;
+    --color-danger: #a5281b;
+    --color-success: #14652f;
+    --color-warning: #8a4708;
+  }
+
+  /* La navigation et les actions d'écran ne s'impriment pas. */
+  [data-chrome='app'] {
+    display: none !important;
+  }
+
+  /* Les navigateurs suppriment fonds et couleurs par défaut ; on les garde,
+     sans quoi les pastilles de statut deviennent du texte noir sur blanc et
+     « En retard » ne se distingue plus de « Livré ». */
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Une carte coupée en deux entre deux feuilles se relit mal. */
+  article,
+  section,
+  tr {
+    break-inside: avoid;
+  }
+}
